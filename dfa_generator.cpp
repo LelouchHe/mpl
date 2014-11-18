@@ -178,7 +178,7 @@ const std::vector<int>& DFAGenerator::last() const {
 	return _last;
 }
 
-bool DFAGenerator::match(const char* str) const {
+bool DFAGenerator::full_match(const char* str) const {
 	int cur = _start;
 	while (*str != '\0') {
 		const ::mpl::DFAGenerator::DFATran& tran = _trans[cur];
@@ -198,9 +198,36 @@ bool DFAGenerator::match(const char* str) const {
 	return std::find(_last.begin(), _last.end(), cur) != _last.end();
 }
 
+bool DFAGenerator::partial_match(const char* str, char** end) const {
+	int pre = -1;
+	int cur = _start;
+
+	while (*str != '\0') {
+		const ::mpl::DFAGenerator::DFATran& tran = _trans[cur];
+		::mpl::DFAConverter::DFATran::const_iterator it = tran.find(*str);
+		if (it == tran.end()) {
+			it = tran.find('\xFF');
+			if (it == tran.end()) {
+				cur = -1;
+				break;
+			}
+		}
+
+		pre = cur;
+		cur = it->second;
+		str++;
+	}
+
+	if (end != NULL) {
+		*end = const_cast<char *>(str);
+	}
+
+	return std::find(_last.begin(), _last.end(), pre) != _last.end();
+}
+
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 using namespace std;
@@ -217,7 +244,8 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
+	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
+	const char* pattern = "((((((((((a*)*)*)*)*)*)*)*)*)*)*";
 	::mpl::DFAGenerator dfa;
 	dfa.parse(pattern);
 
@@ -246,14 +274,25 @@ int main() {
 		}
 	}
 
-	const char* str = ".12312312";
+	char str[] = "abcdefg";
+	char* begin = str;
+	char* end = str;
 	cout << str << endl;
-	if (dfa.match(str)) {
-		cout << "match";
-	} else {
-		cout << "dismatch";
+
+	while (*end != '\0') {
+		bool is_match = dfa.partial_match(begin, &end);
+		char save = *end;
+		*end = '\0';
+		if (is_match) {
+			cout << "match   : " << begin << endl;
+		} else {
+			cout << "dismatch: " << begin << endl;
+		}
+		
+		// ´Ë´¦±ØĞë+1
+		*end = save;
+		begin = end + 1;
 	}
-	cout << endl;
 
 	return 0;
 }

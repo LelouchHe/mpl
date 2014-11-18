@@ -308,7 +308,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* str = ".*";
+	const char* str = "(a|b)";
 	::mpl::NFAConverter nfa;
 	nfa.parse(str);
 

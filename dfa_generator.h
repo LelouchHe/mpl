@@ -26,7 +26,8 @@ public:
 	int start() const;
 	const std::vector<int>& last() const;
 
-	bool match(const char* str) const;
+	bool full_match(const char* str) const;
+	bool partial_match(const char* str, char** end) const;
 
 private:
 	void build(const ::mpl::DFAConverter& dfa, const std::set<std::vector<int> >& t);

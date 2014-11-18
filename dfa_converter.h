@@ -23,8 +23,6 @@ public:
 	int start() const;
 	const std::vector<int>& last() const;
 
-	bool match(const char* str) const;
-
 private:
 	int new_state();
 	void reset();

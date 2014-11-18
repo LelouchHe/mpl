@@ -190,27 +190,6 @@ const std::vector<int>& DFAConverter::last() const {
 	return _last;
 }
 
-bool DFAConverter::match(const char* str) const {
-	int cur = _start;
-	while (*str != '\0'&& cur != -1) {
-		const ::mpl::DFAConverter::DFATran& tran = _trans[cur];
-		::mpl::DFAConverter::DFATran::const_iterator it = tran.find(*str);
-		if (it == tran.end()) {
-			// 尝试others(因为上面已经证明,不存在于现有转移)
-			it = tran.find('\xFF');
-			if (it == tran.end()) {
-				cur = -1;
-				break;
-			}
-		}
-
-		cur = it->second;
-		str++;
-	}
-
-	return std::find(_last.begin(), _last.end(), cur) != _last.end();
-}
-
 } // namespace mpl
 
 #if 0
@@ -259,15 +238,6 @@ int main() {
 			cout << endl;
 		}
 	}
-
-	const char* str = "bd";
-	cout << str << endl;
-	if (dfa.match(str)) {
-		cout << "match";
-	} else {
-		cout << "dismatch";
-	}
-	cout << endl;
 
 	return 0;
 }
