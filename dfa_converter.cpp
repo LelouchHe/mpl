@@ -230,7 +230,7 @@ int main() {
 			} else if (it->first == '\xFF') {
 				cout << "-1";
 			} else {
-				cout << it->first;
+				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";

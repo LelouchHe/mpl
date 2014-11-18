@@ -178,53 +178,6 @@ const std::vector<int>& DFAGenerator::last() const {
 	return _last;
 }
 
-bool DFAGenerator::full_match(const char* str) const {
-	int cur = _start;
-	while (*str != '\0') {
-		const ::mpl::DFAGenerator::DFATran& tran = _trans[cur];
-		::mpl::DFAConverter::DFATran::const_iterator it = tran.find(*str);
-		if (it == tran.end()) {
-			it = tran.find('\xFF');
-			if (it == tran.end()) {
-				cur = -1;
-				break;
-			}
-		}
-
-		cur = it->second;
-		str++;
-	}
-
-	return std::find(_last.begin(), _last.end(), cur) != _last.end();
-}
-
-bool DFAGenerator::partial_match(const char* str, char** end) const {
-	int pre = -1;
-	int cur = _start;
-
-	while (*str != '\0') {
-		const ::mpl::DFAGenerator::DFATran& tran = _trans[cur];
-		::mpl::DFAConverter::DFATran::const_iterator it = tran.find(*str);
-		if (it == tran.end()) {
-			it = tran.find('\xFF');
-			if (it == tran.end()) {
-				cur = -1;
-				break;
-			}
-		}
-
-		pre = cur;
-		cur = it->second;
-		str++;
-	}
-
-	if (end != NULL) {
-		*end = const_cast<char *>(str);
-	}
-
-	return std::find(_last.begin(), _last.end(), pre) != _last.end();
-}
-
 } // namespace mpl
 
 #if 0
@@ -245,7 +198,7 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
-	const char* pattern = "((((((((((a*)*)*)*)*)*)*)*)*)*)*";
+	const char* pattern = "ab";
 	::mpl::DFAGenerator dfa;
 	dfa.parse(pattern);
 
@@ -265,33 +218,13 @@ int main() {
 			} else if (it->first == '\xFF') {
 				cout << "-1";
 			} else {
-				cout << it->first;
+				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";
 			cout << it->second;
 			cout << endl;
 		}
-	}
-
-	char str[] = "abcdefg";
-	char* begin = str;
-	char* end = str;
-	cout << str << endl;
-
-	while (*end != '\0') {
-		bool is_match = dfa.partial_match(begin, &end);
-		char save = *end;
-		*end = '\0';
-		if (is_match) {
-			cout << "match   : " << begin << endl;
-		} else {
-			cout << "dismatch: " << begin << endl;
-		}
-		
-		// ´Ë´¦±ØÐë+1
-		*end = save;
-		begin = end + 1;
 	}
 
 	return 0;

@@ -149,14 +149,14 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 					to[0] = from;
 					nstart = -1;
 					nlast = -1;
-					build_alpha(to, &nstart, &nlast);
+					build_char(to, &nstart, &nlast);
 					link_or_append(nstart, nlast, start, last);
 
 					from++;
 				}
 				str++;
 			} else {
-				str += build_alpha(str, &nstart, &nlast);
+				str += build_char(str, &nstart, &nlast);
 				link_or_append(nstart, nlast, start, last);
 			}
 		}
@@ -168,7 +168,7 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 		char others[1] = { '\xFF' };
 		int nstart = -1;
 		int nlast = -1;
-		build_alpha(others, &nstart, &nlast);
+		build_char(others, &nstart, &nlast);
 		*last = new_state();
 		link_or_append(nstart, nlast, start, last);
 	}
@@ -182,7 +182,7 @@ int NFAConverter::build_escape(const char* str, int* start, int* last) {
 	assert(is_reserved(*(str + 1)));
 
 	str++;
-	int len = build_alpha(str, start, last);
+	int len = build_char(str, start, last);
 	return len + 1;
 }
 
@@ -190,10 +190,43 @@ int NFAConverter::build_dot(const char* str, int* start, int* last) {
 	assert(*str == '.');
 
 	char all[1] = { '\xFF' };
-	return build_alpha(all, start, last);
+	return build_char(all, start, last);
 }
 
-int NFAConverter::build_alpha(const char* str, int* start, int* last) {
+static int left_one(unsigned char ch) {
+	int n = 0;
+	unsigned int mask = 0x80;
+	while (mask > 0 && (ch & mask)) {
+		n++;
+		mask >>= 1;
+	}
+	
+	return n;
+}
+
+int NFAConverter::build_char(const char* str, int* start, int* last) {
+	unsigned char uc = *str;
+	assert(uc != '\xFF');
+
+	int len = 0;
+	if (uc <= '\x7F') {
+		len += build_byte(str, start, last);
+	} else {
+		int n = left_one(uc);
+		while (n-- > 0) {
+			int nstart = -1;
+			int nlast = -1;
+			len += build_byte(str, &nstart, &nlast);
+			str++;
+
+			link(nstart, nlast, start, last);
+		}
+	}
+
+	return len;
+}
+
+int NFAConverter::build_byte(const char* str, int* start, int* last) {
 	*start = new_state();
 	*last = new_state();
 
@@ -226,7 +259,7 @@ int NFAConverter::build(const char* str, int* start, int* last) {
 			str += build_dot(str, &nstart, &nlast);
 		} else {
 			assert(!is_reserved(*str));
-			str += build_alpha(str, &nstart, &nlast);
+			str += build_char(str, &nstart, &nlast);
 		}
 
 		// '*'系列单独处理,优先级2
@@ -308,7 +341,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* str = "(a|b)";
+	const char* str = "ab";
 	::mpl::NFAConverter nfa;
 	nfa.parse(str);
 
@@ -325,7 +358,7 @@ int main() {
 			} else if (it->first == '\xFF') {
 				cout << "-1";
 			} else {
-				cout << it->first;
+				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";

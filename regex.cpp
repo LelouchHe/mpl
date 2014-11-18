@@ -48,7 +48,11 @@ bool Regex::partial_match(const char* str, char** end) {
 		*end = const_cast<char *>(str);
 	}
 
-	return std::find(_dfa.last().begin(), _dfa.last().end(), pre) != _dfa.last().end();
+	if (*str == '\0') {
+		return std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end();
+	} else {
+		return std::find(_dfa.last().begin(), _dfa.last().end(), pre) != _dfa.last().end();
+	}
 }
 
 } // namespace mpl
@@ -68,7 +72,7 @@ int main() {
 		return -1;
 	}
 
-	char str[] = "123.456e100 11";
+	char str[] = "1.2";
 	cout << "str     : " << str << endl;
 
 	char* begin = str;

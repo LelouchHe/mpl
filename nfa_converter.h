@@ -1,5 +1,5 @@
-#ifndef MPL_NFAConverter_H
-#define MPL_NFAConverter_H
+#ifndef MPL_NFACONVERTER_H
+#define MPL_NFACONVERTER_H
 
 #include <vector>
 #include <map>
@@ -21,18 +21,19 @@ public:
 	const NFATran& operator[](size_t s) const;
 	size_t size() const;
 
-	// < 0: 状态错误
+	// < 0: 错误
 	int start() const;
 	int last() const;
 
 private:
-	// 返回的是消耗掉的字符数
+	// 返回消耗的字节数
 	int build(const char* str, int* start, int* last);
 	int build_parenthesis(const char* str, int* start, int* last);
 	int build_bracket(const char* str, int* start, int* last);
 	int build_escape(const char* str, int* start, int* last);
 	int build_dot(const char* str, int* start, int* last);
-	int build_alpha(const char* str, int* start, int* last);
+	int build_char(const char* str, int* start, int* last);
+	int build_byte(const char* str, int* start, int* last);
 
 	void link(int nstart, int nlast, int* start, int* last);
 	void link_star(int nstart, int nlast, int* start, int* last);
@@ -61,4 +62,4 @@ private:
 
 } // namespace mpl
 
-#endif // MPL_NFAConverter_H
+#endif // MPL_NFACONVERTER_H
