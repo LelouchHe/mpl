@@ -217,7 +217,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* pattern = ".*";
+	const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
 	::mpl::DFAGenerator dfa;
 	dfa.parse(pattern);
 
@@ -246,7 +246,7 @@ int main() {
 		}
 	}
 
-	const char* str = "bbb";
+	const char* str = ".12312312";
 	cout << str << endl;
 	if (dfa.match(str)) {
 		cout << "match";

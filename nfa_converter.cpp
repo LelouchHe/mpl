@@ -7,7 +7,7 @@ namespace mpl {
 std::set<char> NFAConverter::_s_reserved = {
 	'(', ')', '[', ']', '-',
 	'*', '+', '?',
-	'^', '$'
+	'^', '$', '.'
 };
 
 bool NFAConverter::is_reserved(char ch) {
@@ -123,17 +123,16 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 
 	if (*str == '^') {
 		*last = -1;
+		str++;
 	} else {
 		*last = new_state();
 	}
 
-	str++;
 	while (*str != '\0' && *str != ']') {
 		int nstart = -1;
 		int nlast = -1;
 		if (*str == '\\') {
 			str += build_escape(str, &nstart, &nlast);
-			assert(!is_reserved(*str));
 			link_or_append(nstart, nlast, start, last);
 		} else {
 			// 原始字符
@@ -164,6 +163,7 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 	}
 	assert(*str == ']');
 
+	// 使用了分类,需要新建\xFF路径
 	if (*last == -1) {
 		char others[1] = { '\xFF' };
 		int nstart = -1;
