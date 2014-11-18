@@ -186,6 +186,13 @@ int NFAConverter::build_escape(const char* str, int* start, int* last) {
 	return len + 1;
 }
 
+int NFAConverter::build_dot(const char* str, int* start, int* last) {
+	assert(*str == '.');
+
+	char all[1] = { '\xFF' };
+	return build_alpha(all, start, last);
+}
+
 int NFAConverter::build_alpha(const char* str, int* start, int* last) {
 	*start = new_state();
 	*last = new_state();
@@ -214,7 +221,9 @@ int NFAConverter::build(const char* str, int* start, int* last) {
 		} else if (*str == '[') {
 			str += build_bracket(str, &nstart, &nlast);
 		} else if (*str == '\\') {
-			str += build_alpha(str, &nstart, &nlast);
+			str += build_escape(str, &nstart, &nlast);
+		} else if (*str == '.') {
+			str += build_dot(str, &nstart, &nlast);
 		} else {
 			assert(!is_reserved(*str));
 			str += build_alpha(str, &nstart, &nlast);
@@ -299,7 +308,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* str = "[^a]";
+	const char* str = ".*";
 	::mpl::NFAConverter nfa;
 	nfa.parse(str);
 

@@ -31,6 +31,7 @@ private:
 	int build_parenthesis(const char* str, int* start, int* last);
 	int build_bracket(const char* str, int* start, int* last);
 	int build_escape(const char* str, int* start, int* last);
+	int build_dot(const char* str, int* start, int* last);
 	int build_alpha(const char* str, int* start, int* last);
 
 	void link(int nstart, int nlast, int* start, int* last);

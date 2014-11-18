@@ -2,6 +2,7 @@
 
 #include <set>
 #include <algorithm>
+#include <cassert>
 #include "dfa_converter.h"
 
 namespace mpl {
@@ -31,7 +32,10 @@ static void init(const ::mpl::DFAConverter& dfa, std::set<StateList> *s) {
 			non_last.push_back(i);
 		}
 	}
-	s->insert(non_last);
+
+	if (!non_last.empty()) {
+		s->insert(non_last);
+	}
 }
 
 static void split(const ::mpl::DFAConverter& dfa,
@@ -56,7 +60,8 @@ static void split(const ::mpl::DFAConverter& dfa,
 		for (size_t i = 0; i < s.size(); i++) {
 			const ::mpl::DFAConverter::DFATran& tran = dfa[s[i]];
 			::mpl::DFAConverter::DFATran::const_iterator cit = tran.find(*it);
-			if (cit != tran.end()) {
+			// -1错误状态提前判断
+			if (cit != tran.end() && cit->second != -1) {
 				if (to == NULL) {
 					to = states[cit->second];
 				}
@@ -86,17 +91,18 @@ static void split_all(const ::mpl::DFAConverter& dfa, std::set<StateList>* t) {
 	std::set<StateList> p;
 	init(dfa, t);
 
+	// -1状态不做split处理
 	while (p != *t) {
 		p.swap(*t);
+		t->clear();
 		for (std::set<StateList>::iterator it = p.begin(); it != p.end(); ++it) {
 			for (size_t i = 0; i < it->size(); i++) {
+				assert((*it)[i] >= 0);
 				states[(*it)[i]] = &(*it);
 			}
 		}
-		t->clear();
 
-		for (std::set<StateList>::iterator it = p.begin();
-			it != p.end(); ++it) {
+		for (std::set<StateList>::iterator it = p.begin(); it != p.end(); ++it) {
 			split(dfa, states, *it, t);
 		}
 	}
@@ -105,6 +111,9 @@ static void split_all(const ::mpl::DFAConverter& dfa, std::set<StateList>* t) {
 void DFAGenerator::build(const ::mpl::DFAConverter& dfa, const std::set<std::vector<int> >& t) {
 	const StateList& last = dfa.last();
 	std::map<int, int> ms;
+	// 错误状态只有1个,提前写入
+	ms[-1] = -1;
+
 	for (std::set<StateList>::iterator it = t.begin();
 		it != t.end(); ++it) {
 		int s = new_state();
@@ -175,8 +184,11 @@ bool DFAGenerator::match(const char* str) const {
 		const ::mpl::DFAGenerator::DFATran& tran = _trans[cur];
 		::mpl::DFAConverter::DFATran::const_iterator it = tran.find(*str);
 		if (it == tran.end()) {
-			cur = -1;
-			break;
+			it = tran.find('\xFF');
+			if (it == tran.end()) {
+				cur = -1;
+				break;
+			}
 		}
 
 		cur = it->second;
@@ -188,7 +200,7 @@ bool DFAGenerator::match(const char* str) const {
 
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <iostream>
 using namespace std;
@@ -205,7 +217,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* pattern = "a[0-b]?";
+	const char* pattern = ".*";
 	::mpl::DFAGenerator dfa;
 	dfa.parse(pattern);
 
@@ -219,14 +231,22 @@ int main() {
 		const ::mpl::DFAGenerator::DFATran& tran = dfa[i];
 		for (::mpl::DFAGenerator::DFATran::const_iterator it = tran.begin();
 			it != tran.end(); ++it) {
-			cout << i << "(" << it->first << ")";
+			cout << i << "(";
+			if (it->first == '\0') {
+				cout << " ";
+			} else if (it->first == '\xFF') {
+				cout << "-1";
+			} else {
+				cout << it->first;
+			}
+			cout << ")";
 			cout << "\t->\t";
 			cout << it->second;
 			cout << endl;
 		}
 	}
 
-	const char* str = "ab";
+	const char* str = "bbb";
 	cout << str << endl;
 	if (dfa.match(str)) {
 		cout << "match";

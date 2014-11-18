@@ -3,6 +3,7 @@
 #include <queue>
 #include <set>
 #include <algorithm>
+#include <cassert>
 #include "nfa_converter.h"
 
 namespace mpl {
@@ -29,10 +30,17 @@ static std::vector<int> fill(const NFAConverter& nfa, const std::vector<int>& fr
 		dedup.insert(from[i]);
 	}
 
+	std::set<int> ends;
 	for (size_t i = 0; i < to.size(); i++) {
+		// -1: 显式错误情况,一般用于[^]
+		if (to[i] == -1) {
+			ends.insert(-1);
+			continue;
+		}
 		const ::mpl::NFAConverter::NFATran& trans = nfa[to[i]];
 		::mpl::NFAConverter::NFATran::const_iterator it = trans.find('\0');
 		if (it == trans.end()) {
+			ends.insert(to[i]);
 			continue;
 		}
 
@@ -48,6 +56,15 @@ static std::vector<int> fill(const NFAConverter& nfa, const std::vector<int>& fr
 
 	*is_last = dedup.find(nfa.last()) != dedup.end();
 
+	if (ends.find(-1) == ends.end() || ends.size() > 1) {
+		to.erase(std::remove(to.begin(), to.end(), -1), to.end());
+	} else {
+		to.clear();
+		to.push_back(-1);
+	}
+
+	std::sort(to.begin(), to.end());
+
 	return to;
 }
 
@@ -56,6 +73,12 @@ static std::vector<int> expand(const NFAConverter& nfa, const std::vector<int>& 
 	std::vector<int> to;
 	std::set<int> dedup;
 	for (size_t i = 0; i < from.size(); i++) {
+		// -1: 显式错误情况
+		if (from[i] == -1) {
+			to.clear();
+			to.push_back(-1);
+			break;
+		}
 		const ::mpl::NFAConverter::NFATran& trans = nfa[from[i]];
 		::mpl::NFAConverter::NFATran::const_iterator it = trans.find(ch);
 		if (it == trans.end()) {
@@ -72,7 +95,6 @@ static std::vector<int> expand(const NFAConverter& nfa, const std::vector<int>& 
 		}
 	}
 
-
 	sort(to.begin(), to.end());
 	return to;
 }
@@ -85,32 +107,39 @@ bool DFAConverter::parse(const char* str) {
 		return false;
 	}
 
-	std::map<::mpl::NFAConverter::StateList, size_t> nfa_to_dfa;
+	std::map<::mpl::NFAConverter::StateList, int> nfa_to_dfa;
+	::mpl::NFAConverter::StateList v;
+	v.push_back(-1);
+	nfa_to_dfa[v] = -1;
+	v.clear();
 	bool is_last = false;
 
-	std::queue<::mpl::NFAConverter::StateList> q;
-	::mpl::NFAConverter::StateList v;
 	v.push_back(nfa.start());
 	v = fill(nfa, v, &is_last);
-	q.push(v);
-
 	nfa_to_dfa[v] = new_state();
 	_start = 0;
 	if (is_last) {
 		_last.push_back(0);
 	}
 
+	std::queue<::mpl::NFAConverter::StateList> q;
+
+	q.push(v);
 	while (!q.empty()) {
 		v = q.front();
 		q.pop();
 
 		int from = nfa_to_dfa[v];
+		std::set<char> dedup;
+		dedup.insert('\0');
 
 		for (size_t i = 0; i < v.size(); i++) {
+			assert(v[i] >= 0);
+
 			const ::mpl::NFAConverter::NFATran& tran = nfa[v[i]];
 			for (::mpl::NFAConverter::NFATran::const_iterator it = tran.begin();
 					it != tran.end(); ++it) {
-				if (it->first == '\0') {
+				if (dedup.find(it->first) != dedup.end()) {
 					continue;
 				}
 
@@ -131,6 +160,7 @@ bool DFAConverter::parse(const char* str) {
 				}
 
 				_trans[from][it->first] = to;
+				dedup.insert(it->first);
 			}
 		}
 	}
@@ -162,12 +192,16 @@ const std::vector<int>& DFAConverter::last() const {
 
 bool DFAConverter::match(const char* str) const {
 	int cur = _start;
-	while (*str != '\0') {
+	while (*str != '\0'&& cur != -1) {
 		const ::mpl::DFAConverter::DFATran& tran = _trans[cur];
 		::mpl::DFAConverter::DFATran::const_iterator it = tran.find(*str);
 		if (it == tran.end()) {
-			cur = -1;
-			break;
+			// 尝试others(因为上面已经证明,不存在于现有转移)
+			it = tran.find('\xFF');
+			if (it == tran.end()) {
+				cur = -1;
+				break;
+			}
 		}
 
 		cur = it->second;
@@ -179,7 +213,7 @@ bool DFAConverter::match(const char* str) const {
 
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 using namespace std;
@@ -196,7 +230,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* pattern = "[^a]";
+	const char* pattern = ".*";
 	::mpl::DFAConverter dfa;
 	dfa.parse(pattern);
 
@@ -211,14 +245,22 @@ int main() {
 		const ::mpl::DFAConverter::DFATran& tran = dfa[i];
 		for (::mpl::DFAConverter::DFATran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
-			cout << i << "(" << it->first << ")";
+			cout << i << "(";
+			if (it->first == '\0') {
+				cout << " ";
+			} else if (it->first == '\xFF') {
+				cout << "-1";
+			} else {
+				cout << it->first;
+			}
+			cout << ")";
 			cout << "\t->\t";
 			cout << it->second;
 			cout << endl;
 		}
 	}
 
-	const char* str = "abbcbccbbc";
+	const char* str = "bd";
 	cout << str << endl;
 	if (dfa.match(str)) {
 		cout << "match";
