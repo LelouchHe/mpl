@@ -198,7 +198,7 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
-	const char* pattern = "ab";
+	const char* pattern = "[^ ]*";
 	::mpl::DFAGenerator dfa;
 	dfa.parse(pattern);
 

@@ -28,18 +28,23 @@ bool Regex::partial_match(const char* str, char** end) {
 	int pre = -1;
 	int cur = _dfa.start();
 
-	while (*str != '\0') {
+	while (*str != '\0' && cur >= 0) {
 		const ::mpl::DFAGenerator::DFATran& tran = _dfa[cur];
 		::mpl::DFAGenerator::DFATran::const_iterator it = tran.find(*str);
-		if (it == tran.end()) {
-			it = tran.find('\xFF');
+		if (it == tran.end() || it->second == -1) {
+			// ³¢ÊÔothers
 			if (it == tran.end()) {
+				it = tran.find('\xFF');
+			}
+			if (it == tran.end() || it->second == -1) {
 				cur = -1;
 				break;
 			}
 		}
 
-		pre = cur;
+		if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
+			pre = cur;
+		}
 		cur = it->second;
 		str++;
 	}
@@ -63,7 +68,8 @@ bool Regex::partial_match(const char* str, char** end) {
 using namespace std;
 
 int main() {
-	const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
+	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
+	const char* pattern = "[^ ]*";
 	cout << "pattern: " << pattern << endl;
 
 	::mpl::Regex re;
@@ -72,7 +78,7 @@ int main() {
 		return -1;
 	}
 
-	char str[] = "1.2";
+	char str[] = "hello world";
 	cout << "str     : " << str << endl;
 
 	char* begin = str;

@@ -168,7 +168,8 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 		char others[1] = { '\xFF' };
 		int nstart = -1;
 		int nlast = -1;
-		build_char(others, &nstart, &nlast);
+		// 注意,此处使用byte,而不是char,避免0xFF被utf-8
+		build_byte(others, &nstart, &nlast);
 		*last = new_state();
 		link_or_append(nstart, nlast, start, last);
 	}
