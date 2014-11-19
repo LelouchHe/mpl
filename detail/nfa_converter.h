@@ -1,11 +1,12 @@
-#ifndef MPL_NFACONVERTER_H
-#define MPL_NFACONVERTER_H
+#ifndef MPL_DETAIL_NFACONVERTER_H
+#define MPL_DETAIL_NFACONVERTER_H
 
 #include <vector>
 #include <map>
 #include <set>
 
 namespace mpl {
+namespace detail {
 
 class NFAConverter {
 public:
@@ -26,7 +27,7 @@ public:
 	int last() const;
 
 private:
-	// 返回消耗的字节数
+	// return consume byte num
 	int build(const char* str, int* start, int* last);
 	int build_parenthesis(const char* str, int* start, int* last);
 	int build_bracket(const char* str, int* start, int* last);
@@ -60,6 +61,7 @@ private:
 	static bool is_suffix(char ch);
 };
 
+} // namespace detail
 } // namespace mpl
 
-#endif // MPL_NFACONVERTER_H
+#endif // MPL_DETAIL_NFACONVERTER_H

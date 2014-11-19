@@ -65,7 +65,7 @@ bool Regex::partial_match(const char* str, char** end) {
 
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 using namespace std;

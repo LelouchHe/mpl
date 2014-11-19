@@ -3,6 +3,7 @@
 #include <cassert>
 
 namespace mpl {
+	namespace detail {
 
 std::set<char> NFAConverter::_s_reserved = {
 	'(', ')', '[', ']', '-',
@@ -323,9 +324,10 @@ int NFAConverter::last() const {
 	return _last;
 }
 
+} // namespace detail
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <iostream>
 using namespace std;
@@ -343,15 +345,15 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	const char* str = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
-	::mpl::NFAConverter nfa;
+	::mpl::detail::NFAConverter nfa;
 	nfa.parse(str);
 
 	cout << "start: " << nfa.start() << endl;
 	cout << "last : " << nfa.last() << endl;
 
 	for (size_t i = 0; i < nfa.size(); i++) {
-		const ::mpl::NFAConverter::NFATran& tran = nfa[i];
-		for (::mpl::NFAConverter::NFATran::const_iterator it = tran.begin();
+		const ::mpl::detail::NFAConverter::NFATran& tran = nfa[i];
+		for (::mpl::detail::NFAConverter::NFATran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
 			cout << i << "(";
 			if (it->first == '\0') {
