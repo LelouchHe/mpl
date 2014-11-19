@@ -37,6 +37,9 @@ bool Regex::partial_match(const char* str, char** end) {
 				it = tran.find('\xFF');
 			}
 			if (it == tran.end() || it->second == -1) {
+				if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
+					pre = cur;
+				}
 				cur = -1;
 				break;
 			}
@@ -68,8 +71,7 @@ bool Regex::partial_match(const char* str, char** end) {
 using namespace std;
 
 int main() {
-	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
-	const char* pattern = "[^ ]*";
+	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
 	cout << "pattern: " << pattern << endl;
 
 	::mpl::Regex re;
@@ -95,7 +97,7 @@ int main() {
 		}
 		*end = save;
 
-		begin = end + 1;
+		begin = end;
 	}
 
 	if (re.full_match(str)) {

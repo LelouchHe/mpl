@@ -342,7 +342,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* str = "ab";
+	const char* str = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
 	::mpl::NFAConverter nfa;
 	nfa.parse(str);
 
@@ -355,11 +355,12 @@ int main() {
 				it != tran.end(); ++it) {
 			cout << i << "(";
 			if (it->first == '\0') {
-				cout << " ";
+				cout << "\\0";
 			} else if (it->first == '\xFF') {
 				cout << "-1";
 			} else {
-				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
+				cout << it->first;
+				//cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";

@@ -198,7 +198,7 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
-	const char* pattern = "[^ ]*";
+	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]*";
 	::mpl::DFAGenerator dfa;
 	dfa.parse(pattern);
 
@@ -214,11 +214,12 @@ int main() {
 			it != tran.end(); ++it) {
 			cout << i << "(";
 			if (it->first == '\0') {
-				cout << " ";
+				cout << "\\0";
 			} else if (it->first == '\xFF') {
 				cout << "-1";
 			} else {
-				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
+				cout << it->first;
+				//cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";
