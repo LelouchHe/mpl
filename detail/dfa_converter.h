@@ -1,29 +1,32 @@
 #ifndef MPL_DFA_CONVERTER_H
 #define MPL_DFA_CONVERTER_H
 
-#include <vector>
-#include <map>
+#include "state.h"
+#include "dfa.h"
 
 namespace mpl {
+namespace detail {
 
-class DFAConverter {
+class DFAConverter : public DFA {
 public:
-	typedef std::map<char, int> DFATran;
-	typedef std::vector<int> Tag;
-
 	DFAConverter();
 	~DFAConverter();
 
-	bool parse(const char* str);
-	bool parse(const char* str, int tag);
+	bool parse(const Byte* str);
+	bool parse(const Byte* str, int tag);
 
-	// Pre: s < size()
-	const DFATran& operator[](size_t s) const;
-	size_t size() const;
+	bool build(int start, int last,
+			const std::vector<NFATran>& trans,
+			const std::map<size_t, Tag>& tags);
 
 	// < 0: ×´Ì¬´íÎó
 	int start() const;
 	const std::vector<int>& last() const;
+
+public:
+	virtual size_t size() const;
+	virtual const DFATran& operator[](size_t s) const;
+	virtual const Tag& tags(size_t s) const;
 
 private:
 	int new_state();
@@ -31,12 +34,13 @@ private:
 
 private:
 	std::vector<DFATran> _trans;
-	std::map<int, Tag> _tags;
+	std::map<size_t, Tag> _tags;
 	
 	int _start;
 	std::vector<int> _last;
 };
 
+} // namespace detail
 } // namespace mpl
 
 #endif // MPL_DFA_CONVERTER_H

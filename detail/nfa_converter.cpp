@@ -3,22 +3,23 @@
 #include <cassert>
 
 namespace mpl {
+namespace detail {
 
-std::set<char> NFAConverter::_s_reserved = {
+std::set<Byte> NFAConverter::_s_reserved = {
 	'(', ')', '[', ']', '-',
 	'*', '+', '?',
 	'^', '$', '.'
 };
 
-bool NFAConverter::is_reserved(char ch) {
+bool NFAConverter::is_reserved(Byte ch) {
 	return _s_reserved.find(ch) != _s_reserved.end();
 }
 
-std::set<char> NFAConverter::_s_suffix = {
+std::set<Byte> NFAConverter::_s_suffix = {
 	'*', '+', '?'
 };
 
-bool NFAConverter::is_suffix(char ch) {
+bool NFAConverter::is_suffix(Byte ch) {
 	return _s_suffix.find(ch) != _s_suffix.end();
 }
 
@@ -41,7 +42,7 @@ void NFAConverter::link(int nstart, int nlast, int* start, int* last) {
 		*start = nstart;
 		*last = nlast;
 	} else {
-		_trans[*last]['\0'].push_back(nstart);
+		_trans[*last][EPSILON].push_back(nstart);
 		*last = nlast;
 	}
 }
@@ -50,10 +51,10 @@ void NFAConverter::link_or(int nstart, int nlast, int* start, int* last) {
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before]['\0'].push_back(nstart);
-	_trans[before]['\0'].push_back(*start);
-	_trans[nlast]['\0'].push_back(after);
-	_trans[*last]['\0'].push_back(after);
+	_trans[before][EPSILON].push_back(nstart);
+	_trans[before][EPSILON].push_back(*start);
+	_trans[nlast][EPSILON].push_back(after);
+	_trans[*last][EPSILON].push_back(after);
 
 	*start = before;
 	*last = after;
@@ -61,18 +62,18 @@ void NFAConverter::link_or(int nstart, int nlast, int* start, int* last) {
 
 // start/last是原有状态,将nstart/nlast添加到其间做or
 void NFAConverter::link_or_append(int nstart, int nlast, int* start, int* last) {
-	_trans[*start]['\0'].push_back(nstart);
-	_trans[nlast]['\0'].push_back(*last);
+	_trans[*start][EPSILON].push_back(nstart);
+	_trans[nlast][EPSILON].push_back(*last);
 }
 
 void NFAConverter::link_star(int nstart, int nlast, int* start, int* last) {
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before]['\0'].push_back(nstart);
-	_trans[nlast]['\0'].push_back(after);
-	_trans[nlast]['\0'].push_back(nstart);
-	_trans[before]['\0'].push_back(after);
+	_trans[before][EPSILON].push_back(nstart);
+	_trans[nlast][EPSILON].push_back(after);
+	_trans[nlast][EPSILON].push_back(nstart);
+	_trans[before][EPSILON].push_back(after);
 
 	*start = before;
 	*last = after;
@@ -82,9 +83,9 @@ void NFAConverter::link_plus(int nstart, int nlast, int* start, int* last) {
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before]['\0'].push_back(nstart);
-	_trans[nlast]['\0'].push_back(after);
-	_trans[nlast]['\0'].push_back(nstart);
+	_trans[before][EPSILON].push_back(nstart);
+	_trans[nlast][EPSILON].push_back(after);
+	_trans[nlast][EPSILON].push_back(nstart);
 
 	*start = before;
 	*last = after;
@@ -94,15 +95,15 @@ void NFAConverter::link_question_mark(int nstart, int nlast, int* start, int* la
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before]['\0'].push_back(nstart);
-	_trans[nlast]['\0'].push_back(after);
-	_trans[before]['\0'].push_back(after);
+	_trans[before][EPSILON].push_back(nstart);
+	_trans[nlast][EPSILON].push_back(after);
+	_trans[before][EPSILON].push_back(after);
 
 	*start = before;
 	*last = after;
 }
 
-int NFAConverter::build_parenthesis(const char* str, int* start, int* last) {
+int NFAConverter::build_parenthesis(const Byte* str, int* start, int* last) {
 	assert(*str == '(');
 
 	str++;
@@ -113,10 +114,10 @@ int NFAConverter::build_parenthesis(const char* str, int* start, int* last) {
 
 // 目前只处理单字符的选择
 // []其实代表着类字符的处理,包括[^ ]
-int NFAConverter::build_bracket(const char* str, int* start, int* last) {
+int NFAConverter::build_bracket(const Byte* str, int* start, int* last) {
 	assert(*str == '[');
 
-	const char* begin = str;
+	const Byte* begin = str;
 	str++;
 
 	*start = new_state();
@@ -128,29 +129,29 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 		*last = new_state();
 	}
 
-	while (*str != '\0' && *str != ']') {
+	while (*str != EPSILON && *str != ']') {
 		if (*str == '\\') {
 			str += build_escape_direct(str, start, last);
 		} else {
 			// 原始字符
 			assert(!is_reserved(*str));
 
-			char from = *str;
+			Byte from = *str;
 			if (*(str + 1) == '-') {
 				str += 2;
 				assert(!is_reserved(*str));
 				assert(from < *str);
 
-				char to[1];
+				Byte to[1];
 				while (from <= *str) {
 					to[0] = from;
-					build_char_direct(to, start, last);
+					build_byte_direct(to, start, last);
 
 					from++;
 				}
 				str++;
 			} else {
-				str += build_char_direct(str, start, last);
+				str += build_byte_direct(str, start, last);
 			}
 		}
 	}
@@ -158,8 +159,8 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 
 	// 使用了分类,需要新建\xFF路径
 	if (*last == -1) {
-		char others[1] = { '\xFF' };
-		// 注意,此处使用byte,而不是char,避免0xFF被utf-8
+		Byte others[1] = { OTHER };
+		// 注意,此处使用byte,而不是Byte,避免0xFF被utf-8
 		*last = new_state();
 		build_byte_direct(others, start, last);
 	}
@@ -168,7 +169,7 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 }
 
 // 目前只处理reserved的转义
-int NFAConverter::build_escape(const char* str, int* start, int* last) {
+int NFAConverter::build_escape(const Byte* str, int* start, int* last) {
 	assert(*str == '\\');
 	assert(is_reserved(*(str + 1)));
 
@@ -178,7 +179,7 @@ int NFAConverter::build_escape(const char* str, int* start, int* last) {
 }
 
 // 目前只处理reserved的转义
-int NFAConverter::build_escape_direct(const char* str, int* start, int* last) {
+int NFAConverter::build_escape_direct(const Byte* str, int* start, int* last) {
 	assert(*str == '\\');
 	assert(is_reserved(*(str + 1)));
 
@@ -187,14 +188,14 @@ int NFAConverter::build_escape_direct(const char* str, int* start, int* last) {
 	return len + 1;
 }
 
-int NFAConverter::build_dot(const char* str, int* start, int* last) {
+int NFAConverter::build_dot(const Byte* str, int* start, int* last) {
 	assert(*str == '.');
 
-	char all[1] = { '\xFF' };
-	return build_char(all, start, last);
+	Byte all[1] = { OTHER };
+	return build_byte(all, start, last);
 }
 
-static int left_one(unsigned char ch) {
+static int left_one(Byte ch) {
 	int n = 0;
 	unsigned int mask = 0x80;
 	while (mask > 0 && (ch & mask)) {
@@ -205,17 +206,17 @@ static int left_one(unsigned char ch) {
 	return n;
 }
 
-int NFAConverter::build_char(const char* str, int* start, int* last) {
+int NFAConverter::build_char(const Byte* str, int* start, int* last) {
 	return build_char_inner(str, start, last, false);
 }
 
-int NFAConverter::build_char_direct(const char* str, int* start, int* last) {
+int NFAConverter::build_char_direct(const Byte* str, int* start, int* last) {
 	return build_char_inner(str, start, last, true);
 }
 
-int NFAConverter::build_char_inner(const char* str, int* start, int* last, bool is_direct) {
-	unsigned char uc = *str;
-	assert(uc != '\xFF');
+int NFAConverter::build_char_inner(const Byte* str, int* start, int* last, bool is_direct) {
+	Byte uc = *str;
+	assert(uc != OTHER);
 
 	int len = 0;
 	if (uc <= '\x7F') {
@@ -242,14 +243,14 @@ int NFAConverter::build_char_inner(const char* str, int* start, int* last, bool 
 	return len;
 }
 
-int NFAConverter::build_byte(const char* str, int* start, int* last) {
+int NFAConverter::build_byte(const Byte* str, int* start, int* last) {
 	*start = new_state();
 	*last = new_state();
 
 	return build_byte_direct(str, start, last);
 }
 
-int NFAConverter::build_byte_direct(const char* str, int* start, int* last) {
+int NFAConverter::build_byte_direct(const Byte* str, int* start, int* last) {
 	_trans[*start][*str].push_back(*last);
 	return 1;
 }
@@ -259,10 +260,10 @@ int NFAConverter::build_byte_direct(const char* str, int* start, int* last) {
 // 2. *节点 (单独处理)
 // 3. +节点 (主循环体现)
 // 4. |节点 (需要重启build)
-int NFAConverter::build(const char* str, int* start, int* last) {
-	const char* begin = str;
+int NFAConverter::build(const Byte* str, int* start, int* last) {
+	const Byte* begin = str;
 
-	while (*str != '\0' && *str != ')') {
+	while (*str != EPSILON && *str != ')') {
 		int nstart = -1;
 		int nlast = -1;
 
@@ -311,11 +312,11 @@ int NFAConverter::build(const char* str, int* start, int* last) {
 	return str - begin;
 }
 
-bool NFAConverter::parse(const char* str) {
+bool NFAConverter::parse(const Byte* str) {
 	reset();
 
 	int len = build(str, &_start, &_last);
-	return str[len] == '\0';
+	return str[len] == EPSILON;
 }
 
 void NFAConverter::reset() {
@@ -324,7 +325,11 @@ void NFAConverter::reset() {
 	_last = -1;
 }
 
-const NFAConverter::NFATran& NFAConverter::operator[](size_t s) const {
+const std::vector<NFATran>& NFAConverter::trans() const {
+	return _trans;
+}
+
+const NFATran& NFAConverter::operator[](size_t s) const {
 	assert(s < _trans.size());
 	return _trans[s];
 }
@@ -341,6 +346,7 @@ int NFAConverter::last() const {
 	return _last;
 }
 
+} // namespace detail
 } // namespace mpl
 
 #if 0
@@ -360,21 +366,21 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* str = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
-	::mpl::NFAConverter nfa;
+	const ::mpl::detail::Byte* str = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
+	::mpl::detail::NFAConverter nfa;
 	nfa.parse(str);
 
 	cout << "start: " << nfa.start() << endl;
 	cout << "last : " << nfa.last() << endl;
 
 	for (size_t i = 0; i < nfa.size(); i++) {
-		const ::mpl::NFAConverter::NFATran& tran = nfa[i];
-		for (::mpl::NFAConverter::NFATran::const_iterator it = tran.begin();
+		const ::mpl::detail::NFATran& tran = nfa[i];
+		for (::mpl::detail::NFATran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
 			cout << i << "(";
-			if (it->first == '\0') {
+			if (it->first == ::mpl::detail::EPSILON) {
 				cout << "\\0";
-			} else if (it->first == '\xFF') {
+			} else if (it->first == ::mpl::detail::OTHER) {
 				cout << "-1";
 			} else {
 				cout << it->first;

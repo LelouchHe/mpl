@@ -7,6 +7,7 @@
 #include "nfa_converter.h"
 
 namespace mpl {
+namespace detail {
 
 DFAConverter::DFAConverter() : _start(-1) {
 
@@ -21,8 +22,8 @@ int DFAConverter::new_state() {
 	return _trans.size() - 1;
 }
 
-// 所有能从from通过'\0'能达到的NFA状态(包括from)
-static std::vector<int> fill(const NFAConverter& nfa, const std::vector<int>& from, bool* is_last) {
+// 所有能从from通过EPSILON能达到的NFA状态(包括from)
+static std::vector<int> fill(const std::vector<NFATran>& trans, int last, const std::vector<int>& from, bool* is_last) {
 	std::vector<int> to;
 	std::set<int> dedup;
 	for (size_t i = 0; i < from.size(); i++) {
@@ -37,9 +38,9 @@ static std::vector<int> fill(const NFAConverter& nfa, const std::vector<int>& fr
 			ends.insert(-1);
 			continue;
 		}
-		const ::mpl::NFAConverter::NFATran& trans = nfa[to[i]];
-		::mpl::NFAConverter::NFATran::const_iterator it = trans.find('\0');
-		if (it == trans.end()) {
+		const ::mpl::detail::NFATran& tran = trans[to[i]];
+		::mpl::detail::NFATran::const_iterator it = tran.find(EPSILON);
+		if (it == tran.end()) {
 			ends.insert(to[i]);
 			continue;
 		}
@@ -54,7 +55,7 @@ static std::vector<int> fill(const NFAConverter& nfa, const std::vector<int>& fr
 		}
 	}
 
-	*is_last = dedup.find(nfa.last()) != dedup.end();
+	*is_last = dedup.find(last) != dedup.end();
 
 	if (ends.find(-1) == ends.end() || ends.size() > 1) {
 		to.erase(std::remove(to.begin(), to.end(), -1), to.end());
@@ -69,7 +70,7 @@ static std::vector<int> fill(const NFAConverter& nfa, const std::vector<int>& fr
 }
 
 // 所有从from通过一次ch到达的NFA状态
-static std::vector<int> expand(const NFAConverter& nfa, const std::vector<int>& from, char ch) {
+static std::vector<int> expand(const std::vector<NFATran>& trans, const std::vector<int>& from, char ch) {
 	std::vector<int> to;
 	std::set<int> dedup;
 	for (size_t i = 0; i < from.size(); i++) {
@@ -79,9 +80,9 @@ static std::vector<int> expand(const NFAConverter& nfa, const std::vector<int>& 
 			to.push_back(-1);
 			break;
 		}
-		const ::mpl::NFAConverter::NFATran& trans = nfa[from[i]];
-		::mpl::NFAConverter::NFATran::const_iterator it = trans.find(ch);
-		if (it == trans.end()) {
+		const ::mpl::detail::NFATran& tran = trans[from[i]];
+		::mpl::detail::NFATran::const_iterator it = tran.find(ch);
+		if (it == tran.end()) {
 			continue;
 		}
 
@@ -99,35 +100,45 @@ static std::vector<int> expand(const NFAConverter& nfa, const std::vector<int>& 
 	return to;
 }
 
-bool DFAConverter::parse(const char* str) {
+static void merge_tags(const std::vector<int>& states,
+		const std::map<size_t, Tag>& from,
+		int s, std::map<size_t, Tag> *to) {
+	size_t size = states.size();
+	for (size_t i = 0; i < size; i++) {
+		assert(states[i] >= 0);
+		std::map<size_t, Tag>::const_iterator it = from.find(states[i]);
+		if (it != from.end()) {
+			Tag& tag = (*to)[s];
+			tag.insert(tag.end(), it->second.begin(), it->second.end());
+		}
+	}
+}
+
+bool DFAConverter::parse(const Byte* str) {
 	return parse(str, -1);
 }
 
-bool DFAConverter::parse(const char* str) {
-	reset();
+bool DFAConverter::build(int start, int last,
+		const std::vector<NFATran>& trans,
+		const std::map<size_t, Tag>& tags) {
 
-	NFAConverter nfa;
-	if (!nfa.parse(str)) {
-		return false;
-	}
-
-	std::map<::mpl::NFAConverter::StateList, int> nfa_to_dfa;
-	::mpl::NFAConverter::StateList v;
+	std::map<::mpl::detail::StateList, int> nfa_to_dfa;
+	::mpl::detail::StateList v;
 	v.push_back(-1);
 	nfa_to_dfa[v] = -1;
 	v.clear();
 	bool is_last = false;
 
-	v.push_back(nfa.start());
-	v = fill(nfa, v, &is_last);
-	nfa_to_dfa[v] = new_state();
-	_start = 0;
+	v.push_back(start);
+	v = fill(trans, last, v, &is_last);
+	_start = new_state();
+	nfa_to_dfa[v] = _start;
 	if (is_last) {
-		_last.push_back(0);
+		_last.push_back(_start);
 	}
+	merge_tags(v, tags, _start, &_tags);
 
-	std::queue<::mpl::NFAConverter::StateList> q;
-
+	std::queue<::mpl::detail::StateList> q;
 	q.push(v);
 	while (!q.empty()) {
 		v = q.front();
@@ -135,21 +146,21 @@ bool DFAConverter::parse(const char* str) {
 
 		int from = nfa_to_dfa[v];
 		std::set<char> dedup;
-		dedup.insert('\0');
+		dedup.insert(EPSILON);
 
 		for (size_t i = 0; i < v.size(); i++) {
 			assert(v[i] >= 0);
 
-			const ::mpl::NFAConverter::NFATran& tran = nfa[v[i]];
-			for (::mpl::NFAConverter::NFATran::const_iterator it = tran.begin();
-					it != tran.end(); ++it) {
+			const ::mpl::detail::NFATran& tran = trans[v[i]];
+			for (::mpl::detail::NFATran::const_iterator it = tran.begin();
+				it != tran.end(); ++it) {
 				if (dedup.find(it->first) != dedup.end()) {
 					continue;
 				}
 
 				is_last = false;
-				::mpl::NFAConverter::StateList next = expand(nfa, v, it->first);
-				next = fill(nfa, next, &is_last);
+				::mpl::detail::StateList next = expand(trans, v, it->first);
+				next = fill(trans, last, next, &is_last);
 
 				int to = -1;
 				if (nfa_to_dfa.find(next) == nfa_to_dfa.end()) {
@@ -159,6 +170,7 @@ bool DFAConverter::parse(const char* str) {
 					if (is_last) {
 						_last.push_back(to);
 					}
+					merge_tags(next, tags, to, &_tags);
 				} else {
 					to = nfa_to_dfa[next];
 				}
@@ -172,18 +184,41 @@ bool DFAConverter::parse(const char* str) {
 	return true;
 }
 
+bool DFAConverter::parse(const Byte* str, int tag) {
+	reset();
+
+	NFAConverter nfa;
+	if (!nfa.parse(str)) {
+		return false;
+	}
+	std::map<size_t, Tag> tags;
+	tags[nfa.last()].push_back(tag);
+
+	return build(nfa.start(), nfa.last(), nfa.trans(), tags);
+}
+
 void DFAConverter::reset() {
 	_trans.clear();
 	_start = -1;
 	_last.clear();
 }
 
-const ::mpl::DFAConverter::DFATran& DFAConverter::operator[](size_t s) const {
+size_t DFAConverter::size() const {
+	return _trans.size();
+}
+
+const DFATran& DFAConverter::operator[](size_t s) const {
+	assert(s < _trans.size());
 	return _trans[s];
 }
 
-size_t DFAConverter::size() const {
-	return _trans.size();
+const Tag& DFAConverter::tags(size_t s) const {
+	std::map<size_t, Tag>::const_iterator it = _tags.find(s);
+	if (it != _tags.end()) {
+		return it->second;
+	} else {
+		return NONE_TAG;
+	}
 }
 
 int DFAConverter::start() const {
@@ -194,9 +229,10 @@ const std::vector<int>& DFAConverter::last() const {
 	return _last;
 }
 
+} // namespace detail
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 using namespace std;
@@ -214,8 +250,8 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
-	::mpl::DFAConverter dfa;
-	dfa.parse(pattern);
+	::mpl::detail::DFAConverter dfa;
+	dfa.parse((::mpl::detail::Byte *)pattern);
 
 	cout << "pattern: " << pattern << endl;
 	cout << "start  : " << dfa.start() << endl;
@@ -225,13 +261,13 @@ int main() {
 	cout << endl;
 
 	for (size_t i = 0; i < dfa.size(); i++) {
-		const ::mpl::DFAConverter::DFATran& tran = dfa[i];
-		for (::mpl::DFAConverter::DFATran::const_iterator it = tran.begin();
+		const ::mpl::detail::DFATran& tran = dfa[i];
+		for (::mpl::detail::DFATran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
 			cout << i << "(";
-			if (it->first == '\0') {
+			if (it->first == ::mpl::detail::EPSILON) {
 				cout << "\\0";
-			} else if (it->first == '\xFF') {
+			} else if (it->first == ::mpl::detail::OTHER) {
 				cout << "-1";
 			} else {
 				cout << it->first;
@@ -242,6 +278,19 @@ int main() {
 			cout << it->second;
 			cout << endl;
 		}
+	}
+
+	for (size_t i = 0; i < last.size(); i++) {
+		const ::mpl::detail::Tag& tag = dfa.tags(last[i]);
+		if (tag.empty()) {
+			continue;
+		}
+
+		cout << last[i] << ": " << tag[0];
+		for (size_t i = 1; i < tag.size(); i++) {
+			cout << ", " << tag[i];
+		}
+		cout << endl;
 	}
 
 	return 0;

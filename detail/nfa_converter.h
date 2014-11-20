@@ -1,25 +1,23 @@
 #ifndef MPL_DETAIL_NFACONVERTER_H
 #define MPL_DETAIL_NFACONVERTER_H
 
-#include <vector>
-#include <map>
 #include <set>
+#include "state.h"
 
 namespace mpl {
+namespace detail {
 
 class NFAConverter {
 public:
-	typedef std::vector<int> StateList;
-	typedef std::map<char, StateList> NFATran;
-
 	NFAConverter();
 	~NFAConverter();
 
-	bool parse(const char* str);
+	bool parse(const Byte* str);
 
-	// Pre: s < size()
-	const NFATran& operator[](size_t s) const;
+	const std::vector<NFATran>& trans() const;
+
 	size_t size() const;
+	const NFATran& operator[](size_t s) const;
 
 	// < 0: 错误
 	int start() const;
@@ -27,22 +25,22 @@ public:
 
 private:
 	// return consume byte num
-	int build(const char* str, int* start, int* last);
-	int build_parenthesis(const char* str, int* start, int* last);
-	int build_bracket(const char* str, int* start, int* last);
-	int build_escape(const char* str, int* start, int* last);
-	int build_dot(const char* str, int* start, int* last);
-	int build_char(const char* str, int* start, int* last);
-	int build_byte(const char* str, int* start, int* last);
+	int build(const Byte* str, int* start, int* last);
+	int build_parenthesis(const Byte* str, int* start, int* last);
+	int build_bracket(const Byte* str, int* start, int* last);
+	int build_escape(const Byte* str, int* start, int* last);
+	int build_dot(const Byte* str, int* start, int* last);
+	int build_char(const Byte* str, int* start, int* last);
+	int build_byte(const Byte* str, int* start, int* last);
 
 	// 在[]中的处理,以单字符+utf-8
 	// 以start/last为始终,接入str
 	// []中直接构建DFA(单字符),长串(utf-8)
-	int build_escape_direct(const char* str, int* start, int* last);
-	int build_char_direct(const char* str, int* start, int* last);
-	int build_byte_direct(const char* str, int* start, int* last);
+	int build_escape_direct(const Byte* str, int* start, int* last);
+	int build_char_direct(const Byte* str, int* start, int* last);
+	int build_byte_direct(const Byte* str, int* start, int* last);
 
-	int build_char_inner(const char* str, int* start, int* last, bool is_direct);
+	int build_char_inner(const Byte* str, int* start, int* last, bool is_direct);
 
 	void link(int nstart, int nlast, int* start, int* last);
 	void link_star(int nstart, int nlast, int* start, int* last);
@@ -59,13 +57,14 @@ private:
 	int _start;
 	int _last;
 
-	static std::set<char> _s_reserved;
-	static bool is_reserved(char ch);
+	static std::set<Byte> _s_reserved;
+	static bool is_reserved(Byte ch);
 
-	static std::set<char> _s_suffix;
-	static bool is_suffix(char ch);
+	static std::set<Byte> _s_suffix;
+	static bool is_suffix(Byte ch);
 };
 
+} // namespace detail
 } // namespace mpl
 
 #endif // MPL_DETAIL_NFACONVERTER_H

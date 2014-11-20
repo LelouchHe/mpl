@@ -1,9 +1,8 @@
 #ifndef MPL_DFA_GENERATOR_H
 #define MPL_DFA_GENERATOR_H
 
-#include <vector>
-#include <map>
 #include <set>
+#include "dfa.h"
 
 namespace mpl {
 

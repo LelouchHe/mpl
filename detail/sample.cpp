@@ -1,10 +1,15 @@
 
+// 定式:
+build: 从pattern构建DFA
+parse: 解析str
+
 // parser
 
 Lexer lexer;
 lexer.add(NUM, "[1-9][0-9]*");
 lexer.add(KEY, "if");
 lexer.add(ID, "[_a-zA-Z][_a-zA-Z0-9]*")
+lexer.build();
 
 lexer.parse(reader);
 
@@ -33,14 +38,13 @@ typedef std::vector<int> Tag;
 
 class DFA {
 public:
-    ~DFA();
+    virtual ~DFA();
     virtual size_t size() = 0;
     virtual const DFATran& tran(size_t s) = 0;
     virtual const Tag& tag(size_t) = 0;
 };
 
 // NFA -> DFA
-// DFAs -> NFA -> DFA
 class DFAConverter : public DFA {
 public:
     void parse(const char* pattern, int tag) {
@@ -56,16 +60,6 @@ public:
     // 2. Tran是确定的,但nfa则是vector
     // 如何融合二者的算法?
     // 1. 将DFATran -> NFATran, 生成vector
-    void merge(const std::vector<int>& start,
-            const std::vector<int>& last,
-            const std::vector<DFATran>& trans,
-            const std::vector<Tag>& tags) {
-        int nfa_start = -1;
-        int nfa_last = -1;
-        nfa_trans = to_nfa(trans, &nfa_start, &nfa_last);
-        build(start, last, nfa_trans, tags);
-    }
-
     void build(int start, int last,
             const std::vector<NFATran>& trans,
             const std::vector<Tag>& tags);
@@ -83,9 +77,11 @@ public:
     void build(const DFA& dfa);
 };
 
-// DFAs -> NFA(多start,单last) -> DFA
+// DFAs -> NFA -> DFA
 class DFAMerger : public DFA {
 public:
+    // 这里直接转成NFA是否合适?
+    // 合适,直接转换NFATran
     void add(const DFA& dfa) {
         size_t size = dfa.size();
         size_t base = _trans.size();
@@ -101,19 +97,21 @@ public:
                 _tags[base + i].insert(tag.begin(), tag.end());
             }
         }
-        _start.push_back(base + dfa.start());
+        _trans[_start]['\0'].push_back(base + dfa.start());
         const std::vector<int>& last = dfa.last();
         for (size_t i = 0; i < last.size(); i++) {
-            _last.push_back(base + last[i]);
+            _trans[base + last[i]]['\0'].push_back(_last);
         }
     }
 
     void build() {
-        _dfa.merge(_start, _last, _trans, _tags);
+        _dfa.build(_start, _last, _trans, _tags);
     }
 
+    std::vector<NFATran> _trans;
+    std::vector<int> _tags;
+
     DFAConverter _dfa;
-    std::vector<int> _start;
-    std::vector<int> _last;
-    
+    int _start;
+    int _last;
 };
