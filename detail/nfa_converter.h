@@ -6,7 +6,6 @@
 #include <set>
 
 namespace mpl {
-namespace detail {
 
 class NFAConverter {
 public:
@@ -61,7 +60,6 @@ private:
 	static bool is_suffix(char ch);
 };
 
-} // namespace detail
 } // namespace mpl
 
 #endif // MPL_DETAIL_NFACONVERTER_H
