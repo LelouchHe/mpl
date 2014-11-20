@@ -36,7 +36,8 @@ int NFAConverter::new_state() {
 }
 
 void NFAConverter::link(int nstart, int nlast, int* start, int* last) {
-	if (*start == -1 || *last == -1) {
+	// last有可能是-1,表示错误状态
+	if (*start == -1) {
 		*start = nstart;
 		*last = nlast;
 	} else {
@@ -129,11 +130,8 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 	}
 
 	while (*str != '\0' && *str != ']') {
-		int nstart = -1;
-		int nlast = -1;
 		if (*str == '\\') {
-			str += build_escape(str, &nstart, &nlast);
-			link_or_append(nstart, nlast, start, last);
+			str += build_escape_direct(str, start, last);
 		} else {
 			// 原始字符
 			assert(!is_reserved(*str));
@@ -147,17 +145,13 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 				char to[1];
 				while (from <= *str) {
 					to[0] = from;
-					nstart = -1;
-					nlast = -1;
-					build_char(to, &nstart, &nlast);
-					link_or_append(nstart, nlast, start, last);
+					build_char_direct(to, start, last);
 
 					from++;
 				}
 				str++;
 			} else {
-				str += build_char(str, &nstart, &nlast);
-				link_or_append(nstart, nlast, start, last);
+				str += build_char_direct(str, start, last);
 			}
 		}
 	}
@@ -166,12 +160,9 @@ int NFAConverter::build_bracket(const char* str, int* start, int* last) {
 	// 使用了分类,需要新建\xFF路径
 	if (*last == -1) {
 		char others[1] = { '\xFF' };
-		int nstart = -1;
-		int nlast = -1;
 		// 注意,此处使用byte,而不是char,避免0xFF被utf-8
-		build_byte(others, &nstart, &nlast);
 		*last = new_state();
-		link_or_append(nstart, nlast, start, last);
+		build_byte_direct(others, start, last);
 	}
 
 	return str + 1 - begin;
@@ -184,6 +175,16 @@ int NFAConverter::build_escape(const char* str, int* start, int* last) {
 
 	str++;
 	int len = build_char(str, start, last);
+	return len + 1;
+}
+
+// 目前只处理reserved的转义
+int NFAConverter::build_escape_direct(const char* str, int* start, int* last) {
+	assert(*str == '\\');
+	assert(is_reserved(*(str + 1)));
+
+	str++;
+	int len = build_char_direct(str, start, last);
 	return len + 1;
 }
 
@@ -206,14 +207,29 @@ static int left_one(unsigned char ch) {
 }
 
 int NFAConverter::build_char(const char* str, int* start, int* last) {
+	return build_char_inner(str, start, last, false);
+}
+
+int NFAConverter::build_char_direct(const char* str, int* start, int* last) {
+	return build_char_inner(str, start, last, true);
+}
+
+int NFAConverter::build_char_inner(const char* str, int* start, int* last, bool is_direct) {
 	unsigned char uc = *str;
 	assert(uc != '\xFF');
 
 	int len = 0;
 	if (uc <= '\x7F') {
-		len += build_byte(str, start, last);
+		if (is_direct) {
+			len += build_byte_direct(str, start, last);
+		} else {
+			len += build_byte(str, start, last);
+		}
 	} else {
 		int n = left_one(uc);
+
+		// vs 保存 utf-8 有问题,测试时使用 ucs 双字节表示
+		// n = 2;
 		while (n-- > 0) {
 			int nstart = -1;
 			int nlast = -1;
@@ -231,8 +247,11 @@ int NFAConverter::build_byte(const char* str, int* start, int* last) {
 	*start = new_state();
 	*last = new_state();
 
-	_trans[*start][*str].push_back(*last);
+	return build_byte_direct(str, start, last);
+}
 
+int NFAConverter::build_byte_direct(const char* str, int* start, int* last) {
+	_trans[*start][*str].push_back(*last);
 	return 1;
 }
 
@@ -325,7 +344,7 @@ int NFAConverter::last() const {
 
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 using namespace std;

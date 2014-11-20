@@ -35,6 +35,14 @@ private:
 	int build_char(const char* str, int* start, int* last);
 	int build_byte(const char* str, int* start, int* last);
 
+	// 在[]中的处理,以单字符+utf-8
+	// 以start/last为始终,接入str
+	int build_escape_direct(const char* str, int* start, int* last);
+	int build_char_direct(const char* str, int* start, int* last);
+	int build_byte_direct(const char* str, int* start, int* last);
+
+	int build_char_inner(const char* str, int* start, int* last, bool is_direct);
+
 	void link(int nstart, int nlast, int* start, int* last);
 	void link_star(int nstart, int nlast, int* start, int* last);
 	void link_plus(int nstart, int nlast, int* start, int* last);

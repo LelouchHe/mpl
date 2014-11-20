@@ -65,13 +65,13 @@ bool Regex::partial_match(const char* str, char** end) {
 
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <iostream>
 using namespace std;
 
 int main() {
-	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
+	const char* pattern = "你好*";
 	cout << "pattern: " << pattern << endl;
 
 	::mpl::Regex re;
@@ -80,7 +80,7 @@ int main() {
 		return -1;
 	}
 
-	char str[] = "hello world";
+	char str[] = "你好好好";
 	cout << "str     : " << str << endl;
 
 	char* begin = str;
