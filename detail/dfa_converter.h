@@ -9,11 +9,13 @@ namespace mpl {
 class DFAConverter {
 public:
 	typedef std::map<char, int> DFATran;
+	typedef std::vector<int> Tag;
 
 	DFAConverter();
 	~DFAConverter();
 
 	bool parse(const char* str);
+	bool parse(const char* str, int tag);
 
 	// Pre: s < size()
 	const DFATran& operator[](size_t s) const;
@@ -29,6 +31,7 @@ private:
 
 private:
 	std::vector<DFATran> _trans;
+	std::map<int, Tag> _tags;
 	
 	int _start;
 	std::vector<int> _last;

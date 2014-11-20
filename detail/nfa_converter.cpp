@@ -108,7 +108,6 @@ int NFAConverter::build_parenthesis(const char* str, int* start, int* last) {
 	str++;
 	int len = build(str, start, last);
 	assert(*(str + len) == ')');
-	_catches.push_back(std::make_pair(*start, *last));
 	return len + 2;
 }
 

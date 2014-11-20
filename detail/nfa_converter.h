@@ -37,6 +37,7 @@ private:
 
 	// 在[]中的处理,以单字符+utf-8
 	// 以start/last为始终,接入str
+	// []中直接构建DFA(单字符),长串(utf-8)
 	int build_escape_direct(const char* str, int* start, int* last);
 	int build_char_direct(const char* str, int* start, int* last);
 	int build_byte_direct(const char* str, int* start, int* last);
@@ -57,9 +58,6 @@ private:
 	std::vector<NFATran> _trans;
 	int _start;
 	int _last;
-
-	typedef std::pair<int, int> Catch;
-	std::vector<Catch> _catches;
 
 	static std::set<char> _s_reserved;
 	static bool is_reserved(char ch);

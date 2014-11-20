@@ -156,6 +156,7 @@ bool DFAGenerator::parse(const char* str) {
 
 	return true;
 }
+
 void DFAGenerator::reset() {
 	_trans.clear();
 	_start = -1;

@@ -100,6 +100,10 @@ static std::vector<int> expand(const NFAConverter& nfa, const std::vector<int>& 
 }
 
 bool DFAConverter::parse(const char* str) {
+	return parse(str, -1);
+}
+
+bool DFAConverter::parse(const char* str) {
 	reset();
 
 	NFAConverter nfa;
@@ -192,7 +196,7 @@ const std::vector<int>& DFAConverter::last() const {
 
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <iostream>
 using namespace std;
