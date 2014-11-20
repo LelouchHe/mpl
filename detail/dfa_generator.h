@@ -1,42 +1,42 @@
-#ifndef MPL_DFA_GENERATOR_H
-#define MPL_DFA_GENERATOR_H
+#ifndef MPL_DETAIL_DFA_GENERATOR_H
+#define MPL_DETAIL_DFA_GENERATOR_H
 
 #include <set>
 #include "dfa.h"
 
 namespace mpl {
+namespace detail {
 
-class DFAConverter;
-
-class DFAGenerator {
+class DFAGenerator : public DFA {
 public:
-	typedef std::map<char, int> DFATran;
-
 	DFAGenerator();
 	~DFAGenerator();
 
-	bool parse(const char* str);
+	bool parse(const Byte* str);
+	bool parse(const Byte* str, int tag);
+	bool build(const DFA& dfa);
 
-	// Pre: s < size()
-	const DFATran& operator[](size_t s) const;
-	size_t size() const;
-
-	// < 0: ×´Ì¬´íÎó
-	int start() const;
-	const std::vector<int>& last() const;
+public:
+	virtual size_t size() const;
+	virtual const DFATran& operator[](size_t s) const;
+	virtual const Tag& tags(size_t s) const;
+	virtual int start() const;
+	virtual const StateList& last() const;
 
 private:
-	void build(const ::mpl::DFAConverter& dfa, const std::set<std::vector<int> >& t);
+	bool build(const DFA& dfa, const std::set<StateList>& t);
 	int new_state();
 	void reset();
 
 private:
 	std::vector<DFATran> _trans;
+	std::map<size_t, Tag> _tags;
 
 	int _start;
-	std::vector<int> _last;
+	StateList _last;
 };
 
+} // namespace detail
 } // namespace mpl
 
-#endif // MPL_DFA_GENERATOR_H
+#endif // MPL_DETAIL_DFA_GENERATOR_H

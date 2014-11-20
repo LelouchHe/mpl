@@ -1,5 +1,5 @@
-#ifndef MPL_DFA_CONVERTER_H
-#define MPL_DFA_CONVERTER_H
+#ifndef MPL_DETAIL_DFA_CONVERTER_H
+#define MPL_DETAIL_DFA_CONVERTER_H
 
 #include "state.h"
 #include "dfa.h"
@@ -19,14 +19,12 @@ public:
 			const std::vector<NFATran>& trans,
 			const std::map<size_t, Tag>& tags);
 
-	// < 0: ×´Ì¬´íÎó
-	int start() const;
-	const std::vector<int>& last() const;
-
 public:
 	virtual size_t size() const;
 	virtual const DFATran& operator[](size_t s) const;
 	virtual const Tag& tags(size_t s) const;
+	virtual int start() const;
+	virtual const StateList& last() const;
 
 private:
 	int new_state();
@@ -37,10 +35,10 @@ private:
 	std::map<size_t, Tag> _tags;
 	
 	int _start;
-	std::vector<int> _last;
+	StateList _last;
 };
 
 } // namespace detail
 } // namespace mpl
 
-#endif // MPL_DFA_CONVERTER_H
+#endif // MPL_DETAIL_DFA_CONVERTER_H

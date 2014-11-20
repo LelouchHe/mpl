@@ -13,6 +13,9 @@ public:
 	virtual size_t size() const = 0;
 	virtual const DFATran& operator[](size_t s) const = 0;
 	virtual const Tag& tags(size_t s) const = 0;
+
+	virtual int start() const = 0;
+	virtual const StateList& last() const = 0;
 };
 
 } // namespace detail
