@@ -20,7 +20,7 @@ typedef std::map<Byte, StateList> NFATran;
 typedef std::map<Byte, int> DFATran;
 
 typedef std::vector<int> Tag;
-const Tag NONE_TAG;
+extern const Tag NONE_TAG;
 
 } // namespace detail
 } // namespace mpl

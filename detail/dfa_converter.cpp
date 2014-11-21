@@ -250,7 +250,7 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
+	const char* pattern = "\\N";
 	::mpl::detail::DFAConverter dfa;
 	dfa.parse((::mpl::detail::Byte *)pattern);
 
@@ -271,8 +271,8 @@ int main() {
 			} else if (it->first == ::mpl::detail::OTHER) {
 				cout << "-1";
 			} else {
-				cout << it->first;
-				//cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
+				//cout << it->first;
+				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";

@@ -5,23 +5,33 @@
 namespace mpl {
 namespace detail {
 
-std::set<Byte> NFAConverter::_s_reserved = {
+static std::set<Byte> s_reserved = {
 	'(', ')', '[', ']', '-',
 	'*', '+', '?',
 	'^', '$', '.'
 };
 
-bool NFAConverter::is_reserved(Byte ch) {
-	return _s_reserved.find(ch) != _s_reserved.end();
+static bool is_reserved(Byte ch) {
+	return s_reserved.find(ch) != s_reserved.end();
 }
 
-std::set<Byte> NFAConverter::_s_suffix = {
+static std::set<Byte> s_suffix = {
 	'*', '+', '?'
 };
 
-bool NFAConverter::is_suffix(Byte ch) {
-	return _s_suffix.find(ch) != _s_suffix.end();
+static bool is_suffix(Byte ch) {
+	return s_suffix.find(ch) != s_suffix.end();
 }
+
+// 如何得到原生的无符号字符串?
+static std::map<Byte, const char *> s_char_class = {
+	{ 'w', "[_a-zA-Z0-9]" }, { 'a', "[a-zA-Z]" },
+	{ 'd', "[0-9]" }, { 'x', "[0-9a-fA-F]" },
+	{ 's', "[ \t]" }, { 'n', "\n|\n\r|\r\n" },
+	{ 'W', "[^\\w]" }, { 'A', "[^\\a]" },
+	{ 'D', "[^\\d]" }, { 'X', "[^\\x]" },
+	{ 'S', "[^\\s]" }, { 'N', "[^\\n]" }
+};
 
 NFAConverter::NFAConverter() : _start(-1), _last(-1) {
 
@@ -114,6 +124,13 @@ int NFAConverter::build_parenthesis(const Byte* str, int* start, int* last) {
 
 // 目前只处理单字符的选择
 // []其实代表着类字符的处理,包括[^ ]
+// direct的目的在于减少状态,使得起始都是一个状态,这样后续处理状态较少,比较快速(否则,就陷入了以前的性能坑)
+// 能想到2种解决:
+// 1. 类似现在这种,创建时就尽量合并状态
+// 2. 照常构建,但合并不同的起始状态,并标记为dead state,后续操作进行忽略
+// 构建良好的re,二者其实等价
+// 比如,不要写[\d0-9]这样有大量重复的转移
+// 好吧,选择相信试图使用这个的,对re应该很熟悉
 int NFAConverter::build_bracket(const Byte* str, int* start, int* last) {
 	assert(*str == '[');
 
@@ -129,7 +146,7 @@ int NFAConverter::build_bracket(const Byte* str, int* start, int* last) {
 		*last = new_state();
 	}
 
-	while (*str != EPSILON && *str != ']') {
+	while (*str != '\0' && *str != ']') {
 		if (*str == '\\') {
 			str += build_escape_direct(str, start, last);
 		} else {
@@ -168,23 +185,42 @@ int NFAConverter::build_bracket(const Byte* str, int* start, int* last) {
 	return str + 1 - begin;
 }
 
-// 目前只处理reserved的转义
+// 目前只处理reserved/char_class的转义
 int NFAConverter::build_escape(const Byte* str, int* start, int* last) {
 	assert(*str == '\\');
-	assert(is_reserved(*(str + 1)));
 
 	str++;
-	int len = build_char(str, start, last);
+	int len = 0;
+	if (is_reserved(*str)) {
+		len = build_byte(str, start, last);
+	} else {
+		std::map<Byte, const char *>::const_iterator it = s_char_class.find(*str);
+		assert(it != s_char_class.end());
+		build((const Byte *)it->second, start, last);
+		len = 1;
+	}
+
 	return len + 1;
 }
 
 // 目前只处理reserved的转义
 int NFAConverter::build_escape_direct(const Byte* str, int* start, int* last) {
 	assert(*str == '\\');
-	assert(is_reserved(*(str + 1)));
 
 	str++;
-	int len = build_char_direct(str, start, last);
+	int len = 0;
+	if (is_reserved(*str)) {
+		len = build_byte_direct(str, start, last);
+	} else {
+		std::map<Byte, const char *>::const_iterator it = s_char_class.find(*str);
+		assert(it != s_char_class.end());
+		int nstart = -1;
+		int nlast = -1;
+		build((const Byte *)it->second, &nstart, &nlast);
+		link_or_append(nstart, nlast, start, last);
+		len = 1;
+	}
+
 	return len + 1;
 }
 
@@ -219,7 +255,7 @@ int NFAConverter::build_char_inner(const Byte* str, int* start, int* last, bool 
 	assert(uc != OTHER);
 
 	int len = 0;
-	if (uc <= '\x7F') {
+	if (uc <= 0x7F) {
 		if (is_direct) {
 			len += build_byte_direct(str, start, last);
 		} else {
@@ -263,7 +299,7 @@ int NFAConverter::build_byte_direct(const Byte* str, int* start, int* last) {
 int NFAConverter::build(const Byte* str, int* start, int* last) {
 	const Byte* begin = str;
 
-	while (*str != EPSILON && *str != ')') {
+	while (*str != '\0' && *str != ')') {
 		int nstart = -1;
 		int nlast = -1;
 
@@ -305,7 +341,7 @@ int NFAConverter::build(const Byte* str, int* start, int* last) {
 			nstart = -1;
 			nlast = -1;
 			str += build(str, &nstart, &nlast);
-			link_or(nstart, nlast, start, last);
+			link_or_append(nstart, nlast, start, last);
 		}
 	}
 
@@ -316,7 +352,7 @@ bool NFAConverter::parse(const Byte* str) {
 	reset();
 
 	int len = build(str, &_start, &_last);
-	return str[len] == EPSILON;
+	return str[len] == '\0';
 }
 
 void NFAConverter::reset() {
@@ -366,9 +402,9 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	const ::mpl::detail::Byte* str = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
+	const char* str = "\\N";
 	::mpl::detail::NFAConverter nfa;
-	nfa.parse(str);
+	nfa.parse((const ::mpl::detail::Byte*)str);
 
 	cout << "start: " << nfa.start() << endl;
 	cout << "last : " << nfa.last() << endl;
@@ -383,8 +419,8 @@ int main() {
 			} else if (it->first == ::mpl::detail::OTHER) {
 				cout << "-1";
 			} else {
-				cout << it->first;
-				//cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
+				//cout << it->first;
+				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";

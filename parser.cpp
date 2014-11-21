@@ -3,12 +3,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include "lexer.h"
+#include "lexer/manual_lexer.h"
 
 namespace mpl {
 
 Parser::Parser(::mpl::Reader& reader): 
-	_lexer(reader) {
+	_lexer(new ::mpl::lexer::ManualLexer(reader)) {
 }
 
 Parser::~Parser() {
@@ -27,7 +27,7 @@ term  -> NUM | ID | '(' value ')'
 #endif
 
 int Parser::term() {
-	::mpl::Token t = _lexer.next();
+	::mpl::Token t = _lexer->next();
 
 	switch (t.type) {
 	case TT_NUMBER:
@@ -40,7 +40,7 @@ int Parser::term() {
 	case TT_LEFT_PARENTHESIS:
 		{
 			int n = value();
-			t = _lexer.next();
+			t = _lexer->next();
 			assert(t.type == TT_RIGHT_PARENTHESIS);
 			return n;
 		}
@@ -56,15 +56,15 @@ int Parser::term() {
 int Parser::prod() {
 	int n = term();
 
-	::mpl::Token ahead = _lexer.lookahead();
+	::mpl::Token ahead = _lexer->lookahead();
 	while (ahead.type == TT_MUL || ahead.type == TT_DIV) {
-		_lexer.next();
+		_lexer->next();
 		if (ahead.type == TT_MUL) {
 			n *= prod();
 		} else {
 			n /= prod();
 		}
-		ahead = _lexer.lookahead();
+		ahead = _lexer->lookahead();
 	}
 
 	return n;
@@ -73,26 +73,26 @@ int Parser::prod() {
 int Parser::value() {
 	int n = prod();
 
-	::mpl::Token ahead = _lexer.lookahead();
+	::mpl::Token ahead = _lexer->lookahead();
 	while (ahead.type == TT_PLUS || ahead.type == TT_MINUS) {
-		_lexer.next();
+		_lexer->next();
 		if (ahead.type == TT_PLUS) {
 			n += prod();
 		} else {
 			n -= prod();
 		}
-		ahead = _lexer.lookahead();
+		ahead = _lexer->lookahead();
 	}
 
 	return n;
 }
 
 void Parser::expr() {
-	::mpl::Token t = _lexer.next();
+	::mpl::Token t = _lexer->next();
 	if (t.type == TT_ASSIGN) {
 		std::cout << value() << std::endl;
 	} else if (t.type == TT_ID) {
-		::mpl::Token assign = _lexer.next();
+		::mpl::Token assign = _lexer->next();
 		assert(assign.type == TT_ASSIGN);
 		int s = value();
 
@@ -101,7 +101,7 @@ void Parser::expr() {
 }
 
 void Parser::parse() {
-	while (_lexer.lookahead().type != TT_EOS) {
+	while (_lexer->lookahead().type != TT_EOS) {
 		expr();
 	}
 }

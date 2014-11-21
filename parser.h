@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <memory>
 #include "lexer.h"
 
 namespace mpl {
@@ -23,7 +24,7 @@ private:
 	int term();
 
 private:
-	::mpl::Lexer _lexer;
+	std::shared_ptr<Lexer> _lexer;
 	std::map<std::string, int> _vars;
 };
 

@@ -84,7 +84,7 @@ const StateList& DFAMerger::last() const {
 } // namespace detail
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 #include "dfa_generator.h"
@@ -103,7 +103,7 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
-	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
+	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]+";
 	::mpl::detail::DFAGenerator gen;
 	::mpl::detail::DFAMerger merger;
 
@@ -111,6 +111,9 @@ int main() {
 	merger.add(gen);
 
 	gen.parse((const ::mpl::detail::Byte *)" +", 2);
+	merger.add(gen);
+
+	gen.parse((const ::mpl::detail::Byte *)"[1-9][0-9]*", 3);
 	merger.add(gen);
 
 	merger.build();

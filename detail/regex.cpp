@@ -2,6 +2,7 @@
 #include <algorithm>
 
 namespace mpl {
+namespace detail {
 
 Regex::Regex() {
 
@@ -14,7 +15,7 @@ Regex::~Regex() {
 bool Regex::parse(const char* pattern) {
 	_pattern.assign(pattern);
 	
-	return _dfa.parse(_pattern.c_str());
+	return _dfa.parse((const Byte *)_pattern.c_str());
 }
 
 bool Regex::full_match(const char* str) {
@@ -26,61 +27,61 @@ bool Regex::full_match(const char* str) {
 
 bool Regex::partial_match(const char* str, char** end) {
 	int pre = -1;
+	const char* pre_end = NULL;
 	int cur = _dfa.start();
 
 	while (*str != '\0' && cur >= 0) {
-		const ::mpl::DFAGenerator::DFATran& tran = _dfa[cur];
-		::mpl::DFAGenerator::DFATran::const_iterator it = tran.find(*str);
+		if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
+			pre = cur;
+			pre_end = str;
+		}
+
+		const DFATran& tran = _dfa[cur];
+		DFATran::const_iterator it = tran.find(*str);
 		if (it == tran.end() || it->second == -1) {
 			// 尝试others
 			if (it == tran.end()) {
-				it = tran.find('\xFF');
+				it = tran.find(OTHER);
 			}
 			if (it == tran.end() || it->second == -1) {
-				if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
-					pre = cur;
-				}
 				cur = -1;
 				break;
 			}
-		}
-
-		if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
-			pre = cur;
 		}
 		cur = it->second;
 		str++;
 	}
 
-	if (end != NULL) {
-		*end = const_cast<char *>(str);
+	if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
+		pre = cur;
+		pre_end = str;
 	}
 
-	if (*str == '\0') {
-		return std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end();
-	} else {
-		return std::find(_dfa.last().begin(), _dfa.last().end(), pre) != _dfa.last().end();
+	if (end != NULL) {
+		*end = const_cast<char *>(pre_end);
 	}
+	return std::find(_dfa.last().begin(), _dfa.last().end(), pre) != _dfa.last().end();
 }
 
+} // namespace detail
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <iostream>
 using namespace std;
 
 int main() {
-	const char* pattern = "你好*";
+	const char* pattern = "\\N+|\\n";
 	cout << "pattern: " << pattern << endl;
 
-	::mpl::Regex re;
+	::mpl::detail::Regex re;
 	if (!re.parse(pattern)) {
 		cout << "pattern parse fail" << endl;
 		return -1;
 	}
 
-	char str[] = "你好好好";
+	char str[] = "hello\nworld\r\nnihao\r\nshijie";
 	cout << "str     : " << str << endl;
 
 	char* begin = str;
@@ -98,12 +99,6 @@ int main() {
 		*end = save;
 
 		begin = end;
-	}
-
-	if (re.full_match(str)) {
-		cout << "match" << endl;
-	} else {
-		cout << "dismatch" << endl;
 	}
 
 	return 0;

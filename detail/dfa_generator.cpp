@@ -161,6 +161,7 @@ bool DFAGenerator::build(const DFA& dfa, const std::set<StateList>& t) {
 	return true;
 }
 
+// 最小化还有一个优化,当唯一后续可能状态为-1时,可以直接到-1,后续都不用判断
 bool DFAGenerator::build(const DFA& dfa) {
 	reset();
 
@@ -237,7 +238,7 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
-	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]";
+	const char* pattern = "\\N+|\\n";
 	::mpl::detail::DFAGenerator dfa;
 	dfa.parse((const ::mpl::detail::Byte *)pattern);
 
@@ -253,13 +254,13 @@ int main() {
 		for (::mpl::detail::DFATran::const_iterator it = tran.begin();
 			it != tran.end(); ++it) {
 			cout << i << "(";
-			if (it->first == '\0') {
+			if (it->first == ::mpl::detail::EPSILON) {
 				cout << "\\0";
-			} else if (it->first == '\xFF') {
+			} else if (it->first == ::mpl::detail::OTHER) {
 				cout << "-1";
 			} else {
-				cout << it->first;
-				//cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
+				//cout << it->first;
+				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
 			}
 			cout << ")";
 			cout << "\t->\t";

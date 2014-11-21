@@ -56,12 +56,6 @@ private:
 	std::vector<NFATran> _trans;
 	int _start;
 	int _last;
-
-	static std::set<Byte> _s_reserved;
-	static bool is_reserved(Byte ch);
-
-	static std::set<Byte> _s_suffix;
-	static bool is_suffix(Byte ch);
 };
 
 } // namespace detail

@@ -1,19 +1,13 @@
-#include "lexer.h"
+#include "manual_lexer.h"
 
 #include <cctype>
 #include <cassert>
-#include "reader.h"
-
-/*
-TT_AND, TT_BREAK, TT_DO, TT_ELSE, TT_ELSEIF, TT_END,
-TT_FALSE, TT_FOR, TT_FUNCTION, TT_GOTO, TT_IF, TT_IN,
-TT_LOCAL, TT_NIL, TT_NOT, TT_OR, TT_REPEAT, TT_RETURN,
-TT_THEN, TT_TRUE, TT_UNTIL, TT_WHILE,
-*/
+#include "../reader.h"
 
 namespace mpl {
+	namespace lexer {
 
-std::map<std::string, TokenType> Lexer::_s_reserved_tokens = {
+std::map<std::string, TokenType> ManualLexer::_s_reserved_tokens = {
 	{ "and", TT_AND }, { "break", TT_BREAK }, { "do", TT_DO },
 	{ "else", TT_ELSE }, { "end", TT_END }, { "false", TT_FALSE },
 	{ "for", TT_FOR }, { "function", TT_FUNCTION }, { "goto", TT_GOTO },
@@ -24,15 +18,15 @@ std::map<std::string, TokenType> Lexer::_s_reserved_tokens = {
 	{ "while", TT_WHILE }
 };
 
-Lexer::Lexer(::mpl::Reader& reader)
+ManualLexer::ManualLexer(::mpl::Reader& reader)
 	:_reader(reader), _line_num(0) {
 }
 
-Lexer::~Lexer() {
+ManualLexer::~ManualLexer() {
 
 }
 
-Token Lexer::next() {
+const Token& ManualLexer::next() {
 	if (_ahead.type != TT_EOS) {
 		_next = _ahead;
 		_ahead.type = TT_EOS;
@@ -46,7 +40,7 @@ Token Lexer::next() {
 }
 
 // 连续lookahead,返回相同值
-Token Lexer::lookahead() {
+const Token& ManualLexer::lookahead() {
 	if (_ahead.type == TT_EOS) {
 		_ahead.type = lex();
 		_ahead.text = _buff.str();
@@ -55,7 +49,7 @@ Token Lexer::lookahead() {
 	return _ahead;
 }
 
-void Lexer::new_line(bool should_save) {
+void ManualLexer::new_line(bool should_save) {
 	char ch = _reader.next();
 	if (_current == '\r') {
 		if (ch == '\n') {
@@ -83,16 +77,16 @@ void Lexer::new_line(bool should_save) {
 }
 
 // 保存当前值,并取下一个值
-void Lexer::save_and_next() {
+void ManualLexer::save_and_next() {
 	_buff << _current;
 	_current = _reader.next();
 }
 
-void Lexer::nosave_and_next() {
+void ManualLexer::nosave_and_next() {
 	_current = _reader.next();
 }
 
-int Lexer::count_nosave(char ch) {
+int ManualLexer::count_nosave(char ch) {
 	int n = 0;
 	while (_current == 'ch') {
 		n++;
@@ -104,7 +98,7 @@ int Lexer::count_nosave(char ch) {
 
 // lex将得到的字符传到_buff,并返回类型,不处理_next/_ahead
 // _current保存下一个字符,或者'\0',表示尚没有读取
-TokenType Lexer::lex() {
+TokenType ManualLexer::lex() {
 	_buff.str("");
 
 	if (_current == '\0') {
@@ -239,16 +233,16 @@ TokenType Lexer::lex() {
 			return TT_SEMICOLON;
 
 		case ':':
-			nosave_and_next();
+			save_and_next();
 			if (_current != ':') {
-				_buff << ":";
 				return TT_COLON;
 			} else {
-				nosave_and_next();
+				save_and_next();
 				read_id();
 				assert(_current == ':');
-				nosave_and_next();
+				save_and_next();
 				assert(_current == ':');
+				save_and_next();
 
 				return TT_LABEL;
 			}
@@ -309,7 +303,7 @@ static int decvalue(char ch) {
 	return ch - '0';
 }
 
-void Lexer::escape() {
+void ManualLexer::escape() {
 	nosave_and_next();
 	switch (_current) {
 	// \xXX
@@ -400,7 +394,7 @@ void Lexer::escape() {
 	}
 }
 
-void Lexer::read_string() {
+void ManualLexer::read_string() {
 	char sep = _current;
 	nosave_and_next();
 
@@ -436,7 +430,7 @@ void Lexer::read_string() {
 	}
 }
 
-void Lexer::read_long_string(int sep) {
+void ManualLexer::read_long_string(int sep) {
 	assert(_current == '[');
 	nosave_and_next();
 
@@ -478,7 +472,7 @@ void Lexer::read_long_string(int sep) {
 	assert(false);
 }
 
-void Lexer::read_id() {
+void ManualLexer::read_id() {
 	save_and_next();
 
 	while (!_reader.eof()) {
@@ -510,7 +504,7 @@ static bool is_base_digit(int base, char ch) {
 }
 
 // _buff里可能有fallthrough的'.'
-void Lexer::read_number() {
+void ManualLexer::read_number() {
 	bool has_dot = !_buff.str().empty();
 	bool has_exp = false;
 	char exp = 'e';
@@ -553,7 +547,7 @@ void Lexer::read_number() {
 	}
 }
 
-void Lexer::read_comment() {
+void ManualLexer::read_comment() {
 	nosave_and_next();
 
 	// 因为注释中没有任何语法规则,所以任何情况都有可能
@@ -579,12 +573,13 @@ void Lexer::read_comment() {
 	}
 }
 
+} // namespace lexer
 } // namespace mpl
 
 #if 0
 
 #include <iostream>
-#include "file_reader.h"
+#include "../file_reader.h"
 
 static void print_token(const ::mpl::Token& t) {
 	std::cout << t.type << "\t" << t.text << std::endl;
@@ -593,10 +588,10 @@ static void print_token(const ::mpl::Token& t) {
 int main() {
 	::mpl::FileReader fr("test.txt");
 
-	::mpl::Lexer lexer(fr);
+	::mpl::lexer::ManualLexer ManualLexer(fr);
 
 	while (true) {
-		::mpl::Token t = lexer.next();
+		::mpl::Token t = ManualLexer.next();
 		if (t.type == ::mpl::TT_EOS) {
 			break;
 		}

@@ -1,9 +1,10 @@
-#ifndef MPL_REGEX_H
-#define MPL_REGEX_H
+#ifndef MPL_DETAIL_REGEX_H
+#define MPL_DETAIL_REGEX_H
 
 #include "dfa_generator.h"
 
 namespace mpl {
+namespace detail {
 
 class Regex {
 public:
@@ -17,9 +18,10 @@ public:
 
 private:
 	std::string _pattern;
-	::mpl::DFAGenerator _dfa;
+	DFAGenerator _dfa;
 };
 
+} // namespace detail
 } // namespace mpl
 
 #endif // MPL_REGEX_H
