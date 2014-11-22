@@ -1,10 +1,11 @@
-#ifndef MPL_DETAIL_DFA_MERGER_H
-#define MPL_DETAIL_DFA_MERGER_H
+#ifndef MPL_LEXER_DETAIL_DFA_MERGER_H
+#define MPL_LEXER_DETAIL_DFA_MERGER_H
 
 #include "dfa.h"
 #include "dfa_converter.h"
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 class DFAMerger : public DFA {
@@ -29,12 +30,13 @@ private:
 	std::vector<NFATran> _trans;
 	std::map<size_t, Tag> _tags;
 	int _start;
-	int _last;
+	StateList _last;
 
 	DFAConverter _converter;
 };
 	
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_DETAIL_DFA_MERGER_H
+#endif // MPL_LEXER_DETAIL_DFA_MERGER_H

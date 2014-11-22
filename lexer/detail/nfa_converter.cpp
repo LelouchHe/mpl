@@ -3,6 +3,7 @@
 #include <cassert>
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 static std::set<Byte> s_reserved = {
@@ -383,6 +384,7 @@ int NFAConverter::last() const {
 }
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
 #if 0
@@ -403,20 +405,20 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	const char* str = "\\N";
-	::mpl::detail::NFAConverter nfa;
-	nfa.parse((const ::mpl::detail::Byte*)str);
+	::mpl::lexer::detail::NFAConverter nfa;
+	nfa.parse((const ::mpl::lexer::detail::Byte*)str);
 
 	cout << "start: " << nfa.start() << endl;
 	cout << "last : " << nfa.last() << endl;
 
 	for (size_t i = 0; i < nfa.size(); i++) {
-		const ::mpl::detail::NFATran& tran = nfa[i];
-		for (::mpl::detail::NFATran::const_iterator it = tran.begin();
+		const ::mpl::lexer::detail::NFATran& tran = nfa[i];
+		for (::mpl::lexer::detail::NFATran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
 			cout << i << "(";
-			if (it->first == ::mpl::detail::EPSILON) {
+			if (it->first == ::mpl::lexer::detail::EPSILON) {
 				cout << "\\0";
-			} else if (it->first == ::mpl::detail::OTHER) {
+			} else if (it->first == ::mpl::lexer::detail::OTHER) {
 				cout << "-1";
 			} else {
 				//cout << it->first;

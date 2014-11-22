@@ -8,8 +8,8 @@ namespace mpl {
 
 // 单字符token也返回类型吧
 // 反正不多,而且保证类型安全
+// 越小优先级越高
 enum TokenType {
-	TT_EOS = 0,
 	// 关键字
 	TT_AND, TT_BREAK, TT_DO, TT_ELSE, TT_ELSEIF, TT_END,
 	TT_FALSE, TT_FOR, TT_FUNCTION, TT_GOTO, TT_IF, TT_IN,
@@ -29,7 +29,9 @@ enum TokenType {
 	TT_SPACE, TT_NEWLINE,
 
 	// 统称
-	TT_ID, TT_NUMBER, TT_STRING, TT_COMMENT
+	TT_ID, TT_NUMBER, TT_STRING, TT_COMMENT,
+
+	TT_EOS
 };
 
 extern const std::map<const char*, TokenType> TOKEN_RE_KEYS;

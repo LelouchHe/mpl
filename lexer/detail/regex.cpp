@@ -2,6 +2,7 @@
 #include <algorithm>
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 Regex::Regex() {
@@ -64,9 +65,10 @@ bool Regex::partial_match(const char* str, char** end) {
 }
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 using namespace std;
@@ -75,7 +77,7 @@ int main() {
 	const char* pattern = "\\N+|\\n";
 	cout << "pattern: " << pattern << endl;
 
-	::mpl::detail::Regex re;
+	::mpl::lexer::detail::Regex re;
 	if (!re.parse(pattern)) {
 		cout << "pattern parse fail" << endl;
 		return -1;

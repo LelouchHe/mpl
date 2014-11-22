@@ -2,9 +2,10 @@
 #include <cassert>
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
-DFAMerger::DFAMerger() : _start(-1), _last(-1) {
+DFAMerger::DFAMerger() : _start(-1) {
 
 }
 
@@ -23,10 +24,6 @@ bool DFAMerger::add(const DFA& dfa) {
 		_start = new_state();
 	}
 	assert(_start >= 0);
-	if (_last == -1) {
-		_last = new_state();
-	}
-	assert(_last >= 0);
 
 	size_t size = dfa.size();
 	size_t base = _trans.size();
@@ -50,14 +47,14 @@ bool DFAMerger::add(const DFA& dfa) {
 
 	const StateList& last = dfa.last();
 	for (size_t i = 0; i < last.size(); i++) {
-		_trans[base + last[i]][EPSILON].push_back(_last);
+		_last.push_back(base + last[i]);
 	}
 
 	return true;
 }
 
 bool DFAMerger::build() {
-	assert(_start >= 0 && _last >= 0);
+	assert(_start >= 0);
 	return _converter.build(_start, _last, _trans, _tags);
 }
 
@@ -82,9 +79,10 @@ const StateList& DFAMerger::last() const {
 }
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <iostream>
 #include "dfa_generator.h"
@@ -102,19 +100,33 @@ void print_vector(const std::vector<int>& v) {
 }
 
 int main() {
-	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
-	const char* pattern = "[_a-zA-Z][_a-zA-Z0-9]*|[ ]+";
-	::mpl::detail::DFAGenerator gen;
-	::mpl::detail::DFAMerger merger;
+	::mpl::lexer::detail::DFAGenerator gen;
+	::mpl::lexer::detail::DFAMerger merger;
 
-	gen.parse((const ::mpl::detail::Byte *)"[_a-zA-Z][_a-zA-Z0-9]*", 1);
+	gen.parse((const ::mpl::lexer::detail::Byte *)"and", 0);
 	merger.add(gen);
 
-	gen.parse((const ::mpl::detail::Byte *)" +", 2);
+	/*
+	gen.parse((const ::mpl::lexer::detail::Byte *)"break", 1);
 	merger.add(gen);
 
-	gen.parse((const ::mpl::detail::Byte *)"[1-9][0-9]*", 3);
+	gen.parse((const ::mpl::lexer::detail::Byte *)"do", 2);
 	merger.add(gen);
+
+	gen.parse((const ::mpl::lexer::detail::Byte *)"\\+", 32);
+	merger.add(gen);
+	*/
+
+	gen.parse((const ::mpl::lexer::detail::Byte *)"=", 40);
+	merger.add(gen);
+
+	/*
+	gen.parse((const ::mpl::lexer::detail::Byte *)" ", 49);
+	merger.add(gen);
+
+	gen.parse((const ::mpl::lexer::detail::Byte *)"a+", 51);
+	merger.add(gen);
+	*/
 
 	merger.build();
 	gen.build(merger);
@@ -126,13 +138,13 @@ int main() {
 	cout << endl;
 
 	for (size_t i = 0; i < gen.size(); i++) {
-		const ::mpl::detail::DFATran& tran = gen[i];
-		for (::mpl::detail::DFATran::const_iterator it = tran.begin();
-			it != tran.end(); ++it) {
+		const ::mpl::lexer::detail::DFATran& tran = gen[i];
+		for (::mpl::lexer::detail::DFATran::const_iterator it = tran.begin();
+				it != tran.end(); ++it) {
 			cout << i << "(";
-			if (it->first == '\0') {
+			if (it->first == ::mpl::lexer::detail::EPSILON) {
 				cout << "\\0";
-			} else if (it->first == '\xFF') {
+			} else if (it->first == ::mpl::lexer::detail::OTHER) {
 				cout << "-1";
 			} else {
 				cout << it->first;
@@ -146,7 +158,7 @@ int main() {
 	}
 
 	for (size_t i = 0; i < last.size(); i++) {
-		const ::mpl::detail::Tag& tag = gen.tags(last[i]);
+		const ::mpl::lexer::detail::Tag& tag = gen.tags(last[i]);
 
 		cout << last[i] << ": ";
 		print_vector(tag);

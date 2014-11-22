@@ -1,10 +1,11 @@
-#ifndef MPL_DETAIL_NFACONVERTER_H
-#define MPL_DETAIL_NFACONVERTER_H
+#ifndef MPL_LEXER_DETAIL_NFACONVERTER_H
+#define MPL_LEXER_DETAIL_NFACONVERTER_H
 
 #include <set>
 #include "state.h"
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 class NFAConverter {
@@ -59,6 +60,7 @@ private:
 };
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_DETAIL_NFACONVERTER_H
+#endif // MPL_LEXER_DETAIL_NFACONVERTER_H

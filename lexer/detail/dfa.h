@@ -1,9 +1,10 @@
-#ifndef MPL_DETAIL_DFA_H
-#define MPL_DETAIL_DFA_H
+#ifndef MPL_LEXER_DETAIL_DFA_H
+#define MPL_LEXER_DETAIL_DFA_H
 
 #include "state.h"
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 class DFA {
@@ -19,6 +20,7 @@ public:
 };
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_DETAIL_DFA_H
+#endif // MPL_LEXER_DETAIL_DFA_H

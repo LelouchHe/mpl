@@ -2,9 +2,10 @@
 #define MPL_LEXER_H
 
 #include <string>
-#include "token.h"
 
 namespace mpl {
+
+class Token;
 
 class Lexer {
 public:

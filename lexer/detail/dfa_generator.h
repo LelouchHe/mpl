@@ -1,10 +1,11 @@
-#ifndef MPL_DETAIL_DFA_GENERATOR_H
-#define MPL_DETAIL_DFA_GENERATOR_H
+#ifndef MPL_LEXER_DETAIL_DFA_GENERATOR_H
+#define MPL_LEXER_DETAIL_DFA_GENERATOR_H
 
 #include <set>
 #include "dfa.h"
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 class DFAGenerator : public DFA {
@@ -37,6 +38,7 @@ private:
 };
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_DETAIL_DFA_GENERATOR_H
+#endif // MPL_LEXER_DETAIL_DFA_GENERATOR_H

@@ -5,8 +5,7 @@ namespace mpl {
 
 class Reader {
 public:
-	virtual ~Reader() {
-	}
+	virtual ~Reader() {}
 
 	virtual char next() = 0;
 	virtual bool eof() = 0;

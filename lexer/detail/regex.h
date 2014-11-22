@@ -1,9 +1,10 @@
-#ifndef MPL_DETAIL_REGEX_H
-#define MPL_DETAIL_REGEX_H
+#ifndef MPL_LEXER_DETAIL_REGEX_H
+#define MPL_LEXER_DETAIL_REGEX_H
 
 #include "dfa_generator.h"
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 class Regex {
@@ -22,6 +23,7 @@ private:
 };
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_REGEX_H
+#endif // MPL_LEXER_DETAIL_REGEX_H

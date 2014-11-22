@@ -4,12 +4,12 @@
 #include <map>
 #include <sstream>
 #include "../lexer.h"
-#include "../reader.h"
+#include "../token.h"
 
 namespace mpl {
-namespace lexer {
-
 class Reader;
+
+namespace lexer {
 
 class ManualLexer : public ::mpl::Lexer {
 public:
@@ -21,7 +21,7 @@ public:
 	virtual const ::mpl::Token& lookahead();
 
 private:
-	TokenType lex();
+	::mpl::TokenType lex();
 
 	// 主要是突出语义效果
 	void save_and_next();
@@ -48,10 +48,8 @@ private:
 
 	int _line_num;
 
-	Token _next;
-	Token _ahead;
-
-	static std::map<std::string, ::mpl::TokenType> _s_reserved_tokens;
+	::mpl::Token _next;
+	::mpl::Token _ahead;
 };
 
 } // namespace lexer

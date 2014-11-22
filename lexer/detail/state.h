@@ -1,11 +1,12 @@
-#ifndef MPL_DETAIL_STATE_H
-#define MPL_DETAIL_STATE_H
+#ifndef MPL_LEXER_DETAIL_STATE_H
+#define MPL_LEXER_DETAIL_STATE_H
 
 #include <map>
 #include <vector>
 #include <cstdint>
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 typedef uint8_t Byte;
@@ -23,6 +24,7 @@ typedef std::vector<int> Tag;
 extern const Tag NONE_TAG;
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_DETAIL_STATE_H
+#endif // MPL_LEXER_DETAIL_STATE_H

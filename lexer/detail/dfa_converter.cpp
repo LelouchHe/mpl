@@ -7,6 +7,7 @@
 #include "nfa_converter.h"
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
 DFAConverter::DFAConverter() : _start(-1) {
@@ -117,6 +118,11 @@ static void merge_tags(const StateList& states,
 
 bool DFAConverter::parse(const Byte* str) {
 	return parse(str, -1);
+}
+
+bool DFAConverter::build(int start, StateList last,
+	const std::vector<NFATran>& trans,
+	const std::map<size_t, Tag>& tags) {
 }
 
 bool DFAConverter::build(int start, int last,
@@ -231,6 +237,7 @@ const StateList& DFAConverter::last() const {
 }
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
 #if 0
@@ -251,8 +258,8 @@ void print_vector(const std::vector<int>& v) {
 
 int main() {
 	const char* pattern = "\\N";
-	::mpl::detail::DFAConverter dfa;
-	dfa.parse((::mpl::detail::Byte *)pattern);
+	::mpl::lexer::detail::DFAConverter dfa;
+	dfa.parse((::mpl::lexer::detail::Byte *)pattern);
 
 	cout << "pattern: " << pattern << endl;
 	cout << "start  : " << dfa.start() << endl;
@@ -262,13 +269,13 @@ int main() {
 	cout << endl;
 
 	for (size_t i = 0; i < dfa.size(); i++) {
-		const ::mpl::detail::DFATran& tran = dfa[i];
-		for (::mpl::detail::DFATran::const_iterator it = tran.begin();
+		const ::mpl::lexer::detail::DFATran& tran = dfa[i];
+		for (::mpl::lexer::detail::DFATran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
 			cout << i << "(";
-			if (it->first == ::mpl::detail::EPSILON) {
+			if (it->first == ::mpl::lexer::detail::EPSILON) {
 				cout << "\\0";
-			} else if (it->first == ::mpl::detail::OTHER) {
+			} else if (it->first == ::mpl::lexer::detail::OTHER) {
 				cout << "-1";
 			} else {
 				//cout << it->first;
@@ -282,7 +289,7 @@ int main() {
 	}
 
 	for (size_t i = 0; i < last.size(); i++) {
-		const ::mpl::detail::Tag& tag = dfa.tags(last[i]);
+		const ::mpl::lexer::detail::Tag& tag = dfa.tags(last[i]);
 
 		cout << last[i] << ": " << tag[0];
 		print_vector(tag);

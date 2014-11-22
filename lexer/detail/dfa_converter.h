@@ -1,12 +1,14 @@
-#ifndef MPL_DETAIL_DFA_CONVERTER_H
-#define MPL_DETAIL_DFA_CONVERTER_H
+#ifndef MPL_LEXER_DETAIL_DFA_CONVERTER_H
+#define MPL_LEXER_DETAIL_DFA_CONVERTER_H
 
 #include "state.h"
 #include "dfa.h"
 
 namespace mpl {
+namespace lexer {
 namespace detail {
 
+// NFA只有一个start,但可能有多个last
 class DFAConverter : public DFA {
 public:
 	DFAConverter();
@@ -19,6 +21,9 @@ public:
 			const std::vector<NFATran>& trans,
 			const std::map<size_t, Tag>& tags);
 
+	bool build(int start, StateList last,
+		const std::vector<NFATran>& trans,
+		const std::map<size_t, Tag>& tags);
 public:
 	virtual size_t size() const;
 	virtual const DFATran& operator[](size_t s) const;
@@ -39,6 +44,7 @@ private:
 };
 
 } // namespace detail
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_DETAIL_DFA_CONVERTER_H
+#endif // MPL_LEXER_DETAIL_DFA_CONVERTER_H

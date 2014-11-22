@@ -5,31 +5,20 @@
 #include "../reader.h"
 
 namespace mpl {
-	namespace lexer {
+namespace lexer {
 
-std::map<std::string, TokenType> ManualLexer::_s_reserved_tokens = {
-	{ "and", TT_AND }, { "break", TT_BREAK }, { "do", TT_DO },
-	{ "else", TT_ELSE }, { "end", TT_END }, { "false", TT_FALSE },
-	{ "for", TT_FOR }, { "function", TT_FUNCTION }, { "goto", TT_GOTO },
-	{ "if", TT_IF }, { "in", TT_IN }, { "local", TT_LOCAL },
-	{ "nil", TT_NIL }, { "not", TT_NOT }, { "or", TT_OR },
-	{ "repeat", TT_REPEAT }, { "return", TT_RETURN },
-	{ "then", TT_THEN }, { "true", TT_TRUE }, { "until", TT_UNTIL },
-	{ "while", TT_WHILE }
-};
-
-ManualLexer::ManualLexer(::mpl::Reader& reader)
-	:_reader(reader), _line_num(0) {
+ManualLexer::ManualLexer(::mpl::Reader& reader) :
+		_reader(reader), _current('\0'), _line_num(0) {
 }
 
 ManualLexer::~ManualLexer() {
 
 }
 
-const Token& ManualLexer::next() {
-	if (_ahead.type != TT_EOS) {
+const ::mpl::Token& ManualLexer::next() {
+	if (_ahead.type != ::mpl::TT_EOS) {
 		_next = _ahead;
-		_ahead.type = TT_EOS;
+		_ahead.type = ::mpl::TT_EOS;
 		return _next;
 	}
 
@@ -40,8 +29,8 @@ const Token& ManualLexer::next() {
 }
 
 // 连续lookahead,返回相同值
-const Token& ManualLexer::lookahead() {
-	if (_ahead.type == TT_EOS) {
+const ::mpl::Token& ManualLexer::lookahead() {
+	if (_ahead.type == ::mpl::TT_EOS) {
 		_ahead.type = lex();
 		_ahead.text = _buff.str();
 	}
@@ -88,7 +77,7 @@ void ManualLexer::nosave_and_next() {
 
 int ManualLexer::count_nosave(char ch) {
 	int n = 0;
-	while (_current == 'ch') {
+	while (_current == ch) {
 		n++;
 		nosave_and_next();
 	}
@@ -98,7 +87,7 @@ int ManualLexer::count_nosave(char ch) {
 
 // lex将得到的字符传到_buff,并返回类型,不处理_next/_ahead
 // _current保存下一个字符,或者'\0',表示尚没有读取
-TokenType ManualLexer::lex() {
+::mpl::TokenType ManualLexer::lex() {
 	_buff.str("");
 
 	if (_current == '\0') {
@@ -120,7 +109,7 @@ TokenType ManualLexer::lex() {
 		case '\'':
 		case '"':
 			read_string();
-			return TT_STRING;
+			return ::mpl::TT_STRING;
 
 		case '[':
 			{
@@ -128,114 +117,114 @@ TokenType ManualLexer::lex() {
 				int sep = count_nosave('=');
 				if (_current == '[') {
 					read_long_string(sep);
-					return TT_STRING;
+					return ::mpl::TT_STRING;
 				} else {
 					assert(sep == 0);
 					_buff << '[';
-					return TT_LEFT_SQUARE;
+					return ::mpl::TT_LEFT_SQUARE;
 				}
 			}
 
 		case ']':
 			save_and_next();
-			return TT_RIGHT_SQUARE;
+			return ::mpl::TT_RIGHT_SQUARE;
 
 		case '(':
 			save_and_next();
-			return TT_LEFT_PARENTHESIS;
+			return ::mpl::TT_LEFT_PARENTHESIS;
 
 		case ')':
 			save_and_next();
-			return TT_RIGHT_PARENTHESIS;
+			return ::mpl::TT_RIGHT_PARENTHESIS;
 
 		case '{':
 			save_and_next();
-			return TT_LEFT_BRACE;
+			return ::mpl::TT_LEFT_BRACE;
 
 		case '}':
 			save_and_next();
-			return TT_RIGHT_BRACE;
+			return ::mpl::TT_RIGHT_BRACE;
 
 		case '^':
 			save_and_next();
-			return TT_EXP;
+			return ::mpl::TT_EXP;
 
 		case '*':
 			save_and_next();
-			return TT_MUL;
+			return ::mpl::TT_MUL;
 
 		case '/':
 			save_and_next();
-			return TT_DIV;
+			return ::mpl::TT_DIV;
 
 		case '%':
 			save_and_next();
-			return TT_MOD;
+			return ::mpl::TT_MOD;
 
 		case '+':
 			save_and_next();
-			return TT_PLUS;
+			return ::mpl::TT_PLUS;
 
 		// 无法区分是负号,还是减号
 		case '-':
 			nosave_and_next();
 			if (_current == '-') {
 				read_comment();
-				return TT_COMMENT;
+				return ::mpl::TT_COMMENT;
 			} else {
 				_buff << '-';
-				return TT_MINUS;
+				return ::mpl::TT_MINUS;
 			}
 
 		case '<':
 			save_and_next();
 			if (_current == '=') {
 				save_and_next();
-				return TT_LESS_EQUAL;
+				return ::mpl::TT_LESS_EQUAL;
 			} else {
-				return TT_LESS;
+				return ::mpl::TT_LESS;
 			}
 
 		case '>':
 			save_and_next();
 			if (_current == '=') {
 				save_and_next();
-				return TT_GREATER_EQUAL;
+				return ::mpl::TT_GREATER_EQUAL;
 			} else {
-				return TT_GREATER;
+				return ::mpl::TT_GREATER;
 			}
 
 		case '=':
 			save_and_next();
 			if (_current == '=') {
 				save_and_next();
-				return TT_EQUAL;
+				return ::mpl::TT_EQUAL;
 			} else {
-				return TT_ASSIGN;
+				return ::mpl::TT_ASSIGN;
 			}
 
 		case '~':
 			save_and_next();
 			assert(_current == '=');
 			save_and_next();
-			return TT_NOT_EQUAL;
+			return ::mpl::TT_NOT_EQUAL;
 
 		case '#':
 			save_and_next();
-			return TT_LEN;
+			return ::mpl::TT_LEN;
 
 		case ',':
 			save_and_next();
-			return TT_COMMA;
+			return ::mpl::TT_COMMA;
 
 		case ';':
 			save_and_next();
-			return TT_SEMICOLON;
+			return ::mpl::TT_SEMICOLON;
 
 		case ':':
 			save_and_next();
 			if (_current != ':') {
-				return TT_COLON;
+				return ::mpl::TT_COLON;
 			} else {
 				save_and_next();
 				read_id();
@@ -244,7 +233,7 @@ TokenType ManualLexer::lex() {
 				assert(_current == ':');
 				save_and_next();
 
-				return TT_LABEL;
+				return ::mpl::TT_LABEL;
 			}
 
 		case '.':
@@ -253,12 +242,12 @@ TokenType ManualLexer::lex() {
 				save_and_next();
 				if (_current == '.') {
 					save_and_next();
-					return TT_VARARG;
+					return ::mpl::TT_VARARG;
 				} else {
-					return TT_CONCAT;
+					return ::mpl::TT_CONCAT;
 				}
 			} else if (!std::isdigit(_current)) {
-				return TT_DOT;
+				return ::mpl::TT_DOT;
 			}
 
 			// fallthrough
@@ -273,22 +262,22 @@ TokenType ManualLexer::lex() {
 		case '8':
 		case '9':
 			read_number();
-			return TT_NUMBER;
+			return ::mpl::TT_NUMBER;
 
 		default:
 			{
 				read_id();
-				std::map<std::string, TokenType>::iterator it =
-						_s_reserved_tokens.find(_buff.str());
-				if (it != _s_reserved_tokens.end()) {
+				std::map<const char *, TokenType>::const_iterator it =
+						::mpl::TOKEN_RE_KEYS.find(_buff.str().c_str());
+				if (it != ::mpl::TOKEN_RE_KEYS.end()) {
 					return it->second;
 				}
-				return TT_ID;
+				return ::mpl::TT_ID;
 			}
 		}
 	}
 
-	return TT_EOS;
+	return ::mpl::TT_EOS;
 }
 
 static int hexvalue(char ch) {
@@ -588,10 +577,10 @@ static void print_token(const ::mpl::Token& t) {
 int main() {
 	::mpl::FileReader fr("test.txt");
 
-	::mpl::lexer::ManualLexer ManualLexer(fr);
+	::mpl::lexer::ManualLexer lexer(fr);
 
 	while (true) {
-		::mpl::Token t = ManualLexer.next();
+		::mpl::Token t = lexer.next();
 		if (t.type == ::mpl::TT_EOS) {
 			break;
 		}
@@ -599,4 +588,5 @@ int main() {
 		print_token(t);
 	}
 }
+
 #endif
