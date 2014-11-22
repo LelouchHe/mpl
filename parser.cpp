@@ -3,12 +3,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include "lexer/manual_lexer.h"
+#include "token.h"
 
 namespace mpl {
 
 Parser::Parser(::mpl::Reader& reader): 
-	_lexer(new ::mpl::lexer::ManualLexer(reader)) {
+	_lexer(create_lexer("auto", reader)) {
 }
 
 Parser::~Parser() {
@@ -108,7 +108,7 @@ void Parser::parse() {
 
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include "file_reader.h"
 

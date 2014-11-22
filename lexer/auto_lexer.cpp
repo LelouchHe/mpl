@@ -8,6 +8,7 @@ namespace mpl {
 namespace lexer {
 
 AutoLexer::AutoLexer(::mpl::Reader& reader) :
+		Lexer(reader),
 		_reader(reader), _current('\0') {
 	init();
 }
@@ -58,6 +59,7 @@ void AutoLexer::init() {
 	return (::mpl::TokenType)min;
 }
 
+// 因为基本上mpl词法是LL(1),所以不需要大的缓冲
 ::mpl::TokenType AutoLexer::lex() {
 	::mpl::lexer::detail::DFA& dfa = _generator;
 	_buff.str("");
@@ -99,12 +101,17 @@ void AutoLexer::init() {
 
 	if (pre == -1) {
 		return ::mpl::TT_EOS;
+	}
+
+	::mpl::TokenType type = token_type(_generator.tags(pre));
+	// 跳过空格和换行
+	if (type == ::mpl::TT_SPACE || type == ::mpl::TT_NEWLINE) {
+		return lex();
 	} else {
-		return token_type(_generator.tags(pre));
+		return type;
 	}
 }
 
-// 因为基本上mpl词法是LL(1),所以不需要大的缓冲
 const ::mpl::Token& AutoLexer::next() {
 	if (_ahead.type != ::mpl::TT_EOS) {
 		_next = _ahead;
@@ -130,7 +137,7 @@ const ::mpl::Token& AutoLexer::lookahead() {
 } // namespace lexer
 } // namepsace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 #include "../file_reader.h"
