@@ -53,7 +53,7 @@ void NFAConverter::link(int nstart, int nlast, int* start, int* last) {
 		*start = nstart;
 		*last = nlast;
 	} else {
-		_trans[*last][EPSILON].push_back(nstart);
+		_trans[*last][EPSILON].insert(nstart);
 		*last = nlast;
 	}
 }
@@ -62,10 +62,10 @@ void NFAConverter::link_or(int nstart, int nlast, int* start, int* last) {
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before][EPSILON].push_back(nstart);
-	_trans[before][EPSILON].push_back(*start);
-	_trans[nlast][EPSILON].push_back(after);
-	_trans[*last][EPSILON].push_back(after);
+	_trans[before][EPSILON].insert(nstart);
+	_trans[before][EPSILON].insert(*start);
+	_trans[nlast][EPSILON].insert(after);
+	_trans[*last][EPSILON].insert(after);
 
 	*start = before;
 	*last = after;
@@ -73,18 +73,18 @@ void NFAConverter::link_or(int nstart, int nlast, int* start, int* last) {
 
 // start/last是原有状态,将nstart/nlast添加到其间做or
 void NFAConverter::link_or_append(int nstart, int nlast, int* start, int* last) {
-	_trans[*start][EPSILON].push_back(nstart);
-	_trans[nlast][EPSILON].push_back(*last);
+	_trans[*start][EPSILON].insert(nstart);
+	_trans[nlast][EPSILON].insert(*last);
 }
 
 void NFAConverter::link_star(int nstart, int nlast, int* start, int* last) {
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before][EPSILON].push_back(nstart);
-	_trans[nlast][EPSILON].push_back(after);
-	_trans[nlast][EPSILON].push_back(nstart);
-	_trans[before][EPSILON].push_back(after);
+	_trans[before][EPSILON].insert(nstart);
+	_trans[nlast][EPSILON].insert(after);
+	_trans[nlast][EPSILON].insert(nstart);
+	_trans[before][EPSILON].insert(after);
 
 	*start = before;
 	*last = after;
@@ -94,9 +94,9 @@ void NFAConverter::link_plus(int nstart, int nlast, int* start, int* last) {
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before][EPSILON].push_back(nstart);
-	_trans[nlast][EPSILON].push_back(after);
-	_trans[nlast][EPSILON].push_back(nstart);
+	_trans[before][EPSILON].insert(nstart);
+	_trans[nlast][EPSILON].insert(after);
+	_trans[nlast][EPSILON].insert(nstart);
 
 	*start = before;
 	*last = after;
@@ -106,9 +106,9 @@ void NFAConverter::link_question_mark(int nstart, int nlast, int* start, int* la
 	int before = new_state();
 	int after = new_state();
 
-	_trans[before][EPSILON].push_back(nstart);
-	_trans[nlast][EPSILON].push_back(after);
-	_trans[before][EPSILON].push_back(after);
+	_trans[before][EPSILON].insert(nstart);
+	_trans[nlast][EPSILON].insert(after);
+	_trans[before][EPSILON].insert(after);
 
 	*start = before;
 	*last = after;
@@ -288,7 +288,7 @@ int NFAConverter::build_byte(const Byte* str, int* start, int* last) {
 }
 
 int NFAConverter::build_byte_direct(const Byte* str, int* start, int* last) {
-	_trans[*start][*str].push_back(*last);
+	_trans[*start][*str].insert(*last);
 	return 1;
 }
 
@@ -392,12 +392,18 @@ int NFAConverter::last() const {
 #include <iostream>
 using namespace std;
 
-void print_vector(const std::vector<int>& v) {
+void print_set(const std::set<int>& s) {
 	cout << "(";
-	if (!v.empty()) {
-		cout << v[0];
-		for (size_t i = 1; i < v.size(); i++) {
-			cout << ", " << v[i];
+	if (!s.empty()) {
+		size_t size = s.size();
+		size_t i = 0;
+		for (::mpl::lexer::detail::States::const_iterator it = s.begin();
+			it != s.end(); ++it) {
+			if (i > 0) {
+				cout << ", ";
+			}
+			cout << *it;
+			i++;
 		}
 	}
 	cout << ")";
@@ -426,7 +432,7 @@ int main() {
 			}
 			cout << ")";
 			cout << "\t->\t";
-			print_vector(it->second);
+			print_set(it->second);
 			cout << endl;
 		}
 	}

@@ -17,36 +17,33 @@ AutoLexer::~AutoLexer() {
 }
 
 void AutoLexer::init() {
-	::mpl::lexer::detail::DFAMerger merger;
-
 	for (std::map<const char *, ::mpl::TokenType>::const_iterator it = ::mpl::TOKEN_RE_KEYS.begin();
 			it != ::mpl::TOKEN_RE_KEYS.end(); ++it) {
-		_dfa.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
-		merger.add(_dfa);
+		_generator.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
+		_merger.add(_generator);
 	}
 
 	for (std::map<const char *, ::mpl::TokenType>::const_iterator it = ::mpl::TOKEN_RE_SYMBOLS.begin();
 		it != ::mpl::TOKEN_RE_SYMBOLS.end(); ++it) {
-		_dfa.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
-		merger.add(_dfa);
+		_generator.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
+		_merger.add(_generator);
 	}
 
-	_dfa.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_ID, (int)::mpl::TT_ID);
-	merger.add(_dfa);
-	/*
-	_dfa.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_NUMBER, (int)::mpl::TT_NUMBER);
-	merger.add(_dfa);
+	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_ID, (int)::mpl::TT_ID);
+	_merger.add(_generator);
 
-	_dfa.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_STRING, (int)::mpl::TT_STRING);
-	merger.add(_dfa);
+	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_NUMBER, (int)::mpl::TT_NUMBER);
+	_merger.add(_generator);
 
-	_dfa.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_COMMENT, (int)::mpl::TT_COMMENT);
-	merger.add(_dfa);
-	*/
+	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_STRING, (int)::mpl::TT_STRING);
+	_merger.add(_generator);
 
-	merger.build();
+	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_COMMENT, (int)::mpl::TT_COMMENT);
+	_merger.add(_generator);
 
-	_dfa.build(merger);
+	// 二者好像结果一样,应该需要再看看
+	_merger.build();
+	_generator.build(_merger, true);
 }
 
 ::mpl::TokenType token_type(const ::mpl::lexer::detail::Tag& tag) {
@@ -61,22 +58,25 @@ void AutoLexer::init() {
 	return (::mpl::TokenType)min;
 }
 
-const ::mpl::Token& AutoLexer::next() {
-	const ::mpl::lexer::detail::StateList& last = _dfa.last();
+::mpl::TokenType AutoLexer::lex() {
+	::mpl::lexer::detail::DFA& dfa = _generator;
+	_buff.str("");
+
+	const ::mpl::lexer::detail::States& last = _generator.last();
 	int pre = -1;
-	int cur = _dfa.start();
+	int cur = dfa.start();
 
 	if (_current == '\0') {
 		_current = _reader.next();
 	}
 	while (!_reader.eof()) {
-		if (std::find(last.begin(), last.end(), cur) != last.end()) {
+		if (last.find(cur) != last.end()) {
 			pre = cur;
 		}
 
-		const ::mpl::lexer::detail::DFATran& tran = _dfa[cur];
+		const ::mpl::lexer::detail::DFATran& tran = dfa[cur];
 		::mpl::lexer::detail::DFATran::const_iterator it = tran.find(_current);
-		
+
 		if (it == tran.end() || it->second == -1) {
 			if (it == tran.end()) {
 				it = tran.find(::mpl::lexer::detail::OTHER);
@@ -88,30 +88,49 @@ const ::mpl::Token& AutoLexer::next() {
 			}
 		}
 		cur = it->second;
+		_buff << _current;
+
 		_current = _reader.next();
 	}
 
-	if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
+	if (last.find(cur) != last.end()) {
 		pre = cur;
 	}
 
 	if (pre == -1) {
-		_next.type = ::mpl::TT_EOS;
+		return ::mpl::TT_EOS;
 	} else {
-		_next.type = token_type(_dfa.tags(pre));
+		return token_type(_generator.tags(pre));
 	}
+}
+
+// 因为基本上mpl词法是LL(1),所以不需要大的缓冲
+const ::mpl::Token& AutoLexer::next() {
+	if (_ahead.type != ::mpl::TT_EOS) {
+		_next = _ahead;
+		_ahead.type = ::mpl::TT_EOS;
+		return _next;
+	}
+
+	_next.type = lex();
+	_next.text = _buff.str();
 
 	return _next;
 }
 
 const ::mpl::Token& AutoLexer::lookahead() {
+	if (_ahead.type == ::mpl::TT_EOS) {
+		_ahead.type = lex();
+		_ahead.text = _buff.str();
+	}
+
 	return _ahead;
 }
 
 } // namespace lexer
 } // namepsace mpl
 
-#if 0
+#if 1
 
 #include <iostream>
 #include "../file_reader.h"

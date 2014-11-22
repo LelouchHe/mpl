@@ -1,5 +1,4 @@
 #include "regex.h"
-#include <algorithm>
 
 namespace mpl {
 namespace lexer {
@@ -27,12 +26,13 @@ bool Regex::full_match(const char* str) {
 }
 
 bool Regex::partial_match(const char* str, char** end) {
+	const States& last = _dfa.last();
 	int pre = -1;
 	const char* pre_end = NULL;
 	int cur = _dfa.start();
 
 	while (*str != '\0' && cur >= 0) {
-		if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
+		if (last.find(cur) != last.end()) {
 			pre = cur;
 			pre_end = str;
 		}
@@ -53,7 +53,8 @@ bool Regex::partial_match(const char* str, char** end) {
 		str++;
 	}
 
-	if (std::find(_dfa.last().begin(), _dfa.last().end(), cur) != _dfa.last().end()) {
+
+	if (last.find(cur) != last.end()) {
 		pre = cur;
 		pre_end = str;
 	}
@@ -61,7 +62,7 @@ bool Regex::partial_match(const char* str, char** end) {
 	if (end != NULL) {
 		*end = const_cast<char *>(pre_end);
 	}
-	return std::find(_dfa.last().begin(), _dfa.last().end(), pre) != _dfa.last().end();
+	return last.find(pre) != last.end();
 }
 
 } // namespace detail

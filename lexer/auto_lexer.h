@@ -2,8 +2,11 @@
 #define MPL_LEXER_AUTO_LEXER_H
 
 #include "../lexer.h"
+
+#include <sstream>
 #include "../token.h"
 #include "detail/dfa_generator.h"
+#include "detail/dfa_merger.h"
 
 namespace mpl {
 class Reader;
@@ -21,11 +24,15 @@ public:
 
 private:
 	void init();
+	::mpl::TokenType lex();
 
 private:
 	::mpl::Reader& _reader;
-	::mpl::lexer::detail::DFAGenerator _dfa;
+	::mpl::lexer::detail::DFA* _dfa;
+	::mpl::lexer::detail::DFAGenerator _generator;
+	::mpl::lexer::detail::DFAMerger _merger;
 
+	std::ostringstream _buff;
 	char _current;
 
 	::mpl::Token _next;

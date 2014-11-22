@@ -16,8 +16,10 @@ public:
 	virtual const Tag& tags(size_t s) const = 0;
 
 	virtual int start() const = 0;
-	virtual const StateList& last() const = 0;
+	virtual const States& last() const = 0;
 };
+
+void print_dfa(const DFA& dfa);
 
 } // namespace detail
 } // namespace lexer

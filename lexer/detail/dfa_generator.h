@@ -15,17 +15,17 @@ public:
 
 	bool parse(const Byte* str);
 	bool parse(const Byte* str, int tag);
-	bool build(const DFA& dfa);
+	bool build(const DFA& dfa, bool is_sep);
 
 public:
 	virtual size_t size() const;
 	virtual const DFATran& operator[](size_t s) const;
 	virtual const Tag& tags(size_t s) const;
 	virtual int start() const;
-	virtual const StateList& last() const;
+	virtual const States& last() const;
 
 private:
-	bool build(const DFA& dfa, const std::set<StateList>& t);
+	bool build(const DFA& dfa, const std::set<States>& t);
 	int new_state();
 	void reset();
 
@@ -34,7 +34,7 @@ private:
 	std::map<size_t, Tag> _tags;
 
 	int _start;
-	StateList _last;
+	States _last;
 };
 
 } // namespace detail

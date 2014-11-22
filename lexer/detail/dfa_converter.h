@@ -21,7 +21,7 @@ public:
 			const std::vector<NFATran>& trans,
 			const std::map<size_t, Tag>& tags);
 
-	bool build(int start, StateList last,
+	bool build(int start, const States& last,
 		const std::vector<NFATran>& trans,
 		const std::map<size_t, Tag>& tags);
 public:
@@ -29,7 +29,7 @@ public:
 	virtual const DFATran& operator[](size_t s) const;
 	virtual const Tag& tags(size_t s) const;
 	virtual int start() const;
-	virtual const StateList& last() const;
+	virtual const States& last() const;
 
 private:
 	int new_state();
@@ -40,7 +40,7 @@ private:
 	std::map<size_t, Tag> _tags;
 	
 	int _start;
-	StateList _last;
+	States _last;
 };
 
 } // namespace detail

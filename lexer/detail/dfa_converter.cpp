@@ -2,7 +2,6 @@
 
 #include <queue>
 #include <set>
-#include <algorithm>
 #include <cassert>
 #include "nfa_converter.h"
 
@@ -25,93 +24,96 @@ int DFAConverter::new_state() {
 }
 
 // 所有能从from通过EPSILON能达到的NFA状态(包括from)
-static std::vector<int> fill(const std::vector<NFATran>& trans, int last, const std::vector<int>& from, bool* is_last) {
-	std::vector<int> to;
-	std::set<int> dedup;
-	for (size_t i = 0; i < from.size(); i++) {
-		to.push_back(from[i]);
-		dedup.insert(from[i]);
+static States fill(const std::vector<NFATran>& trans, const States& last, const States& from, bool* is_last) {
+	std::queue<int> q;
+	for (States::const_iterator it = from.begin();
+			it != from.end(); ++it) {
+		q.push(*it);
 	}
 
-	std::set<int> ends;
-	for (size_t i = 0; i < to.size(); i++) {
-		// -1: 显式错误情况,一般用于[^]
-		if (to[i] == -1) {
+	// ends表示终点(即最终状态),要判断这次转移是否只有-1
+	States ends;
+	States to;
+	while (!q.empty()) {
+		int s = q.front();
+		q.pop();
+
+		to.insert(s);
+		if (last.find(s) != last.end()) {
+			*is_last = true;
+		}
+
+		if (s == -1) {
 			ends.insert(-1);
 			continue;
 		}
-		const NFATran& tran = trans[to[i]];
+
+		const NFATran& tran = trans[s];
 		NFATran::const_iterator it = tran.find(EPSILON);
 		if (it == tran.end()) {
-			ends.insert(to[i]);
+			ends.insert(s);
 			continue;
 		}
 
-		for (size_t j = 0; j < it->second.size(); j++) {
-			if (dedup.find(it->second[j]) != dedup.end()) {
-				continue;
+		const States& next = it->second;
+		for (States::const_iterator nit = next.begin();
+				nit != next.end(); ++nit) {
+			if (to.find(*nit) == to.end()) {
+				q.push(*nit);
 			}
-
-			to.push_back(it->second[j]);
-			dedup.insert(it->second[j]);
 		}
 	}
 
-	*is_last = dedup.find(last) != dedup.end();
-
 	if (ends.find(-1) == ends.end() || ends.size() > 1) {
-		to.erase(std::remove(to.begin(), to.end(), -1), to.end());
+		to.erase(-1);
 	} else {
 		to.clear();
-		to.push_back(-1);
+		to.insert(-1);
 	}
-
-	std::sort(to.begin(), to.end());
 
 	return to;
 }
 
 // 所有从from通过一次ch到达的NFA状态
-static std::vector<int> expand(const std::vector<NFATran>& trans, const std::vector<int>& from, char ch) {
-	std::vector<int> to;
-	std::set<int> dedup;
-	for (size_t i = 0; i < from.size(); i++) {
-		// -1: 显式错误情况
-		if (from[i] == -1) {
+// 这里有-1,表示上次fill只有一个最终状态,即-1
+static States expand(const std::vector<NFATran>& trans, const States& from, char ch) {
+	States to;
+	for (States::const_iterator it = from.begin();
+			it != from.end(); ++it) {
+		int s = *it;
+		if (s == -1) {
 			to.clear();
-			to.push_back(-1);
+			to.insert(-1);
 			break;
 		}
-		const NFATran& tran = trans[from[i]];
-		NFATran::const_iterator it = tran.find(ch);
-		if (it == tran.end()) {
+
+		const NFATran& tran = trans[s];
+		NFATran::const_iterator tit = tran.find(ch);
+		if (tit == tran.end()) {
 			continue;
 		}
 
-		for (size_t j = 0; j < it->second.size(); j++) {
-			if (dedup.find(it->second[j]) != dedup.end()) {
-				continue;
-			}
-
-			to.push_back(it->second[j]);
-			dedup.insert(it->second[j]);
+		const States& next = tit->second;
+		for (States::const_iterator nit = next.begin();
+			nit != next.end(); ++nit) {
+			to.insert(*nit);
 		}
 	}
 
-	sort(to.begin(), to.end());
 	return to;
 }
 
-static void merge_tags(const StateList& states,
+static void merge_tags(const States& states,
 		const std::map<size_t, Tag>& from,
 		int s, std::map<size_t, Tag> *to) {
 	size_t size = states.size();
-	for (size_t i = 0; i < size; i++) {
-		assert(states[i] >= 0);
-		std::map<size_t, Tag>::const_iterator it = from.find(states[i]);
-		if (it != from.end()) {
+	for (States::const_iterator it = states.begin();
+			it != states.end(); ++it) {
+		assert(*it >= 0);
+		std::map<size_t, Tag>::const_iterator fit = from.find(*it);
+		if (fit != from.end()) {
 			Tag& tag = (*to)[s];
-			tag.insert(tag.end(), it->second.begin(), it->second.end());
+			tag.insert(fit->second.begin(), fit->second.end());
 		}
 	}
 }
@@ -120,54 +122,52 @@ bool DFAConverter::parse(const Byte* str) {
 	return parse(str, -1);
 }
 
-bool DFAConverter::build(int start, StateList last,
+bool DFAConverter::build(int start, const States& last,
 	const std::vector<NFATran>& trans,
 	const std::map<size_t, Tag>& tags) {
-}
 
-bool DFAConverter::build(int start, int last,
-		const std::vector<NFATran>& trans,
-		const std::map<size_t, Tag>& tags) {
 	reset();
 
-	std::map<StateList, int> nfa_to_dfa;
-	StateList v;
-	v.push_back(-1);
+	std::map<States, int> nfa_to_dfa;
+	States v;
+	v.insert(-1);
 	nfa_to_dfa[v] = -1;
 	v.clear();
 	bool is_last = false;
 
-	v.push_back(start);
+	v.insert(start);
 	v = fill(trans, last, v, &is_last);
 	_start = new_state();
 	nfa_to_dfa[v] = _start;
 	if (is_last) {
-		_last.push_back(_start);
+		_last.insert(_start);
 	}
 	merge_tags(v, tags, _start, &_tags);
 
-	std::queue<StateList> q;
+	std::queue<States> q;
 	q.push(v);
 	while (!q.empty()) {
 		v = q.front();
 		q.pop();
 
 		int from = nfa_to_dfa[v];
-		std::set<char> dedup;
+		std::set<Byte> dedup;
 		dedup.insert(EPSILON);
 
-		for (size_t i = 0; i < v.size(); i++) {
-			assert(v[i] >= 0);
+		for (States::const_iterator it = v.begin();
+				it != v.end(); ++it) {
+			int s = *it;
+			assert(s >= 0);
 
-			const NFATran& tran = trans[v[i]];
+			const NFATran& tran = trans[s];
 			for (NFATran::const_iterator it = tran.begin();
-					it != tran.end(); ++it) {
+				it != tran.end(); ++it) {
 				if (dedup.find(it->first) != dedup.end()) {
 					continue;
 				}
 
 				is_last = false;
-				StateList next = expand(trans, v, it->first);
+				States next = expand(trans, v, it->first);
 				next = fill(trans, last, next, &is_last);
 
 				int to = -1;
@@ -176,7 +176,7 @@ bool DFAConverter::build(int start, int last,
 					nfa_to_dfa[next] = to;
 					q.push(next);
 					if (is_last) {
-						_last.push_back(to);
+						_last.insert(to);
 					}
 					merge_tags(next, tags, to, &_tags);
 				} else {
@@ -192,13 +192,22 @@ bool DFAConverter::build(int start, int last,
 	return true;
 }
 
+bool DFAConverter::build(int start, int last,
+		const std::vector<NFATran>& trans,
+		const std::map<size_t, Tag>& tags) {
+	States lasts;
+	lasts.insert(last);
+
+	return build(start, lasts, trans, tags);
+}
+
 bool DFAConverter::parse(const Byte* str, int tag) {
 	NFAConverter nfa;
 	if (!nfa.parse(str)) {
 		return false;
 	}
 	std::map<size_t, Tag> tags;
-	tags[nfa.last()].push_back(tag);
+	tags[nfa.last()].insert(tag);
 
 	return build(nfa.start(), nfa.last(), nfa.trans(), tags);
 }
@@ -232,7 +241,7 @@ int DFAConverter::start() const {
 	return _start;
 }
 
-const StateList& DFAConverter::last() const {
+const States& DFAConverter::last() const {
 	return _last;
 }
 
@@ -245,56 +254,13 @@ const StateList& DFAConverter::last() const {
 #include <iostream>
 using namespace std;
 
-void print_vector(const std::vector<int>& v) {
-	cout << "(";
-	if (!v.empty()) {
-		cout << v[0];
-		for (size_t i = 1; i < v.size(); i++) {
-			cout << ", " << v[i];
-		}
-	}
-	cout << ")";
-}
-
 int main() {
-	const char* pattern = "\\N";
+	const char* pattern = "\\N+|\\n";
 	::mpl::lexer::detail::DFAConverter dfa;
 	dfa.parse((::mpl::lexer::detail::Byte *)pattern);
 
 	cout << "pattern: " << pattern << endl;
-	cout << "start  : " << dfa.start() << endl;
-	cout << "last   : ";
-	const std::vector<int>& last = dfa.last();
-	print_vector(last);
-	cout << endl;
-
-	for (size_t i = 0; i < dfa.size(); i++) {
-		const ::mpl::lexer::detail::DFATran& tran = dfa[i];
-		for (::mpl::lexer::detail::DFATran::const_iterator it = tran.begin();
-				it != tran.end(); ++it) {
-			cout << i << "(";
-			if (it->first == ::mpl::lexer::detail::EPSILON) {
-				cout << "\\0";
-			} else if (it->first == ::mpl::lexer::detail::OTHER) {
-				cout << "-1";
-			} else {
-				//cout << it->first;
-				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
-			}
-			cout << ")";
-			cout << "\t->\t";
-			cout << it->second;
-			cout << endl;
-		}
-	}
-
-	for (size_t i = 0; i < last.size(); i++) {
-		const ::mpl::lexer::detail::Tag& tag = dfa.tags(last[i]);
-
-		cout << last[i] << ": " << tag[0];
-		print_vector(tag);
-		cout << endl;
-	}
+	print_dfa(dfa);
 
 	return 0;
 }

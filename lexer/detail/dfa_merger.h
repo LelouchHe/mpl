@@ -21,7 +21,7 @@ public:
 	virtual const DFATran& operator[](size_t s) const;
 	virtual const Tag& tags(size_t s) const;
 	virtual int start() const;
-	virtual const StateList& last() const;
+	virtual const States& last() const;
 
 private:
 	int new_state();
@@ -30,7 +30,7 @@ private:
 	std::vector<NFATran> _trans;
 	std::map<size_t, Tag> _tags;
 	int _start;
-	StateList _last;
+	States _last;
 
 	DFAConverter _converter;
 };

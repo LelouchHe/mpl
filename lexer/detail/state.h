@@ -2,6 +2,7 @@
 #define MPL_LEXER_DETAIL_STATE_H
 
 #include <map>
+#include <set>
 #include <vector>
 #include <cstdint>
 
@@ -14,13 +15,13 @@ typedef uint8_t Byte;
 const Byte EPSILON = 0x0;
 const Byte OTHER = 0xFF;
 
-typedef std::vector<int> StateList;
+typedef std::set<int> States;
 
-typedef std::map<Byte, StateList> NFATran;
+typedef std::map<Byte, States> NFATran;
 
 typedef std::map<Byte, int> DFATran;
 
-typedef std::vector<int> Tag;
+typedef std::set<int> Tag;
 extern const Tag NONE_TAG;
 
 } // namespace detail

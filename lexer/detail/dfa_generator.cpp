@@ -1,15 +1,12 @@
 #include "dfa_generator.h"
 
 #include <set>
-#include <algorithm>
 #include <cassert>
 #include "dfa_converter.h"
 
 namespace mpl {
 namespace lexer {
 namespace detail {
-
-typedef std::vector<int> StateList;
 
 DFAGenerator::DFAGenerator() : _start(-1) {
 
@@ -25,14 +22,23 @@ int DFAGenerator::new_state() {
 	return size;
 }
 
-static void init(const DFA& dfa, std::set<StateList> *s) {
-	const StateList& last = dfa.last();
-	s->insert(last);
+static void init(const DFA& dfa, std::set<States> *s, bool is_sep) {
+	const States& last = dfa.last();
+	if (is_sep) {
+		for (States::const_iterator it = last.begin();
+				it != last.end(); ++it) {
+			States ss;
+			ss.insert(*it);
+			s->insert(ss);
+		}
+	} else {
+		s->insert(last);
+	}
 
-	StateList non_last;
+	States non_last;
 	for (size_t i = 0; i < dfa.size(); i++) {
-		if (std::find(last.begin(), last.end(), i) == last.end()) {
-			non_last.push_back(i);
+		if (last.find(i) == last.end()) {
+			non_last.insert(i);
 		}
 	}
 
@@ -42,26 +48,28 @@ static void init(const DFA& dfa, std::set<StateList> *s) {
 }
 
 static void split(const DFA& dfa,
-		const std::vector<const StateList* >& states,
-		const StateList& s, std::set<StateList>* t) {
-	std::set<char> chars;
-	for (size_t i = 0; i < s.size(); i++) {
-		const DFATran& tran = dfa[s[i]];
-		for (DFATran::const_iterator it = tran.begin();
-				it != tran.end(); ++it) {
-			chars.insert(it->first);
+		const std::vector<const States* >& states,
+		const States& s, std::set<States>* t) {
+	std::set<Byte> chars;
+	for (States::const_iterator it = s.begin();
+			it != s.end(); ++it) {
+		const DFATran& tran = dfa[*it];
+		for (DFATran::const_iterator tit = tran.begin();
+				tit != tran.end(); ++tit) {
+			chars.insert(tit->first);
 		}
 	}
 	
-	StateList to_list;
-	StateList not_to_list;
-	for (std::set<char>::iterator it = chars.begin();
+	States to_list;
+	States not_to_list;
+	for (std::set<Byte>::iterator it = chars.begin();
 			it != chars.end(); ++it) {
-		const StateList* to = NULL;
+		const States* to = NULL;
 		to_list.clear();
 		not_to_list.clear();
-		for (size_t i = 0; i < s.size(); i++) {
-			const DFATran& tran = dfa[s[i]];
+		for (States::const_iterator sit = s.begin();
+				sit != s.end(); ++sit) {
+			const DFATran& tran = dfa[*sit];
 			DFATran::const_iterator cit = tran.find(*it);
 			// -1错误状态提前判断
 			if (cit != tran.end() && cit->second != -1) {
@@ -70,12 +78,12 @@ static void split(const DFA& dfa,
 				}
 
 				if (states[cit->second] == to) {
-					to_list.push_back(s[i]);
+					to_list.insert(*sit);
 				} else {
-					not_to_list.push_back(s[i]);
+					not_to_list.insert(*sit);
 				}
 			} else {
-				not_to_list.push_back(s[i]);
+				not_to_list.insert(*sit);
 			}
 		}
 
@@ -89,69 +97,72 @@ static void split(const DFA& dfa,
 	t->insert(s);
 }
 
-static void split_all(const DFA& dfa, std::set<StateList>* t) {
-	std::vector<const StateList*> states(dfa.size());
-	std::set<StateList> p;
-	init(dfa, t);
+static void split_all(const DFA& dfa, std::set<States>* t, bool is_sep) {
+	std::vector<const States*> states(dfa.size());
+	std::set<States> p;
+	init(dfa, t, is_sep);
 
 	// -1状态不做split处理
 	while (p != *t) {
 		p.swap(*t);
 		t->clear();
-		for (std::set<StateList>::iterator it = p.begin(); it != p.end(); ++it) {
-			for (size_t i = 0; i < it->size(); i++) {
-				assert((*it)[i] >= 0);
-				states[(*it)[i]] = &(*it);
+		for (std::set<States>::iterator it = p.begin(); it != p.end(); ++it) {
+			const States& ss = *it;
+			for (States::const_iterator sit = ss.begin();
+					sit != ss.end(); ++sit) {
+				assert(*sit >= 0);
+				states[*sit] = &(*it);
 			}
 		}
 
-		for (std::set<StateList>::iterator it = p.begin(); it != p.end(); ++it) {
+		for (std::set<States>::iterator it = p.begin(); it != p.end(); ++it) {
 			split(dfa, states, *it, t);
 		}
 	}
 }
 
 static void merge_tags(const DFA& dfa,
-		const StateList& states,
+		const States& states,
 		int s, std::map<size_t, Tag> *tags) {
 	size_t size = states.size();
-	for (size_t i = 0; i < size; i++) {
-		assert(states[i] >= 0);
-		const Tag& t = dfa.tags(states[i]);
+	for (States::const_iterator it = states.begin();
+			it != states.end(); ++it) {
+		assert(*it >= 0);
+		const Tag& t = dfa.tags(*it);
 		if (!t.empty()) {
 			Tag& tag = (*tags)[s];
-			tag.insert(tag.end(), t.begin(), t.end());
+			tag.insert(t.begin(), t.end());
 		}
 	}
 }
 
-bool DFAGenerator::build(const DFA& dfa, const std::set<StateList>& t) {
-	const StateList& last = dfa.last();
+bool DFAGenerator::build(const DFA& dfa, const std::set<States>& t) {
+	const States& last = dfa.last();
 	std::map<int, int> ms;
 	// 错误状态只有1个,提前写入
 	ms[-1] = -1;
 
-	for (std::set<StateList>::iterator it = t.begin();
+	for (std::set<States>::iterator it = t.begin();
 			it != t.end(); ++it) {
 		int s = new_state();
 		bool is_last = false;
-		for (size_t i = 0; i < it->size(); i++) {
-			ms[(*it)[i]] = s;
-			if ((*it)[i] == dfa.start()) {
+		const States& ss = *it;
+		for (States::const_iterator sit = ss.begin();
+				sit != ss.end(); ++sit) {
+			ms[*sit] = s;
+			if (*sit == dfa.start()) {
 				_start = s;
-			} else if (std::find(last.begin(), last.end(), (*it)[i]) != last.end()) {
-				if (std::find(_last.begin(), _last.end(), s) == _last.end()) {
-					_last.push_back(s);
-				}
+			} else if (last.find(*sit) != last.end()) {
+				_last.insert(s);
 			}
 		}
 
 		merge_tags(dfa, *it, s, &_tags);
 	}
 
-	for (std::set<StateList>::iterator it = t.begin(); 
+	for (std::set<States>::iterator it = t.begin(); 
 			it != t.end(); ++it) {
-		int s = (*it)[0];
+		int s = *(it->begin());
 		const DFATran& tran = dfa[s];
 		for (DFATran::const_iterator cit = tran.begin(); 
 				cit != tran.end(); ++cit) {
@@ -163,11 +174,11 @@ bool DFAGenerator::build(const DFA& dfa, const std::set<StateList>& t) {
 }
 
 // 最小化还有一个优化,当唯一后续可能状态为-1时,可以直接到-1,后续都不用判断
-bool DFAGenerator::build(const DFA& dfa) {
+bool DFAGenerator::build(const DFA& dfa, bool is_sep) {
 	reset();
 
-	std::set<StateList> t;
-	split_all(dfa, &t);
+	std::set<States> t;
+	split_all(dfa, &t, is_sep);
 
 	return build(dfa, t);
 }
@@ -178,7 +189,7 @@ bool DFAGenerator::parse(const Byte* str, int tag) {
 		return false;
 	}
 
-	return build(dfa);
+	return build(dfa, false);
 }
 
 bool DFAGenerator::parse(const Byte* str) {
@@ -214,7 +225,7 @@ int DFAGenerator::start() const {
 	return _start;
 }
 
-const StateList& DFAGenerator::last() const {
+const States& DFAGenerator::last() const {
 	return _last;
 }
 
@@ -227,17 +238,6 @@ const StateList& DFAGenerator::last() const {
 #include <iostream>
 using namespace std;
 
-void print_vector(const std::vector<int>& v) {
-	cout << "(";
-	if (!v.empty()) {
-		cout << v[0];
-		for (size_t i = 1; i < v.size(); i++) {
-			cout << ", " << v[i];
-		}
-	}
-	cout << ")";
-}
-
 int main() {
 	//const char* pattern = "[\\+\\-]?((([0-9]+\\.[0-9]*|\\.[0-9]+)([eE][\\+\\-]?[0-9]+)?)|[0-9]+[eE][\\+\\-]?[0-9]+)";
 	const char* pattern = "\\N+|\\n";
@@ -245,39 +245,7 @@ int main() {
 	dfa.parse((const ::mpl::lexer::detail::Byte *)pattern);
 
 	cout << "pattern: " << pattern << endl;
-	cout << "start  : " << dfa.start() << endl;
-	cout << "last   : ";
-	const std::vector<int>& last = dfa.last();
-	print_vector(last);
-	cout << endl;
-
-	for (size_t i = 0; i < dfa.size(); i++) {
-		const ::mpl::lexer::detail::DFATran& tran = dfa[i];
-		for (::mpl::lexer::detail::DFATran::const_iterator it = tran.begin();
-				it != tran.end(); ++it) {
-			cout << i << "(";
-			if (it->first == ::mpl::lexer::detail::EPSILON) {
-				cout << "\\0";
-			} else if (it->first == ::mpl::lexer::detail::OTHER) {
-				cout << "-1";
-			} else {
-				//cout << it->first;
-				cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
-			}
-			cout << ")";
-			cout << "\t->\t";
-			cout << it->second;
-			cout << endl;
-		}
-	}
-
-	for (size_t i = 0; i < last.size(); i++) {
-		const ::mpl::lexer::detail::Tag& tag = dfa.tags(last[i]);
-
-		cout << last[i] << ": ";
-		print_vector(tag);
-		cout << endl;
-	}
+	print_dfa(dfa);
 
 	return 0;
 }

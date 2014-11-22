@@ -33,21 +33,22 @@ bool DFAMerger::add(const DFA& dfa) {
 		const DFATran& tran = dfa[i];
 		for (DFATran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
-			_trans[base + i][it->first].push_back(base + it->second);
+			_trans[base + i][it->first].insert(base + it->second);
 		}
 		const Tag& tag = dfa.tags(i);
 		if (!tag.empty()) {
 			Tag& to = _tags[base + i];
-			to.insert(to.end(), tag.begin(), tag.end());
+			to.insert(tag.begin(), tag.end());
 		}
 	}
 
 
-	_trans[_start][EPSILON].push_back(base + dfa.start());
+	_trans[_start][EPSILON].insert(base + dfa.start());
 
-	const StateList& last = dfa.last();
-	for (size_t i = 0; i < last.size(); i++) {
-		_last.push_back(base + last[i]);
+	const States& last = dfa.last();
+	for (States::const_iterator it = last.begin();
+		it != last.end(); ++it) {
+		_last.insert(base + *it);
 	}
 
 	return true;
@@ -74,7 +75,7 @@ int DFAMerger::start() const {
 	return _converter.start();
 }
 
-const StateList& DFAMerger::last() const {
+const States& DFAMerger::last() const {
 	return _converter.last();
 }
 
@@ -82,22 +83,12 @@ const StateList& DFAMerger::last() const {
 } // namespace lexer
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 #include "dfa_generator.h"
-using namespace std;
 
-void print_vector(const std::vector<int>& v) {
-	cout << "(";
-	if (!v.empty()) {
-		cout << v[0];
-		for (size_t i = 1; i < v.size(); i++) {
-			cout << ", " << v[i];
-		}
-	}
-	cout << ")";
-}
+using namespace std;
 
 int main() {
 	::mpl::lexer::detail::DFAGenerator gen;
@@ -106,7 +97,6 @@ int main() {
 	gen.parse((const ::mpl::lexer::detail::Byte *)"and", 0);
 	merger.add(gen);
 
-	/*
 	gen.parse((const ::mpl::lexer::detail::Byte *)"break", 1);
 	merger.add(gen);
 
@@ -115,55 +105,22 @@ int main() {
 
 	gen.parse((const ::mpl::lexer::detail::Byte *)"\\+", 32);
 	merger.add(gen);
-	*/
 
-	gen.parse((const ::mpl::lexer::detail::Byte *)"=", 40);
+	gen.parse((const ::mpl::lexer::detail::Byte *)"ast", 40);
 	merger.add(gen);
 
-	/*
 	gen.parse((const ::mpl::lexer::detail::Byte *)" ", 49);
 	merger.add(gen);
 
 	gen.parse((const ::mpl::lexer::detail::Byte *)"a+", 51);
 	merger.add(gen);
-	*/
 
+	// 这样merger和gen基本上都是一样的了
 	merger.build();
-	gen.build(merger);
+	print_dfa(merger);
 
-	cout << "start  : " << gen.start() << endl;
-	cout << "last   : ";
-	const std::vector<int>& last = gen.last();
-	print_vector(last);
-	cout << endl;
-
-	for (size_t i = 0; i < gen.size(); i++) {
-		const ::mpl::lexer::detail::DFATran& tran = gen[i];
-		for (::mpl::lexer::detail::DFATran::const_iterator it = tran.begin();
-				it != tran.end(); ++it) {
-			cout << i << "(";
-			if (it->first == ::mpl::lexer::detail::EPSILON) {
-				cout << "\\0";
-			} else if (it->first == ::mpl::lexer::detail::OTHER) {
-				cout << "-1";
-			} else {
-				cout << it->first;
-				//cout << "0x" << hex << (int)(it->first & 0xFF) << dec;
-			}
-			cout << ")";
-			cout << "\t->\t";
-			cout << it->second;
-			cout << endl;
-		}
-	}
-
-	for (size_t i = 0; i < last.size(); i++) {
-		const ::mpl::lexer::detail::Tag& tag = gen.tags(last[i]);
-
-		cout << last[i] << ": ";
-		print_vector(tag);
-		cout << endl;
-	}
+	gen.build(merger, true);
+	print_dfa(gen);
 
 	return 0;
 }
