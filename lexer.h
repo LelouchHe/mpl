@@ -11,14 +11,17 @@ class Token;
 
 class Lexer {
 public:
-	Lexer(::mpl::Reader& reader) {}
+	Lexer(::mpl::Reader& reader) : _reader(reader) {}
 	virtual ~Lexer() {}
 
 	virtual const Token& next() = 0;
 	virtual const Token& lookahead() = 0;
+
+protected:
+	Reader& _reader;
 };
 
-std::shared_ptr<Lexer> create_lexer(const std::string& type, ::mpl::Reader& reader);
+std::shared_ptr<Lexer> create_lexer(const std::string& type, Reader& reader);
 
 } // namespace mpl
 

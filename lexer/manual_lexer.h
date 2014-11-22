@@ -41,8 +41,6 @@ private:
 	void read_comment();
 
 private:
-	::mpl::Reader& _reader;
-
 	std::ostringstream _buff;
 	char _current;
 

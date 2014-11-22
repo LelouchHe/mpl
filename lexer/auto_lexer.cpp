@@ -8,8 +8,7 @@ namespace mpl {
 namespace lexer {
 
 AutoLexer::AutoLexer(::mpl::Reader& reader) :
-		Lexer(reader),
-		_reader(reader), _current('\0') {
+		Lexer(reader), _current('\0') {
 	init();
 }
 

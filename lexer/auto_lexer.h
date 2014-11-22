@@ -27,7 +27,6 @@ private:
 	::mpl::TokenType lex();
 
 private:
-	::mpl::Reader& _reader;
 	::mpl::lexer::detail::DFA* _dfa;
 	::mpl::lexer::detail::DFAGenerator _generator;
 	::mpl::lexer::detail::DFAMerger _merger;

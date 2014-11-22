@@ -9,7 +9,7 @@ namespace lexer {
 
 ManualLexer::ManualLexer(::mpl::Reader& reader) :
 		Lexer(reader),
-		_reader(reader), _current('\0'), _line_num(0) {
+		_current('\0'), _line_num(0) {
 }
 
 ManualLexer::~ManualLexer() {

@@ -6,7 +6,7 @@
 
 namespace mpl {
 
-std::shared_ptr<Lexer> create_lexer(const std::string& type, ::mpl::Reader& reader) {
+std::shared_ptr<Lexer> create_lexer(const std::string& type, Reader& reader) {
 	if (type == "manual") {
 		return std::make_shared<::mpl::lexer::ManualLexer>(reader);
 	} else if (type == "auto") {
