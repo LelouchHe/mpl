@@ -31,7 +31,7 @@ enum TokenType {
 	// Í³³Æ
 	TT_ID, TT_NUMBER, TT_STRING, TT_COMMENT,
 
-	TT_EOS
+	TT_EOS, TT_ERROR, TT_LAST_TOKEN,
 };
 
 extern const std::map<const char*, TokenType> TOKEN_RE_KEYS;

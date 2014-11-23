@@ -1,0 +1,42 @@
+- lexer file
+
+#include <map>
+
+%%
+- GLOBAL
+
+int num_count;
+int id_count;
+
+%%
+- INIT
+num_counte = 0;
+id_count = 0;
+
+%%
+- DEFINITION
+
+PLUS    : \+
+MUL     : \*
+ASSIGN  : =
+STRING  : '[^']*'
+COMMENT : \-\-[^\n]*
+SPACE   : [ ]+
+NEWLINE : \n
+NUM     : [1-9][0-9]*
+ID      : [_a-zA-Z][_a-zA-Z0-9]*
+
+%%
+- ACTION
+SPACE : {
+    token.type = SKIP;
+}
+NEWLINE : {
+}
+NUM: {
+    num_count++;
+}
+ID: {
+    id_count++;
+}
+%%

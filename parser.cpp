@@ -8,7 +8,7 @@
 namespace mpl {
 
 Parser::Parser(::mpl::Reader& reader): 
-	_lexer(create_lexer("auto", reader)) {
+	_lexer(create_lexer("manual", reader)) {
 }
 
 Parser::~Parser() {
@@ -110,16 +110,37 @@ void Parser::parse() {
 
 #if 1
 
+#include <iostream>
+#include "lexer/GeneratedLexer.h"
 #include "file_reader.h"
+
+using namespace std;
 
 int main() {
 	const char* file_name = "test.txt";
 
 	::mpl::FileReader fr(file_name);
 
+	::mpl::lexer::GeneratedLexer lexer(fr);
+
+	while (true) {
+		::mpl::lexer::Token next = lexer.next();
+		if (next.type == ::mpl::lexer::ERROR) {
+			cout << "error" << endl;
+			break;
+		} else if (next.type == ::mpl::lexer::EOS) {
+			break;
+		}
+		cout << next.type << ": " << next.value << endl;
+	}
+	
+	/*
 	::mpl::Parser parser(fr);
 
 	parser.parse();
+	*/
+
+	return 0;
 }
 
 #endif

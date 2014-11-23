@@ -40,6 +40,8 @@ private:
 	void read_long_string(int sep);
 	void read_comment();
 
+	bool eof();
+
 private:
 	std::ostringstream _buff;
 	char _current;

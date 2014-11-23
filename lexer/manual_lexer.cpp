@@ -39,6 +39,10 @@ const ::mpl::Token& ManualLexer::lookahead() {
 	return _ahead;
 }
 
+bool ManualLexer::eof() {
+	return _reader.eof();
+}
+
 void ManualLexer::new_line(bool should_save) {
 	char ch = _reader.next();
 	if (_current == '\r') {
@@ -95,7 +99,7 @@ int ManualLexer::count_nosave(char ch) {
 		_current = _reader.next();
 	}
 
-	while (!_reader.eof()) {
+	while (!eof()) {
 		switch (_current) {
 		case ' ':
 		case '\t':
@@ -388,7 +392,7 @@ void ManualLexer::read_string() {
 	char sep = _current;
 	nosave_and_next();
 
-	while (!_reader.eof()) {
+	while (!eof()) {
 		switch (_current) {
 		// ЧЄТе
 		case '\\':
@@ -428,7 +432,7 @@ void ManualLexer::read_long_string(int sep) {
 		new_line(false);
 	}
 
-	while (!_reader.eof()) {
+	while (!eof()) {
 		switch (_current) {
 		case ']':
 			nosave_and_next();
@@ -465,7 +469,7 @@ void ManualLexer::read_long_string(int sep) {
 void ManualLexer::read_id() {
 	save_and_next();
 
-	while (!_reader.eof()) {
+	while (!eof()) {
 		if (std::isalnum(_current) || _current == '_') {
 			save_and_next();
 		} else {
@@ -520,7 +524,7 @@ void ManualLexer::read_number() {
 		}
 	}
 
-	while (!_reader.eof()) {
+	while (!eof()) {
 		if (is_base_digit(base, _current)) {
 			save_and_next();
 		} else if (std::tolower(_current) == exp) {
@@ -553,7 +557,7 @@ void ManualLexer::read_comment() {
 		}
 	}
 
-	while (!_reader.eof()) {
+	while (!eof()) {
 		if (_current == '\n' || _current == '\r') {
 			new_line(false);
 			break;

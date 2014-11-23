@@ -13,6 +13,7 @@ public:
 	DFAMerger();
 	~DFAMerger();
 
+	void reset();
 	bool add(const DFA& dfa);
 	bool build();
 

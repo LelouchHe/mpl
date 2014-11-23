@@ -1,8 +1,6 @@
 #include "auto_lexer.h"
 
-#include <algorithm>
 #include "../reader.h"
-#include "detail/dfa_merger.h"
 
 namespace mpl {
 namespace lexer {
@@ -61,7 +59,7 @@ void AutoLexer::init() {
 // 因为基本上mpl词法是LL(1),所以不需要大的缓冲
 ::mpl::TokenType AutoLexer::lex() {
 	::mpl::lexer::detail::DFA& dfa = _generator;
-	_buff.str("");
+	_buf.str("");
 
 	const ::mpl::lexer::detail::States& last = _generator.last();
 	int pre = -1;
@@ -89,7 +87,7 @@ void AutoLexer::init() {
 			}
 		}
 		cur = it->second;
-		_buff << _current;
+		_buf << _current;
 
 		_current = _reader.next();
 	}
@@ -99,7 +97,11 @@ void AutoLexer::init() {
 	}
 
 	if (pre == -1) {
-		return ::mpl::TT_EOS;
+		if (_reader.eof()) {
+			return ::mpl::TT_EOS;
+		} else {
+			return ::mpl::TT_ERROR;
+		}
 	}
 
 	::mpl::TokenType type = token_type(_generator.tags(pre));
@@ -119,7 +121,7 @@ const ::mpl::Token& AutoLexer::next() {
 	}
 
 	_next.type = lex();
-	_next.text = _buff.str();
+	_next.text = _buf.str();
 
 	return _next;
 }
@@ -127,7 +129,7 @@ const ::mpl::Token& AutoLexer::next() {
 const ::mpl::Token& AutoLexer::lookahead() {
 	if (_ahead.type == ::mpl::TT_EOS) {
 		_ahead.type = lex();
-		_ahead.text = _buff.str();
+		_ahead.text = _buf.str();
 	}
 
 	return _ahead;
@@ -146,7 +148,7 @@ static void print_token(const ::mpl::Token& t) {
 }
 
 int main() {
-	::mpl::FileReader fr("test.txt");
+	::mpl::FileReader fr("mu.lua");
 
 	::mpl::lexer::AutoLexer lexer(fr);
 

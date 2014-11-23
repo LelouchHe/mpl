@@ -27,11 +27,10 @@ private:
 	::mpl::TokenType lex();
 
 private:
-	::mpl::lexer::detail::DFA* _dfa;
 	::mpl::lexer::detail::DFAGenerator _generator;
 	::mpl::lexer::detail::DFAMerger _merger;
 
-	std::ostringstream _buff;
+	std::ostringstream _buf;
 	char _current;
 
 	::mpl::Token _next;

@@ -5,12 +5,19 @@ namespace mpl {
 namespace lexer {
 namespace detail {
 
-DFAMerger::DFAMerger() : _start(-1) {
-
+DFAMerger::DFAMerger() {
+	reset();
 }
 
 DFAMerger::~DFAMerger() {
 
+}
+
+void DFAMerger::reset() {
+	_trans.clear();
+	_tags.clear();
+	_start = -1;
+	_last.clear();
 }
 
 int DFAMerger::new_state() {
