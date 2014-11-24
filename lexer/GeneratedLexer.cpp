@@ -4,6 +4,8 @@ namespace mpl {
 namespace lexer {
 GeneratedLexer::GeneratedLexer(::mpl::Reader& reader) : 
         _reader(reader), _current('\0') {
+    num_count = 0;
+    id_count = 0;
 }
 GeneratedLexer::~GeneratedLexer() {}
 using ::mpl::lexer::detail::DFATran;
@@ -81,16 +83,16 @@ static const std::vector<DFATran> s_trans = {
 },
 };
 static const std::map<size_t, int> s_tags = {
-	{ 1, { 0 } },
-	{ 3, { 2 } },
-	{ 4, { 3 } },
-	{ 5, { 4 } },
-	{ 7, { 5 } },
-	{ 8, { 6 } },
-	{ 9, { 7 } },
-	{ 11, { 1 } },
-	{ 12, { 4 } },
-	{ 13, { 8 } },
+	{ 1, 0 },
+	{ 3, 2 },
+	{ 4, 3 },
+	{ 5, 4 },
+	{ 7, 5 },
+	{ 8, 6 },
+	{ 9, 7 },
+	{ 11, 1 },
+	{ 12, 4 },
+	{ 13, 8 },
 };
 static const int s_start = 0;
 using ::mpl::lexer::detail::States;
@@ -105,12 +107,15 @@ static const std::map<TokenType, ActionType> s_actions = {
 	{ TT_SPACE, &GeneratedLexer::SPACE_action },
 };
 void GeneratedLexer::ID_action(Token& token) {
-    id_count++;
+	id_count++; 
 }
 void GeneratedLexer::NEWLINE_action(Token& token) {
 }
 void GeneratedLexer::NUM_action(Token& token) {
     num_count++;
+    if (num_count == 10) {
+        num_count *= 2;
+    }
 }
 void GeneratedLexer::SPACE_action(Token& token) {
     token.type = SKIP;
@@ -127,6 +132,18 @@ TokenType GeneratedLexer::token_type(int tag) {
     (this->*(it->second))(token);
     _buf.str(token.value);
     return token.type;
+}
+bool GeneratedLexer::parse() {
+    Token token;
+    while (true) {
+        token = next();
+        if (token.type == ERROR) {
+            return false;
+        } else if (token.type == EOS) {
+            break;
+        }
+    }
+    return true;
 }
 TokenType GeneratedLexer::lex() {
     _buf.str("");

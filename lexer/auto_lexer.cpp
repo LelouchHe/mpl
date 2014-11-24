@@ -45,7 +45,7 @@ void AutoLexer::init() {
 }
 
 ::mpl::TokenType token_type(const ::mpl::lexer::detail::Tag& tag) {
-	int min = (int)::mpl::TT_EOS;
+	int min = (int)::mpl::EOS;
 	for (::mpl::lexer::detail::Tag::const_iterator it = tag.begin();
 			it != tag.end(); ++it) {
 		if (min > *it) {
@@ -98,9 +98,9 @@ void AutoLexer::init() {
 
 	if (pre == -1) {
 		if (_reader.eof()) {
-			return ::mpl::TT_EOS;
+			return ::mpl::EOS;
 		} else {
-			return ::mpl::TT_ERROR;
+			return ::mpl::ERROR;
 		}
 	}
 
@@ -114,9 +114,9 @@ void AutoLexer::init() {
 }
 
 const ::mpl::Token& AutoLexer::next() {
-	if (_ahead.type != ::mpl::TT_EOS) {
+	if (_ahead.type != ::mpl::EOS) {
 		_next = _ahead;
-		_ahead.type = ::mpl::TT_EOS;
+		_ahead.type = ::mpl::EOS;
 		return _next;
 	}
 
@@ -127,7 +127,7 @@ const ::mpl::Token& AutoLexer::next() {
 }
 
 const ::mpl::Token& AutoLexer::lookahead() {
-	if (_ahead.type == ::mpl::TT_EOS) {
+	if (_ahead.type == ::mpl::EOS) {
 		_ahead.type = lex();
 		_ahead.text = _buf.str();
 	}
@@ -154,7 +154,7 @@ int main() {
 
 	while (true) {
 		::mpl::Token t = lexer.next();
-		if (t.type == ::mpl::TT_EOS) {
+		if (t.type == ::mpl::EOS) {
 			break;
 		}
 

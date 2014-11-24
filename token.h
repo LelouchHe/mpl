@@ -31,7 +31,8 @@ enum TokenType {
 	// 统称
 	TT_ID, TT_NUMBER, TT_STRING, TT_COMMENT,
 
-	TT_EOS, TT_ERROR, TT_LAST_TOKEN,
+	// 保留token,主要用于控制和与Generator兼容
+	EOS, ERROR, SKIP, LAST_TOKEN,
 };
 
 extern const std::map<const char*, TokenType> TOKEN_RE_KEYS;
@@ -43,7 +44,7 @@ extern const char* TOKEN_RE_COMMENT;
 
 class Token{
 public:
-	Token() : type(TT_EOS) {
+	Token() : type(EOS) {
 
 	}
 

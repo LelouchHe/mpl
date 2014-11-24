@@ -17,9 +17,9 @@ ManualLexer::~ManualLexer() {
 }
 
 const ::mpl::Token& ManualLexer::next() {
-	if (_ahead.type != ::mpl::TT_EOS) {
+	if (_ahead.type != ::mpl::EOS) {
 		_next = _ahead;
-		_ahead.type = ::mpl::TT_EOS;
+		_ahead.type = ::mpl::EOS;
 		return _next;
 	}
 
@@ -31,7 +31,7 @@ const ::mpl::Token& ManualLexer::next() {
 
 // 连续lookahead,返回相同值
 const ::mpl::Token& ManualLexer::lookahead() {
-	if (_ahead.type == ::mpl::TT_EOS) {
+	if (_ahead.type == ::mpl::EOS) {
 		_ahead.type = lex();
 		_ahead.text = _buff.str();
 	}
@@ -282,7 +282,7 @@ int ManualLexer::count_nosave(char ch) {
 		}
 	}
 
-	return ::mpl::TT_EOS;
+	return ::mpl::EOS;
 }
 
 static int hexvalue(char ch) {
@@ -586,7 +586,7 @@ int main() {
 
 	while (true) {
 		::mpl::Token t = lexer.next();
-		if (t.type == ::mpl::TT_EOS) {
+		if (t.type == ::mpl::EOS) {
 			break;
 		}
 

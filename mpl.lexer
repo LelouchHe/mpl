@@ -1,5 +1,8 @@
 - lexer file
 
+- INCLUDE
+- 任何需要include的地方
+
 #include <map>
 
 %%
@@ -10,11 +13,19 @@ int id_count;
 
 %%
 - INIT
-num_counte = 0;
+num_count = 0;
 id_count = 0;
 
 %%
 - DEFINITION
+- 所有的token都会加前缀'TT_',是::mpl::lexer::TokenType类型
+- 有4个默认token,这些没有前缀'TT_'
+- EOS: 字符串终点
+- ERROR: 错误token,主要用于next/lookahead结果返回和action错误处理
+- SKIP: 控制token,在action中跳过不要处理的字符
+- LAST_TOKEN: 最后一个已知token,用户可以在action返回自定义token,必须大于这个
+- 定义体中是regex,不支持backref,元字符必须转义
+- regex会忽略:后所有空白符号,支持使用\进行分行,但还是会忽略前缀所有空白符
 
 PLUS    : \+
 MUL     : \*
@@ -28,6 +39,16 @@ ID      : [_a-zA-Z][_a-zA-Z0-9]*
 
 %%
 - ACTION
+- 可以定义遇到特定token的动作
+- 可以使用的参数:
+- GLOBALS中定义的量
+- Token token: 当前token值
+- Token {TokenType type; std::string value;}
+- token.type = ERROR: 表示解析错误,value表示错误信息
+- token.type = SKIP : 表示跳过该token
+- 自定义token需要大于LAST_TOKEN
+- 建议使用花括号,分行写
+
 SPACE : {
     token.type = SKIP;
 }
@@ -35,8 +56,9 @@ NEWLINE : {
 }
 NUM: {
     num_count++;
+    if (num_count == 10) {
+        num_count *= 2;
+    }
 }
-ID: {
-    id_count++;
-}
+ID: { id_count++; }
 %%

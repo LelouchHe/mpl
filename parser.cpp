@@ -101,18 +101,22 @@ void Parser::expr() {
 }
 
 void Parser::parse() {
-	while (_lexer->lookahead().type != TT_EOS) {
+	while (_lexer->lookahead().type != EOS) {
 		expr();
 	}
 }
 
 } // namespace mpl
 
-#if 1
-
+#if 0
 #include <iostream>
-#include "lexer/GeneratedLexer.h"
 #include "file_reader.h"
+
+//#define DEBUG_GENERATED_LEXER
+
+#ifdef DEBUG_GENERATED_LEXER
+#include "lexer/GeneratedLexer.h"
+#endif
 
 using namespace std;
 
@@ -121,24 +125,17 @@ int main() {
 
 	::mpl::FileReader fr(file_name);
 
+#ifdef DEBUG_GENERATED_LEXER
 	::mpl::lexer::GeneratedLexer lexer(fr);
 
-	while (true) {
-		::mpl::lexer::Token next = lexer.next();
-		if (next.type == ::mpl::lexer::ERROR) {
-			cout << "error" << endl;
-			break;
-		} else if (next.type == ::mpl::lexer::EOS) {
-			break;
-		}
-		cout << next.type << ": " << next.value << endl;
-	}
-	
-	/*
+	lexer.parse();
+	cout << "id_count: " << lexer.id_count << endl;
+	cout << "num_count: " << lexer.num_count << endl;
+#else
 	::mpl::Parser parser(fr);
 
 	parser.parse();
-	*/
+#endif
 
 	return 0;
 }
