@@ -15,26 +15,26 @@ const std::map<const char*, TokenType> TOKEN_RE_KEYS = {
 };
 
 const std::map<const char*, TokenType> TOKEN_RE_SYMBOLS = {
-	{ "{", TT_LEFT_PARENTHESIS }, { "}", TT_RIGHT_PARENTHESIS },
+	{ "\\(", TT_LEFT_PARENTHESIS }, { "\\)", TT_RIGHT_PARENTHESIS },
 	{ "\\[", TT_LEFT_SQUARE }, { "\\]", TT_RIGHT_SQUARE },
-	{ "\\(", TT_LEFT_SQUARE }, { "\\)", TT_RIGHT_SQUARE },
+	{ "{", TT_LEFT_BRACE }, { "}", TT_RIGHT_BRACE },
 	{ "\\^", TT_EXP }, { "\\*", TT_MUL }, { "/", TT_DIV }, { "%", TT_MOD },
 	{ "\\+", TT_PLUS }, { "\\-", TT_MINUS },
 	{ "<", TT_LESS }, { "<=", TT_LESS_EQUAL }, { ">", TT_GREATER }, { ">=", TT_GREATER_EQUAL },
 	{ "==", TT_EQUAL }, { "~=", TT_NOT_EQUAL }, { "=", TT_ASSIGN },
 	{ "#", TT_LEN }, { ",", TT_COMMA }, { ";", TT_SEMICOLON },
-	{ ":", TT_COLON }, { "::[_a-zA-Z][_a-zA-Z0-9]*::", TT_LABEL },
+	{ ":", TT_COLON }, { "::[_\\a]\\w*::", TT_LABEL },
 	{ "\\.", TT_DOT }, { "\\.\\.", TT_CONCAT }, { "\\.\\.\\.", TT_VARARG },
-	{ " +", TT_SPACE }, { "\n|\n\r|\r\n", TT_NEWLINE }
+	{ "\\s+", TT_SPACE }, { "\\n", TT_NEWLINE }
 };
 
-const char* TOKEN_RE_ID = "[_a-zA-Z][_a-zA-Z0-9]*";
+const char* TOKEN_RE_ID = "[_\\a][\\w]*";
 // 目前只处理十进制实数
-const char* TOKEN_RE_NUMBER = "\\-?(([0-9]+)|([0-9]*\\.[0-9]+)([eE][\\-\\+]?[0-9]+)?)";
+const char* TOKEN_RE_NUMBER = "\\-?((\\d+)|(\\d*\\.\\d+)([eE][\\-\\+]?\\d+)?)";
 // 目前只处理单引号
 const char* TOKEN_RE_STRING = "'[^']*'";
 // 目前只处理单行注释
-const char* TOKEN_RE_COMMENT = "\\-\\-[^\n]*";
+const char* TOKEN_RE_COMMENT = "\\-\\-[^\\n]*";
 
 } // namespace lexer
 } // namespace mpl

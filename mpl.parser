@@ -1,0 +1,8 @@
+%%
+
+- parser语法,可以直接写lexer中的名字(ID),也可以写纯字符串('define', '(')
+- 也可以是re
+- 所以lexer需要提供parse(const char* begin, char** end)来辅助解析
+
+expr: ID + ID
+    | 'define' '(' ID ')'

@@ -135,6 +135,75 @@ const AutoLexer::Token& AutoLexer::lookahead() {
 	return _ahead;
 }
 
+AutoLexer::Token AutoLexer::parse(const char* begin, char** end) {
+	::mpl::lexer::detail::DFA& dfa = _generator;
+	const ::mpl::lexer::detail::States& last = _generator.last();
+
+	std::ostringstream buf;
+	const char* current = begin;
+
+	Token t;
+	while (*current != '\0') {
+		buf.str("");
+		int pre = -1;
+		const char* pre_end = NULL;
+		int cur = dfa.start();
+
+		while (*current != '\0') {
+			if (last.find(cur) != last.end()) {
+				pre = cur;
+				pre_end = current;
+			}
+
+			const ::mpl::lexer::detail::DFATran& tran = dfa[cur];
+			::mpl::lexer::detail::DFATran::const_iterator it = tran.find(*current);
+
+			if (it == tran.end() || it->second == -1) {
+				if (it == tran.end()) {
+					it = tran.find(::mpl::lexer::detail::OTHER);
+				}
+
+				if (it == tran.end() || it->second == -1) {
+					cur = -1;
+					break;
+				}
+			}
+			cur = it->second;
+			buf << _current;
+			current++;
+		}
+
+		if (last.find(cur) != last.end()) {
+			pre = cur;
+			pre_end = current;
+		}
+
+
+		t.text = buf.str();
+
+		TokenType type;
+		if (pre == -1) {
+			if (*current == '\0') {
+				type = TokenType::EOS;
+			} else {
+				type = TokenType::ERROR;
+			}
+		} else {
+			type = token_type(_generator.tags(pre));
+		}
+
+		if (type != TokenType::TT_SPACE && type != TokenType::TT_NEWLINE) {
+			t.type = type;
+			if (end != NULL) {
+				*end = const_cast<char *>(pre_end);
+			}
+			break;
+		}
+	}
+
+	return t;
+}
+
 } // namespace lexer
 } // namepsace mpl
 

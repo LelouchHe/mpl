@@ -8,6 +8,7 @@ namespace mpl {
 
 class Reader;
 
+// Lexer需要满足的具体要求,见 lexer.h
 template <typename Lexer>
 class Parser {
 public:

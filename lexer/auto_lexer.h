@@ -23,6 +23,8 @@ public:
 	const Token& next();
 	const Token& lookahead();
 
+	Token parse(const char* beign, char** end);
+
 private:
 	void init();
 	TokenType lex();

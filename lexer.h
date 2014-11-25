@@ -24,6 +24,10 @@ public:
 	// lookahead: 预取下一个token
 	const Token& next();
 	const Token& lookahead();
+
+	// 解析字符串的类别,end表示结尾
+	// auto/generater有.主要是简化parse解析过程
+	Token parse(const char* begin, char** end);
 };
 
 } // namespace concept

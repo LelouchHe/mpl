@@ -60,6 +60,7 @@ private:
 	std::vector<std::string> _privates;
 	Statment _inits;
 	std::map<std::string, std::string> _definitions;
+	std::vector<std::string> _priorities;
 	std::map<std::string, Statment> _actions;
 
 	::mpl::lexer::detail::DFAGenerator _generator;

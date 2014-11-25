@@ -33,44 +33,12 @@ void LexerGenerator::reset() {
 	_globals.clear();
 	_inits.clear();
 	_definitions.clear();
+	_priorities.clear();
 	_actions.clear();
 
 	_includes.push_back("#include <cassert>");
 	_includes.push_back("#include <sstream>");
 	_includes.push_back("#include \"detail/state.h\"");
-}
-
-static void print(const std::vector<std::string>& includes,
-		const std::vector<std::string>& globals,
-		const std::vector<std::string>& inits,
-		const std::map<std::string, std::string>& definitions,
-		const std::map<std::string, std::string>& actions) {
-	std::cout << "INCLUDE" << std::endl;
-	for (size_t i = 0; i < includes.size(); i++) {
-		std::cout << includes[i] << std::endl;
-	}
-
-	std::cout << "GLOBAL" << std::endl;
-	for (size_t i = 0; i < globals.size(); i++) {
-		std::cout << globals[i] << std::endl;
-	}
-
-	std::cout << "INIT" << std::endl;
-	for (size_t i = 0; i < inits.size(); i++) {
-		std::cout << inits[i] << std::endl;
-	}
-
-	std::cout << "DEFINITION" << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = definitions.begin();
-		it != definitions.end(); ++it) {
-		std::cout << it->first << ": " << it->second << std::endl;
-	}
-
-	std::cout << "ACTION" << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = actions.begin();
-		it != actions.end(); ++it) {
-		std::cout << it->first << ": " << it->second << std::endl;
-	}
 }
 
 bool LexerGenerator::build(const char* lexer_file, const char* lexer_name) {
@@ -94,10 +62,9 @@ bool LexerGenerator::build(const char* lexer_file, const char* lexer_name) {
 bool LexerGenerator::build() {
 	_merger.reset();
 
-	size_t index = 0;
-	for (std::map<std::string, std::string>::iterator it = _definitions.begin();
-			it != _definitions.end(); ++it) {
-		_generator.parse((::mpl::lexer::detail::Byte *)it->second.c_str(), index++);
+	size_t size = _priorities.size();
+	for (size_t i = 0; i < size; i++) {
+		_generator.parse((::mpl::lexer::detail::Byte *)_definitions[_priorities[i]].c_str(), i);
 		_merger.add(_generator);
 	}
 
@@ -202,10 +169,15 @@ bool LexerGenerator::parse(const char* lexer_file) {
 					const char* end = find_delim(begin, " \t:");
 
 					name.assign(begin, end - begin);
-					begin = find_delim(end, ":");
+					if (*end != ':') {
+						end = skip_delim(end, " \t");
+					}
+					assert(*end == ':');
+					end++;
+
+					begin = skip_delim(end, " \t");
 					assert(begin != NULL);
 
-					begin = skip_delim(begin, " \t:");
 					if (buf[len - 1] == '\\') {
 						len--;
 						is_continue = true;
@@ -214,6 +186,7 @@ bool LexerGenerator::parse(const char* lexer_file) {
 				}
 				if (!is_continue) {
 					_definitions[name] = value;
+					_priorities.push_back(name);
 				}
 			}
 
@@ -359,24 +332,21 @@ bool LexerGenerator::generate_header(const char* lexer_name) {
 }
 
 bool LexerGenerator::generate_token(std::FILE* out) {
+	size_t size = _priorities.size();
+	assert(size == _definitions.size());
+
 	fprintf(out, "\tenum TokenType {\n");
 
 	fprintf(out, "\t\t");
-	bool is_first = true;
-	int num = 0;
-	for (std::map<std::string, std::string>::iterator it = _definitions.begin();
-			it != _definitions.end(); ++it) {
-		if (num >= 5) {
+	for (size_t i = 0; i < size; i++) {
+		if (i % 6 == 5) {
 			fprintf(out, "\n\t\t");
-			num = 0;
 		}
-		fprintf(out, "TT_%s", it->first.c_str());
-		if (is_first) {
+		fprintf(out, "TT_%s", _priorities[i].c_str());
+		if (i == 0) {
 			fprintf(out, " = 0");
-			is_first = false;
 		}
 		fprintf(out, ", ");
-		num++;
 	}
 
 	fprintf(out, "\n\t\t");
@@ -476,16 +446,23 @@ bool LexerGenerator::generate_tags(std::FILE* out, const ::mpl::lexer::detail::D
 	fprintf(out, "static const std::map<size_t, int> s_tags = {\n");
 
 	size_t size = dfa.size();
+	fprintf(out, "\t");
+	int num = 0;
 	for (size_t i = 0; i < size; i++) {
 		const ::mpl::lexer::detail::Tag& tag = dfa.tags(i);
 		if (tag.empty()) {
 			continue;
 		}
+		if (num >= 5) {
+			fprintf(out, "\n\t");
+			num = 0;
+		}
 
-		fprintf(out, "\t{ %u, %d },\n", i, *tag.begin());
+		fprintf(out, "{ %u, %d }, ", i, *tag.begin());
+		num++;
 	}
 
-	fprintf(out, "};\n");
+	fprintf(out, "\n};\n");
 	return true;
 }
 
@@ -497,9 +474,15 @@ bool LexerGenerator::generate_start_last(std::FILE* out, const ::mpl::lexer::det
 	fprintf(out, "static const States s_last = {\n");
 
 	fprintf(out, "\t");
+	int num = 0;
 	for (::mpl::lexer::detail::States::const_iterator it = last.begin();
 			it != last.end(); ++it) {
+		if (num >= 5) {
+			fprintf(out, "\n\t");
+			num = 0;
+		}
 		fprintf(out, "%d, ", *it);
+		num++;
 	}
 	fprintf(out, "\n");
 

@@ -114,13 +114,13 @@ void Parser<Lexer>::parse() {
 
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 #include "file_reader.h"
 #include "lexer/manual_lexer.h"
-//#include "lexer/auto_lexer.h"
-//#include "lexer/GeneratedLexer.h"
+#include "lexer/auto_lexer.h"
+#include "lexer/GeneratedLexer.h"
 
 using namespace std;
 
@@ -129,11 +129,25 @@ int main() {
 
 	::mpl::FileReader fr(file_name);
 
-	::mpl::Parser<::mpl::lexer::ManualLexer> parser(fr);
-	// ::mpl::Parser<::mpl::lexer::AutoLexer> parser(fr);
-	// ::mpl::Parser<::mpl::lexer::GeneratedLexer> parser(fr);
+	/*
+	::mpl::lexer::GeneratedLexer lexer(fr);
+	while (true) {
+		::mpl::lexer::GeneratedLexer::Token t = lexer.next();
+		if (t.type == ::mpl::lexer::GeneratedLexer::TokenType::EOS) {
+			break;
+		} else if (t.type == ::mpl::lexer::GeneratedLexer::TokenType::ERROR) {
+			cout << "error" << endl;
+			break;
+		}
+		cout << t.type << ": " << t.text << endl;
+	}
+	*/
 
-	parser.parse();
+	//::mpl::Parser<::mpl::lexer::ManualLexer> parser(fr);
+	//::mpl::Parser<::mpl::lexer::AutoLexer> parser(fr);
+	//mpl::Parser<::mpl::lexer::GeneratedLexer> parser(fr);
+
+	//parser.parse();
 
 	return 0;
 }
