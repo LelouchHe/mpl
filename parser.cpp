@@ -3,15 +3,16 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
-#include "token.h"
 
 namespace mpl {
 
-Parser::Parser(::mpl::Reader& reader): 
-	_lexer(create_lexer("manual", reader)) {
+template <typename Lexer>
+Parser<Lexer>::Parser(::mpl::Reader& reader): 
+	_lexer(reader) {
 }
 
-Parser::~Parser() {
+template <typename Lexer>
+Parser<Lexer>::~Parser() {
 
 }
 
@@ -26,22 +27,23 @@ term  -> NUM | ID | '(' value ')'
 
 #endif
 
-int Parser::term() {
-	::mpl::Token t = _lexer->next();
+template <typename Lexer>
+int Parser<Lexer>::term() {
+	Token t = _lexer.next();
 
 	switch (t.type) {
-	case TT_NUMBER:
+	case TokenType::TT_NUMBER:
 		return strtol(t.text.c_str(), NULL, 0);
 
-	case TT_ID:
+	case TokenType::TT_ID:
 		assert(_vars.find(t.text) != _vars.end());
 		return _vars[t.text];
 
-	case TT_LEFT_PARENTHESIS:
+	case TokenType::TT_LEFT_PARENTHESIS:
 		{
 			int n = value();
-			t = _lexer->next();
-			assert(t.type == TT_RIGHT_PARENTHESIS);
+			t = _lexer.next();
+			assert(t.type == TokenType::TT_RIGHT_PARENTHESIS);
 			return n;
 		}
 
@@ -53,70 +55,72 @@ int Parser::term() {
 	return 0;
 }
 
-int Parser::prod() {
+template <typename Lexer>
+int Parser<Lexer>::prod() {
 	int n = term();
 
-	::mpl::Token ahead = _lexer->lookahead();
-	while (ahead.type == TT_MUL || ahead.type == TT_DIV) {
-		_lexer->next();
-		if (ahead.type == TT_MUL) {
+	Token ahead = _lexer.lookahead();
+	while (ahead.type == TokenType::TT_MUL || ahead.type == TokenType::TT_DIV) {
+		_lexer.next();
+		if (ahead.type == TokenType::TT_MUL) {
 			n *= prod();
 		} else {
 			n /= prod();
 		}
-		ahead = _lexer->lookahead();
+		ahead = _lexer.lookahead();
 	}
 
 	return n;
 }
 
-int Parser::value() {
+template <typename Lexer>
+int Parser<Lexer>::value() {
 	int n = prod();
 
-	::mpl::Token ahead = _lexer->lookahead();
-	while (ahead.type == TT_PLUS || ahead.type == TT_MINUS) {
-		_lexer->next();
-		if (ahead.type == TT_PLUS) {
+	Token ahead = _lexer.lookahead();
+	while (ahead.type == TokenType::TT_PLUS || ahead.type == TokenType::TT_MINUS) {
+		_lexer.next();
+		if (ahead.type == TokenType::TT_PLUS) {
 			n += prod();
 		} else {
 			n -= prod();
 		}
-		ahead = _lexer->lookahead();
+		ahead = _lexer.lookahead();
 	}
 
 	return n;
 }
 
-void Parser::expr() {
-	::mpl::Token t = _lexer->next();
-	if (t.type == TT_ASSIGN) {
+template <typename Lexer>
+void Parser<Lexer>::expr() {
+	Token t = _lexer.next();
+	if (t.type == TokenType::TT_ASSIGN) {
 		std::cout << value() << std::endl;
-	} else if (t.type == TT_ID) {
-		::mpl::Token assign = _lexer->next();
-		assert(assign.type == TT_ASSIGN);
+	} else if (t.type == TokenType::TT_ID) {
+		Token assign = _lexer.next();
+		assert(assign.type == TokenType::TT_ASSIGN);
 		int s = value();
 
 		_vars[t.text] = s;
 	}
 }
 
-void Parser::parse() {
-	while (_lexer->lookahead().type != EOS) {
+template <typename Lexer>
+void Parser<Lexer>::parse() {
+	while (_lexer.lookahead().type != TokenType::EOS) {
 		expr();
 	}
 }
 
 } // namespace mpl
 
-#if 0
+#if 1
+
 #include <iostream>
 #include "file_reader.h"
-
-//#define DEBUG_GENERATED_LEXER
-
-#ifdef DEBUG_GENERATED_LEXER
-#include "lexer/GeneratedLexer.h"
-#endif
+#include "lexer/manual_lexer.h"
+//#include "lexer/auto_lexer.h"
+//#include "lexer/GeneratedLexer.h"
 
 using namespace std;
 
@@ -125,17 +129,11 @@ int main() {
 
 	::mpl::FileReader fr(file_name);
 
-#ifdef DEBUG_GENERATED_LEXER
-	::mpl::lexer::GeneratedLexer lexer(fr);
-
-	lexer.parse();
-	cout << "id_count: " << lexer.id_count << endl;
-	cout << "num_count: " << lexer.num_count << endl;
-#else
-	::mpl::Parser parser(fr);
+	::mpl::Parser<::mpl::lexer::ManualLexer> parser(fr);
+	// ::mpl::Parser<::mpl::lexer::AutoLexer> parser(fr);
+	// ::mpl::Parser<::mpl::lexer::GeneratedLexer> parser(fr);
 
 	parser.parse();
-#endif
 
 	return 0;
 }

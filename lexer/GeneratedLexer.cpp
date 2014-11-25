@@ -11,66 +11,76 @@ GeneratedLexer::~GeneratedLexer() {}
 using ::mpl::lexer::detail::DFATran;
 static const std::vector<DFATran> s_trans = {
 {
-	{0xa, 5}, {0xd, 6}, {0x20, 9}, {0x27, 10}, {0x2a, 4}, 
-	{0x2b, 8}, {0x2d, 2}, {0x31, 7}, {0x32, 7}, {0x33, 7}, 
-	{0x34, 7}, {0x35, 7}, {0x36, 7}, {0x37, 7}, {0x38, 7}, 
-	{0x39, 7}, {0x3d, 1}, {0x41, 3}, {0x42, 3}, {0x43, 3}, 
-	{0x44, 3}, {0x45, 3}, {0x46, 3}, {0x47, 3}, {0x48, 3}, 
-	{0x49, 3}, {0x4a, 3}, {0x4b, 3}, {0x4c, 3}, {0x4d, 3}, 
-	{0x4e, 3}, {0x4f, 3}, {0x50, 3}, {0x51, 3}, {0x52, 3}, 
-	{0x53, 3}, {0x54, 3}, {0x55, 3}, {0x56, 3}, {0x57, 3}, 
-	{0x58, 3}, {0x59, 3}, {0x5a, 3}, {0x5f, 3}, {0x61, 3}, 
-	{0x62, 3}, {0x63, 3}, {0x64, 3}, {0x65, 3}, {0x66, 3}, 
-	{0x67, 3}, {0x68, 3}, {0x69, 3}, {0x6a, 3}, {0x6b, 3}, 
-	{0x6c, 3}, {0x6d, 3}, {0x6e, 3}, {0x6f, 3}, {0x70, 3}, 
-	{0x71, 3}, {0x72, 3}, {0x73, 3}, {0x74, 3}, {0x75, 3}, 
-	{0x76, 3}, {0x77, 3}, {0x78, 3}, {0x79, 3}, {0x7a, 3}, 
+	{0xa, 7}, {0xd, 8}, {0x20, 12}, {0x27, 13}, {0x28, 5}, 
+	{0x29, 11}, {0x2a, 6}, {0x2b, 10}, {0x2d, 2}, {0x2f, 3}, 
+	{0x31, 9}, {0x32, 9}, {0x33, 9}, {0x34, 9}, {0x35, 9}, 
+	{0x36, 9}, {0x37, 9}, {0x38, 9}, {0x39, 9}, {0x3d, 1}, 
+	{0x41, 4}, {0x42, 4}, {0x43, 4}, {0x44, 4}, {0x45, 4}, 
+	{0x46, 4}, {0x47, 4}, {0x48, 4}, {0x49, 4}, {0x4a, 4}, 
+	{0x4b, 4}, {0x4c, 4}, {0x4d, 4}, {0x4e, 4}, {0x4f, 4}, 
+	{0x50, 4}, {0x51, 4}, {0x52, 4}, {0x53, 4}, {0x54, 4}, 
+	{0x55, 4}, {0x56, 4}, {0x57, 4}, {0x58, 4}, {0x59, 4}, 
+	{0x5a, 4}, {0x5f, 4}, {0x61, 4}, {0x62, 4}, {0x63, 4}, 
+	{0x64, 4}, {0x65, 4}, {0x66, 4}, {0x67, 4}, {0x68, 4}, 
+	{0x69, 4}, {0x6a, 4}, {0x6b, 4}, {0x6c, 4}, {0x6d, 4}, 
+	{0x6e, 4}, {0x6f, 4}, {0x70, 4}, {0x71, 4}, {0x72, 4}, 
+	{0x73, 4}, {0x74, 4}, {0x75, 4}, {0x76, 4}, {0x77, 4}, 
+	{0x78, 4}, {0x79, 4}, {0x7a, 4}, 
 },
 {
 	
 },
 {
-	{0x2d, 11}, 
-},
-{
-	{0x30, 3}, {0x31, 3}, {0x32, 3}, {0x33, 3}, {0x34, 3}, 
-	{0x35, 3}, {0x36, 3}, {0x37, 3}, {0x38, 3}, {0x39, 3}, 
-	{0x41, 3}, {0x42, 3}, {0x43, 3}, {0x44, 3}, {0x45, 3}, 
-	{0x46, 3}, {0x47, 3}, {0x48, 3}, {0x49, 3}, {0x4a, 3}, 
-	{0x4b, 3}, {0x4c, 3}, {0x4d, 3}, {0x4e, 3}, {0x4f, 3}, 
-	{0x50, 3}, {0x51, 3}, {0x52, 3}, {0x53, 3}, {0x54, 3}, 
-	{0x55, 3}, {0x56, 3}, {0x57, 3}, {0x58, 3}, {0x59, 3}, 
-	{0x5a, 3}, {0x5f, 3}, {0x61, 3}, {0x62, 3}, {0x63, 3}, 
-	{0x64, 3}, {0x65, 3}, {0x66, 3}, {0x67, 3}, {0x68, 3}, 
-	{0x69, 3}, {0x6a, 3}, {0x6b, 3}, {0x6c, 3}, {0x6d, 3}, 
-	{0x6e, 3}, {0x6f, 3}, {0x70, 3}, {0x71, 3}, {0x72, 3}, 
-	{0x73, 3}, {0x74, 3}, {0x75, 3}, {0x76, 3}, {0x77, 3}, 
-	{0x78, 3}, {0x79, 3}, {0x7a, 3}, 
+	{0x2d, 14}, 
 },
 {
 	
 },
 {
-	{0xd, 12}, 
-},
-{
-	{0xa, 12}, 
-},
-{
-	{0x30, 7}, {0x31, 7}, {0x32, 7}, {0x33, 7}, {0x34, 7}, 
-	{0x35, 7}, {0x36, 7}, {0x37, 7}, {0x38, 7}, {0x39, 7}, 
+	{0x30, 4}, {0x31, 4}, {0x32, 4}, {0x33, 4}, {0x34, 4}, 
+	{0x35, 4}, {0x36, 4}, {0x37, 4}, {0x38, 4}, {0x39, 4}, 
+	{0x41, 4}, {0x42, 4}, {0x43, 4}, {0x44, 4}, {0x45, 4}, 
+	{0x46, 4}, {0x47, 4}, {0x48, 4}, {0x49, 4}, {0x4a, 4}, 
+	{0x4b, 4}, {0x4c, 4}, {0x4d, 4}, {0x4e, 4}, {0x4f, 4}, 
+	{0x50, 4}, {0x51, 4}, {0x52, 4}, {0x53, 4}, {0x54, 4}, 
+	{0x55, 4}, {0x56, 4}, {0x57, 4}, {0x58, 4}, {0x59, 4}, 
+	{0x5a, 4}, {0x5f, 4}, {0x61, 4}, {0x62, 4}, {0x63, 4}, 
+	{0x64, 4}, {0x65, 4}, {0x66, 4}, {0x67, 4}, {0x68, 4}, 
+	{0x69, 4}, {0x6a, 4}, {0x6b, 4}, {0x6c, 4}, {0x6d, 4}, 
+	{0x6e, 4}, {0x6f, 4}, {0x70, 4}, {0x71, 4}, {0x72, 4}, 
+	{0x73, 4}, {0x74, 4}, {0x75, 4}, {0x76, 4}, {0x77, 4}, 
+	{0x78, 4}, {0x79, 4}, {0x7a, 4}, 
 },
 {
 	
 },
 {
-	{0x20, 9}, 
+	
 },
 {
-	{0x27, 13}, {0xff, 10}, 
+	{0xd, 15}, 
 },
 {
-	{0xa, 14}, {0xd, 14}, {0xff, 11}, 
+	{0xa, 15}, 
+},
+{
+	{0x30, 9}, {0x31, 9}, {0x32, 9}, {0x33, 9}, {0x34, 9}, 
+	{0x35, 9}, {0x36, 9}, {0x37, 9}, {0x38, 9}, {0x39, 9}, 
+},
+{
+	
+},
+{
+	
+},
+{
+	{0x20, 12}, 
+},
+{
+	{0x27, 16}, {0xff, 13}, 
+},
+{
+	{0xa, 17}, {0xd, 17}, {0xff, 14}, 
 },
 {
 	
@@ -84,43 +94,47 @@ static const std::vector<DFATran> s_trans = {
 };
 static const std::map<size_t, int> s_tags = {
 	{ 1, 0 },
+	{ 2, 5 },
 	{ 3, 2 },
 	{ 4, 3 },
 	{ 5, 4 },
-	{ 7, 5 },
-	{ 8, 6 },
-	{ 9, 7 },
-	{ 11, 1 },
-	{ 12, 4 },
-	{ 13, 8 },
+	{ 6, 6 },
+	{ 7, 7 },
+	{ 9, 8 },
+	{ 10, 9 },
+	{ 11, 10 },
+	{ 12, 11 },
+	{ 14, 1 },
+	{ 15, 7 },
+	{ 16, 12 },
 };
 static const int s_start = 0;
 using ::mpl::lexer::detail::States;
 static const States s_last = {
-	1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 
+	1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 
 };
-typedef void (GeneratedLexer::*ActionType)(Token&);
-static const std::map<TokenType, ActionType> s_actions = {
-	{ TT_ID, &GeneratedLexer::ID_action },
-	{ TT_NEWLINE, &GeneratedLexer::NEWLINE_action },
-	{ TT_NUM, &GeneratedLexer::NUM_action },
-	{ TT_SPACE, &GeneratedLexer::SPACE_action },
+typedef void (GeneratedLexer::*ActionType)(GeneratedLexer::Token&);
+static const std::map<GeneratedLexer::TokenType, ActionType> s_actions = {
+	{ GeneratedLexer::TT_ID, &GeneratedLexer::ID_action },
+	{ GeneratedLexer::TT_NEWLINE, &GeneratedLexer::NEWLINE_action },
+	{ GeneratedLexer::TT_NUMBER, &GeneratedLexer::NUMBER_action },
+	{ GeneratedLexer::TT_SPACE, &GeneratedLexer::SPACE_action },
 };
-void GeneratedLexer::ID_action(Token& token) {
+void GeneratedLexer::ID_action(GeneratedLexer::Token& token) {
 	id_count++; 
 }
-void GeneratedLexer::NEWLINE_action(Token& token) {
+void GeneratedLexer::NEWLINE_action(GeneratedLexer::Token& token) {
 }
-void GeneratedLexer::NUM_action(Token& token) {
+void GeneratedLexer::NUMBER_action(GeneratedLexer::Token& token) {
     num_count++;
     if (num_count == 10) {
         num_count *= 2;
     }
 }
-void GeneratedLexer::SPACE_action(Token& token) {
+void GeneratedLexer::SPACE_action(GeneratedLexer::Token& token) {
     token.type = SKIP;
 }
-TokenType GeneratedLexer::token_type(int tag) {
+GeneratedLexer::TokenType GeneratedLexer::token_type(int tag) {
     TokenType type = (TokenType)tag;
     std::map<TokenType, ActionType>::const_iterator it = s_actions.find(type);
     if (it == s_actions.end()) {
@@ -128,9 +142,9 @@ TokenType GeneratedLexer::token_type(int tag) {
     }
     Token token;
     token.type = type;
-    token.value = _buf.str();
+    token.text = _buf.str();
     (this->*(it->second))(token);
-    _buf.str(token.value);
+    _buf.str(token.text);
     return token.type;
 }
 bool GeneratedLexer::parse() {
@@ -145,7 +159,7 @@ bool GeneratedLexer::parse() {
     }
     return true;
 }
-TokenType GeneratedLexer::lex() {
+GeneratedLexer::TokenType GeneratedLexer::lex() {
     _buf.str("");
     int pre = -1;
     int cur = s_start;
@@ -190,20 +204,20 @@ TokenType GeneratedLexer::lex() {
         return type;
     }
 }
-const Token& GeneratedLexer::next() {
+const GeneratedLexer::Token& GeneratedLexer::next() {
     if (_ahead.type != EOS) {
         _next = _ahead;
         _ahead.type = EOS;
         return _next;
     }
     _next.type = lex();
-    _next.value = _buf.str();
+    _next.text = _buf.str();
     return _next;
 }
-const Token& GeneratedLexer::lookahead() {
+const GeneratedLexer::Token& GeneratedLexer::lookahead() {
     if (_ahead.type == EOS) {
         _ahead.type = lex();
-        _ahead.value = _buf.str();
+        _ahead.text = _buf.str();
     }
     return _ahead;
 }

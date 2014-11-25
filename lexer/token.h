@@ -1,10 +1,11 @@
-#ifndef MPL_TOKEN_H
-#define MPL_TOKEN_H
+#ifndef MPL_LEXER_TOKEN_H
+#define MPL_LEXER_TOKEN_H
 
 #include <string>
 #include <map>
 
 namespace mpl {
+namespace lexer {
 
 // 单字符token也返回类型吧
 // 反正不多,而且保证类型安全
@@ -53,6 +54,7 @@ public:
 	std::string text;
 };
 
+} // namespace lexer
 } // namespace mpl
 
-#endif // MPL_TOKEN_H
+#endif // MPL_LEXER_TOKEN_H

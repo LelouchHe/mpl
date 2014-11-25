@@ -1,6 +1,7 @@
 #include "token.h"
 
 namespace mpl {
+namespace lexer {
 
 const std::map<const char*, TokenType> TOKEN_RE_KEYS = {
 	{ "and", TT_AND }, { "break", TT_BREAK }, { "do", TT_DO },
@@ -35,4 +36,5 @@ const char* TOKEN_RE_STRING = "'[^']*'";
 // 目前只处理单行注释
 const char* TOKEN_RE_COMMENT = "\\-\\-[^\n]*";
 
+} // namespace lexer
 } // namespace mpl

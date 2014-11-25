@@ -3,25 +3,27 @@
 
 #include <map>
 #include <sstream>
-#include "../lexer.h"
-#include "../token.h"
+#include "token.h"
 
 namespace mpl {
 class Reader;
 
 namespace lexer {
 
-class ManualLexer : public ::mpl::Lexer {
+class ManualLexer {
 public:
 	ManualLexer(::mpl::Reader& reader);
 	~ManualLexer();
 
 public:
-	virtual const ::mpl::Token& next();
-	virtual const ::mpl::Token& lookahead();
+	typedef Token Token;
+	typedef TokenType TokenType;
+
+	const Token& next();
+	const Token& lookahead();
 
 private:
-	::mpl::TokenType lex();
+	TokenType lex();
 
 	// 主要是突出语义效果
 	void save_and_next();
@@ -43,13 +45,14 @@ private:
 	bool eof();
 
 private:
+	::mpl::Reader& _reader;
 	std::ostringstream _buff;
 	char _current;
 
 	int _line_num;
 
-	::mpl::Token _next;
-	::mpl::Token _ahead;
+	Token _next;
+	Token _ahead;
 };
 
 } // namespace lexer

@@ -17,6 +17,7 @@ public:
 	LexerGenerator();
 	~LexerGenerator();
 
+public:
 	// 从lexer_file会生成lexer_name.h/.cpp,其中的lexer名字为lexer_name
 	bool build(const char* lexer_file, const char* lexer_name);
 

@@ -1,28 +1,32 @@
 #ifndef MPL_LEXER_H
 #define MPL_LEXER_H
 
-#include <string>
-#include <memory>
-
+// lexer必须满足的接口要求
 namespace mpl {
-
 class Reader;
+
+namespace concept {
+
 class Token;
+class TokenType;
 
 class Lexer {
 public:
-	Lexer(::mpl::Reader& reader) : _reader(reader) {}
-	virtual ~Lexer() {}
+	Lexer(::mpl::Reader& reader);
+	~Lexer();
 
-	virtual const Token& next() = 0;
-	virtual const Token& lookahead() = 0;
+public:
+	// Token/TokenType是必须暴露的2个类型
+	typedef Token Token;
+	typedef TokenType TokenType;
 
-protected:
-	Reader& _reader;
+	// next: 取下一个token
+	// lookahead: 预取下一个token
+	const Token& next();
+	const Token& lookahead();
 };
 
-std::shared_ptr<Lexer> create_lexer(const std::string& type, Reader& reader);
-
+} // namespace concept
 } // namespace mpl
 
 #endif // MPL_LEXER_H

@@ -1,10 +1,8 @@
 #ifndef MPL_LEXER_AUTO_LEXER_H
 #define MPL_LEXER_AUTO_LEXER_H
 
-#include "../lexer.h"
-
 #include <sstream>
-#include "../token.h"
+#include "token.h"
 #include "detail/dfa_generator.h"
 #include "detail/dfa_merger.h"
 
@@ -13,28 +11,32 @@ class Reader;
 
 namespace lexer {
 
-class AutoLexer : public Lexer {
+class AutoLexer {
 public:
 	AutoLexer(::mpl::Reader& reader);
 	~AutoLexer();
 
 public:
-	virtual const ::mpl::Token& next();
-	virtual const ::mpl::Token& lookahead();
+	typedef Token Token;
+	typedef TokenType TokenType;
+
+	const Token& next();
+	const Token& lookahead();
 
 private:
 	void init();
-	::mpl::TokenType lex();
+	TokenType lex();
 
 private:
 	::mpl::lexer::detail::DFAGenerator _generator;
 	::mpl::lexer::detail::DFAMerger _merger;
 
+	::mpl::Reader& _reader;
 	std::ostringstream _buf;
 	char _current;
 
-	::mpl::Token _next;
-	::mpl::Token _ahead;
+	Token _next;
+	Token _ahead;
 };
 
 } // namespace lexer

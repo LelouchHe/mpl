@@ -27,14 +27,18 @@ id_count = 0;
 - 定义体中是regex,不支持backref,元字符必须转义
 - regex会忽略:后所有空白符号,支持使用\进行分行,但还是会忽略前缀所有空白符
 
+LEFT_PARENTHESIS: \(
+RIGHT_PARENTHESIS: \)
 PLUS    : \+
+MINUS   : \-
 MUL     : \*
+DIV     : /
 ASSIGN  : =
 STRING  : '[^']*'
 COMMENT : \-\-[^\n]*
 SPACE   : [ ]+
 NEWLINE : \n
-NUM     : [1-9][0-9]*
+NUMBER  : [1-9][0-9]*
 ID      : [_a-zA-Z][_a-zA-Z0-9]*
 
 %%
@@ -54,7 +58,7 @@ SPACE : {
 }
 NEWLINE : {
 }
-NUM: {
+NUMBER: {
     num_count++;
     if (num_count == 10) {
         num_count *= 2;

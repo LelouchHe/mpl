@@ -3,20 +3,17 @@
 
 #include <map>
 #include <string>
+#include <memory>
+#include "lexer.h"
 
 namespace mpl {
 
 class Reader;
 
-template <typename Lexer>
 class Parser {
 public:
 	Parser(::mpl::Reader& reader);
 	~Parser();
-
-public:
-	typedef typename Lexer::Token Token;
-	typedef typename Lexer::TokenType TokenType;
 
 	void parse();
 
@@ -27,7 +24,7 @@ private:
 	int term();
 
 private:
-	Lexer _lexer;
+	std::shared_ptr<Lexer> _lexer;
 	std::map<std::string, int> _vars;
 };
 

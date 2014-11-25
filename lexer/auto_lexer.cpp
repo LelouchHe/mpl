@@ -6,7 +6,7 @@ namespace mpl {
 namespace lexer {
 
 AutoLexer::AutoLexer(::mpl::Reader& reader) :
-		Lexer(reader), _current('\0') {
+		_reader(reader), _current('\0') {
 	init();
 }
 
@@ -15,28 +15,28 @@ AutoLexer::~AutoLexer() {
 }
 
 void AutoLexer::init() {
-	for (std::map<const char *, ::mpl::TokenType>::const_iterator it = ::mpl::TOKEN_RE_KEYS.begin();
-			it != ::mpl::TOKEN_RE_KEYS.end(); ++it) {
+	for (std::map<const char *, TokenType>::const_iterator it = TOKEN_RE_KEYS.begin();
+			it != TOKEN_RE_KEYS.end(); ++it) {
 		_generator.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
 		_merger.add(_generator);
 	}
 
-	for (std::map<const char *, ::mpl::TokenType>::const_iterator it = ::mpl::TOKEN_RE_SYMBOLS.begin();
-		it != ::mpl::TOKEN_RE_SYMBOLS.end(); ++it) {
+	for (std::map<const char *, TokenType>::const_iterator it = TOKEN_RE_SYMBOLS.begin();
+		it != TOKEN_RE_SYMBOLS.end(); ++it) {
 		_generator.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
 		_merger.add(_generator);
 	}
 
-	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_ID, (int)::mpl::TT_ID);
+	_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_ID, (int)TT_ID);
 	_merger.add(_generator);
 
-	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_NUMBER, (int)::mpl::TT_NUMBER);
+	_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_NUMBER, (int)TT_NUMBER);
 	_merger.add(_generator);
 
-	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_STRING, (int)::mpl::TT_STRING);
+	_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_STRING, (int)TT_STRING);
 	_merger.add(_generator);
 
-	_generator.parse((::mpl::lexer::detail::Byte *)::mpl::TOKEN_RE_COMMENT, (int)::mpl::TT_COMMENT);
+	_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_COMMENT, (int)TT_COMMENT);
 	_merger.add(_generator);
 
 	// 二者好像结果一样,应该需要再看看
@@ -44,8 +44,8 @@ void AutoLexer::init() {
 	_generator.build(_merger, true);
 }
 
-::mpl::TokenType token_type(const ::mpl::lexer::detail::Tag& tag) {
-	int min = (int)::mpl::EOS;
+TokenType token_type(const ::mpl::lexer::detail::Tag& tag) {
+	int min = (int)EOS;
 	for (::mpl::lexer::detail::Tag::const_iterator it = tag.begin();
 			it != tag.end(); ++it) {
 		if (min > *it) {
@@ -53,11 +53,11 @@ void AutoLexer::init() {
 		}
 	}
 
-	return (::mpl::TokenType)min;
+	return (TokenType)min;
 }
 
 // 因为基本上mpl词法是LL(1),所以不需要大的缓冲
-::mpl::TokenType AutoLexer::lex() {
+TokenType AutoLexer::lex() {
 	::mpl::lexer::detail::DFA& dfa = _generator;
 	_buf.str("");
 
@@ -98,25 +98,25 @@ void AutoLexer::init() {
 
 	if (pre == -1) {
 		if (_reader.eof()) {
-			return ::mpl::EOS;
+			return TokenType::EOS;
 		} else {
-			return ::mpl::ERROR;
+			return TokenType::ERROR;
 		}
 	}
 
-	::mpl::TokenType type = token_type(_generator.tags(pre));
+	TokenType type = token_type(_generator.tags(pre));
 	// 跳过空格和换行
-	if (type == ::mpl::TT_SPACE || type == ::mpl::TT_NEWLINE) {
+	if (type == TokenType::TT_SPACE || type == TokenType::TT_NEWLINE) {
 		return lex();
 	} else {
 		return type;
 	}
 }
 
-const ::mpl::Token& AutoLexer::next() {
-	if (_ahead.type != ::mpl::EOS) {
+const AutoLexer::Token& AutoLexer::next() {
+	if (_ahead.type != TokenType::EOS) {
 		_next = _ahead;
-		_ahead.type = ::mpl::EOS;
+		_ahead.type = TokenType::EOS;
 		return _next;
 	}
 
@@ -126,8 +126,8 @@ const ::mpl::Token& AutoLexer::next() {
 	return _next;
 }
 
-const ::mpl::Token& AutoLexer::lookahead() {
-	if (_ahead.type == ::mpl::EOS) {
+const AutoLexer::Token& AutoLexer::lookahead() {
+	if (_ahead.type == TokenType::EOS) {
 		_ahead.type = lex();
 		_ahead.text = _buf.str();
 	}
@@ -143,18 +143,18 @@ const ::mpl::Token& AutoLexer::lookahead() {
 #include <iostream>
 #include "../file_reader.h"
 
-static void print_token(const ::mpl::Token& t) {
+static void print_token(const ::mpl::lexer::AutoLexer::Token& t) {
 	std::cout << t.type << "\t" << t.text << std::endl;
 }
 
 int main() {
-	::mpl::FileReader fr("mu.lua");
+	::mpl::FileReader fr("test.txt");
 
 	::mpl::lexer::AutoLexer lexer(fr);
 
 	while (true) {
-		::mpl::Token t = lexer.next();
-		if (t.type == ::mpl::EOS) {
+		const ::mpl::lexer::AutoLexer::Token& t = lexer.next();
+		if (t.type == ::mpl::lexer::AutoLexer::TokenType::EOS) {
 			break;
 		}
 
