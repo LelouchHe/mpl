@@ -16,9 +16,10 @@ public:
 	~Lexer();
 
 public:
-	// Token/TokenType是必须暴露的2个类型
+	// Token是必须暴露的类型
+	// Token::TokenType也必须定义
+	// Token.type, Token.text是必须参数,必须有默认构造和双参数构造函数
 	typedef Token Token;
-	typedef TokenType TokenType;
 
 	// next: 取下一个token
 	// lookahead: 预取下一个token

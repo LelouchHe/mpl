@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_H
-#define MPL_PARSER_H
+#ifndef MPL_PARSER_MANUAL_PARSER_H
+#define MPL_PARSER_MANUAL_PARSER_H
 
 #include <map>
 #include <string>
@@ -8,16 +8,18 @@ namespace mpl {
 
 class Reader;
 
+namespace parser {
+
 // Lexer需要满足的具体要求,见 lexer.h
 template <typename Lexer>
-class Parser {
+class ManualParser {
 public:
-	Parser(::mpl::Reader& reader);
-	~Parser();
+	ManualParser(::mpl::Reader& reader);
+	~ManualParser();
 
 public:
 	typedef typename Lexer::Token Token;
-	typedef typename Lexer::TokenType TokenType;
+	typedef typename Token::TokenType TokenType;
 
 	void parse();
 
@@ -32,6 +34,7 @@ private:
 	std::map<std::string, int> _vars;
 };
 
+} // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_H
+#endif // MPL_PARSER_MANUAL_PARSER_H

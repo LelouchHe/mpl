@@ -40,6 +40,7 @@ private:
 	bool generate_source(const char* lexer_name);
 
 	bool generate_token(std::FILE* out);
+	bool generate_token_comparison(std::FILE* out, const char* lexer_name);
 	bool generate_dfa(std::FILE* out);
 	bool generate_trans(std::FILE* out, const ::mpl::lexer::detail::DFA& dfa);
 	bool generate_tags(std::FILE* out, const ::mpl::lexer::detail::DFA& dfa);

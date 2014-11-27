@@ -1,4 +1,5 @@
 #include "GeneratedLexer.h"
+#include <cassert>
 #include "../reader.h"
 namespace mpl {
 namespace lexer {

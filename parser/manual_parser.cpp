@@ -1,18 +1,19 @@
-#include "parser.h"
+#include "manual_parser.h"
 
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
 
 namespace mpl {
+namespace parser {
 
 template <typename Lexer>
-Parser<Lexer>::Parser(::mpl::Reader& reader): 
+ManualParser<Lexer>::ManualParser(::mpl::Reader& reader) :
 	_lexer(reader) {
 }
 
 template <typename Lexer>
-Parser<Lexer>::~Parser() {
+ManualParser<Lexer>::~ManualParser() {
 
 }
 
@@ -28,7 +29,7 @@ term  -> NUM | ID | '(' value ')'
 #endif
 
 template <typename Lexer>
-int Parser<Lexer>::term() {
+int ManualParser<Lexer>::term() {
 	Token t = _lexer.next();
 
 	switch (t.type) {
@@ -56,7 +57,7 @@ int Parser<Lexer>::term() {
 }
 
 template <typename Lexer>
-int Parser<Lexer>::prod() {
+int ManualParser<Lexer>::prod() {
 	int n = term();
 
 	Token ahead = _lexer.lookahead();
@@ -74,7 +75,7 @@ int Parser<Lexer>::prod() {
 }
 
 template <typename Lexer>
-int Parser<Lexer>::value() {
+int ManualParser<Lexer>::value() {
 	int n = prod();
 
 	Token ahead = _lexer.lookahead();
@@ -92,7 +93,7 @@ int Parser<Lexer>::value() {
 }
 
 template <typename Lexer>
-void Parser<Lexer>::expr() {
+void ManualParser<Lexer>::expr() {
 	Token t = _lexer.next();
 	if (t.type == TokenType::TT_ASSIGN) {
 		std::cout << value() << std::endl;
@@ -106,21 +107,22 @@ void Parser<Lexer>::expr() {
 }
 
 template <typename Lexer>
-void Parser<Lexer>::parse() {
+void ManualParser<Lexer>::parse() {
 	while (_lexer.lookahead().type != TokenType::EOS) {
 		expr();
 	}
 }
 
+} // namespace parser
 } // namespace mpl
 
 #if 0
 
 #include <iostream>
-#include "file_reader.h"
-#include "lexer/manual_lexer.h"
-#include "lexer/auto_lexer.h"
-#include "lexer/GeneratedLexer.h"
+#include "../file_reader.h"
+#include "../lexer/manual_lexer.h"
+#include "../lexer/auto_lexer.h"
+#include "../lexer/GeneratedLexer.h"
 
 using namespace std;
 
@@ -143,11 +145,11 @@ int main() {
 	}
 	*/
 
-	//::mpl::Parser<::mpl::lexer::ManualLexer> parser(fr);
-	//::mpl::Parser<::mpl::lexer::AutoLexer> parser(fr);
-	//mpl::Parser<::mpl::lexer::GeneratedLexer> parser(fr);
+	//::mpl::parser::ManualParser< ::mpl::lexer::ManualLexer> parser(fr);
+	//::mpl::parser::ManualParser<::mpl::lexer::AutoLexer> parser(fr);
+	::mpl::parser::ManualParser<::mpl::lexer::GeneratedLexer> parser(fr);
 
-	//parser.parse();
+	parser.parse();
 
 	return 0;
 }

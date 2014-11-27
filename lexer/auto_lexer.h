@@ -18,7 +18,7 @@ public:
 
 public:
 	typedef Token Token;
-	typedef TokenType TokenType;
+	typedef Token::TokenType TokenType;
 
 	const Token& next();
 	const Token& lookahead();

@@ -1,6 +1,5 @@
 #ifndef MPL_LEXER_GeneratedLexer_H
 #define MPL_LEXER_GeneratedLexer_H
-#include <cassert>
 #include <sstream>
 #include "detail/state.h"
 namespace mpl {
@@ -22,13 +21,16 @@ public:
 		TT_COMMA, TT_SEMICOLON, TT_COLON, TT_LABEL, TT_DOT, TT_CONCAT, 
 		TT_VARARG, TT_SPACE, TT_NEWLINE, TT_ID, TT_NUMBER, TT_STRING, 
 		TT_COMMENT, 
-		EOS, ERROR, SKIP, LAST_TOKEN
+		EOS, EPSILON, NONTERNIMAL, ERROR, SKIP, LAST_TOKEN
 	};
 	class Token {
 	public:
+	    typedef TokenType TokenType;
 	    TokenType type;
 	    std::string text;
 	    Token() : type(EOS) {}
+	    Token(TokenType atype, const std::string& atext) :
+	            type(atype), text(atext) {}
 	};
     bool parse();
     const Token& next();
@@ -47,6 +49,21 @@ private:
     Token _next;
     Token _ahead;
 };
+inline bool operator==(const GeneratedLexer::Token& a, const GeneratedLexer::Token& b) {
+    if (a.type != b.type) {
+        return false;
+    }
+    return a.text == b.text;
+}
+inline bool operator<(const GeneratedLexer::Token& a, const GeneratedLexer::Token& b) {
+    if (a.type < b.type) {
+        return true;
+    }
+    return a.text < b.text;
+}
+inline bool operator<=(const GeneratedLexer::Token& a, const GeneratedLexer::Token& b) {
+    return a < b || a == b;
+}
 } // namespace lexer
 } // namespace mpl
 #endif // MPL_LEXER_GeneratedLexer_H

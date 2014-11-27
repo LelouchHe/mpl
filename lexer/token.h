@@ -33,7 +33,7 @@ enum TokenType {
 	TT_ID, TT_NUMBER, TT_STRING, TT_COMMENT,
 
 	// 保留token,主要用于控制和与Generator兼容
-	EOS, ERROR, SKIP, LAST_TOKEN,
+	EOS, EPSILON, NONTERMINAL, ERROR, SKIP, LAST_TOKEN,
 };
 
 extern const std::map<const char*, TokenType> TOKEN_RE_KEYS;
@@ -45,7 +45,13 @@ extern const char* TOKEN_RE_COMMENT;
 
 class Token{
 public:
+	typedef TokenType TokenType;
+
+public:
 	Token() : type(EOS) {
+
+	}
+	Token(TokenType atype, const std::string& atext) : type(atype), text(atext) {
 
 	}
 
@@ -53,6 +59,28 @@ public:
 	TokenType type;
 	std::string text;
 };
+
+inline bool operator==(const Token& left, const Token& right) {
+	if (left.type != right.type) {
+		return false;
+	}
+
+	return left.text == right.text;
+}
+
+inline bool operator<(const Token& left, const Token& right) {
+	if (left.type < right.type) {
+		return true;
+	} else if (left.type > right.type) {
+		return false;
+	}
+
+	return left.text < right.text;
+}
+
+inline bool operator<=(const Token& left, const Token& right) {
+	return left < right || left == right;
+}
 
 } // namespace lexer
 } // namespace mpl

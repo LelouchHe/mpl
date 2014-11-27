@@ -36,7 +36,6 @@ void LexerGenerator::reset() {
 	_priorities.clear();
 	_actions.clear();
 
-	_includes.push_back("#include <cassert>");
 	_includes.push_back("#include <sstream>");
 	_includes.push_back("#include \"detail/state.h\"");
 }
@@ -282,8 +281,6 @@ bool LexerGenerator::generate_header(const char* lexer_name) {
 	fprintf(out, "class Reader;\n");
 	fprintf(out, "namespace lexer {\n");
 
-
-
 	fprintf(out, "class %s {\n", lexer_name);
 	
 	fprintf(out, "public:\n");
@@ -322,6 +319,8 @@ bool LexerGenerator::generate_header(const char* lexer_name) {
 	
 	fprintf(out, "};\n");
 
+	generate_token_comparison(out, lexer_name);
+
 	fprintf(out, "} // namespace lexer\n");
 	fprintf(out, "} // namespace mpl\n");
 
@@ -350,16 +349,41 @@ bool LexerGenerator::generate_token(std::FILE* out) {
 	}
 
 	fprintf(out, "\n\t\t");
-	fprintf(out, "EOS, ERROR, SKIP, LAST_TOKEN\n");
+	fprintf(out, "EOS, EPSILON, NONTERNIMAL, ERROR, SKIP, LAST_TOKEN\n");
 
 	fprintf(out, "\t};\n");
 
 	fprintf(out, "\tclass Token {\n");
 	fprintf(out, "\tpublic:\n");
+	fprintf(out, "\t    typedef TokenType TokenType;\n");
 	fprintf(out, "\t    TokenType type;\n");
 	fprintf(out, "\t    std::string text;\n");
 	fprintf(out, "\t    Token() : type(EOS) {}\n");
+	fprintf(out, "\t    Token(TokenType atype, const std::string& atext) :\n");
+	fprintf(out, "\t            type(atype), text(atext) {}\n");
 	fprintf(out, "\t};\n");
+
+	return true;
+}
+
+bool LexerGenerator::generate_token_comparison(std::FILE* out, const char* lexer_name) {
+	fprintf(out, "inline bool operator==(const %s::Token& a, const %s::Token& b) {\n", lexer_name, lexer_name);
+	fprintf(out, "    if (a.type != b.type) {\n");
+	fprintf(out, "        return false;\n");
+	fprintf(out, "    }\n");
+	fprintf(out, "    return a.text == b.text;\n");
+	fprintf(out, "}\n");
+
+	fprintf(out, "inline bool operator<(const %s::Token& a, const %s::Token& b) {\n", lexer_name, lexer_name);
+	fprintf(out, "    if (a.type < b.type) {\n");
+	fprintf(out, "        return true;\n");
+	fprintf(out, "    }\n");
+	fprintf(out, "    return a.text < b.text;\n");
+	fprintf(out, "}\n");
+
+	fprintf(out, "inline bool operator<=(const %s::Token& a, const %s::Token& b) {\n", lexer_name, lexer_name);
+	fprintf(out, "    return a < b || a == b;\n");
+	fprintf(out, "}\n");
 
 	return true;
 }
@@ -375,6 +399,7 @@ bool LexerGenerator::generate_source(const char* lexer_name) {
 	fopen_s(&out, source_filename.c_str(), "w");
 
 	fprintf(out, "#include \"%s.h\"\n", lexer_name);
+	fprintf(out, "#include <cassert>\n");
 	fprintf(out, "#include \"../reader.h\"\n");
 
 	fprintf(out, "namespace mpl {\n");
