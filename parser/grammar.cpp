@@ -8,6 +8,9 @@ namespace mpl {
 namespace parser {
 
 template <typename Token>
+const typename Gramma<Token>::Rule Gramma<Token>::NON_RULE;
+
+template <typename Token>
 Gramma<Token>::Gramma() {
 
 }
@@ -138,6 +141,8 @@ bool Gramma<Token>::dedup() {
 	return true;
 }
 
+// 没有显示的提供EPSILON,而是以empty为标识
+// 左递归消除会代码很多额外规则(因为进行了替换),应该可以对那些没有参与递归转换的规则,再转换回去
 template <typename Token>
 bool Gramma<Token>::left_recursion() {
 	std::map<Token, Rules> new_gramma;
@@ -149,6 +154,8 @@ bool Gramma<Token>::left_recursion() {
 		for (size_t i = 0; i < rules.size(); i++) {
 			Rule rule = rules[i];
 			if (rule.empty()) {
+				// empty -> EPSILON
+				new_rules.push_back(rule);
 				continue;
 			}
 
@@ -177,6 +184,8 @@ bool Gramma<Token>::left_recursion() {
 		for (size_t i = 0; i < new_rules.size(); i++) {
 			const Rule& rule = new_rules[i];
 			if (rule.empty()) {
+				// empty -> EPSILON
+				non_recursion.push_back(rule);
 				continue;
 			}
 
@@ -380,11 +389,13 @@ bool Gramma<Token>::generate_first() {
 	bool is_changing = true;
 	while (is_changing) {
 		is_changing = false;
+
 		for (std::map<Token, Tokens>::iterator it = _first.begin();
 				it != _first.end(); ++it) {
 			const Token& token = it->first;
 			Tokens& tokens = it->second;
 
+			assert(token.type == TokenType::NONTERMINAL);
 			const Rules& rules = _gramma[token];
 			for (size_t i = 0; i < rules.size(); i++) {
 				const Rule& rule = rules[i];
@@ -403,19 +414,107 @@ bool Gramma<Token>::generate_first() {
 
 				bool is_nullable = true;
 				for (size_t j = 0; j < rule.size() && is_nullable; j++) {
-					const Tokens& right_tokens = _first[rule[j]];
-					for (Tokens::const_iterator tit = right_tokens.begin();
-							tit != right_tokens.end(); ++tit) {
-						ret = tokens.insert(*tit);
+					const Token& right = rule[j];
+					if (right.type != TokenType::NONTERMINAL) {
+						ret = tokens.insert(right);
 						if (ret.second) {
 							is_changing = true;
 						}
-					}
-					
-					if (rule[j].type != TokenType::NONTERMINAL) {
 						is_nullable = false;
 					} else {
-						is_nullable = _nullable[rule[j]];
+						const Tokens& right_tokens = _first[right];
+						for (Tokens::const_iterator tit = right_tokens.begin();
+							tit != right_tokens.end(); ++tit) {
+							ret = tokens.insert(*tit);
+							if (ret.second) {
+								is_changing = true;
+							}
+						}
+						is_nullable = _nullable[right];
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+#if 0
+
+a : b c
+follow(b) = first(c)
+			follow(a) nullable(c) = true
+
+#endif
+
+template <typename Token>
+bool Gramma<Token>::generate_follow() {
+	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
+			it != _gramma.end(); ++it) {
+		assert(it->first.type == TokenType::NONTERMINAL);
+		_follow[it->first].clear();
+	}
+
+	bool is_changing = true;
+	while (is_changing) {
+		is_changing = false;
+
+		for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
+				it != _gramma.end(); ++it) {
+			const Token& left = it->first;
+			const Rules& rules = it->second;
+
+			for (size_t i = 0; i < rules.size(); i++) {
+				const Rule& rule = rules[i];
+				if (rule.empty()) {
+					continue;
+				}
+				
+				std::pair<Tokens::iterator, bool> ret;
+				bool is_nullable = true;
+				for (int j = rule.size() - 1; j >= 0; j--) {
+					const Token& right = rule[j];
+					if (right.type != TokenType::NONTERMINAL) {
+						is_nullable = false;
+						continue;
+					}
+
+					// 后续符号的first
+					if (j < (int)rule.size() - 1) {
+						const Token& next = rule[j + 1];
+						if (next.type != TokenType::NONTERMINAL) {
+							ret = _follow[right].insert(next);
+							if (ret.second) {
+								is_changing = true;
+							}
+						} else {
+							const Tokens& next_tokens = _first[next];
+							for (Tokens::const_iterator tit = next_tokens.begin();
+									tit != next_tokens.end(); tit++) {
+								ret = _follow[right].insert(*tit);
+								if (ret.second) {
+									is_changing = true;
+								}
+							}
+						}
+					}
+
+					// left的follow
+					if (is_nullable) {
+						const Tokens& left_tokens = _follow[left];
+						for (Tokens::const_iterator tit = left_tokens.begin();
+								tit != left_tokens.end(); tit++) {
+							ret = _follow[right].insert(*tit);
+							if (ret.second) {
+								is_changing = true;
+							}
+						}
+					}
+
+					// 更新此时的nullable
+					if (is_nullable) {
+						is_nullable = _nullable[right];
 					}
 				}
 			}
@@ -426,28 +525,68 @@ bool Gramma<Token>::generate_first() {
 }
 
 template <typename Token>
-bool Gramma<Token>::generate_follow() {
-	return true;
+const Token& Gramma<Token>::start() const {
+	return _start;
 }
 
 template <typename Token>
-const typename Gramma<Token>::Rule& Gramma<Token>::fetch(const Token& token, const Token& next) {
+const typename Gramma<Token>::Rule& Gramma<Token>::fetch(const Token& token, const Token& next) const {
+	std::map<Token, Rules>::const_iterator it = _gramma.find(token);
+	if (it == _gramma.end()) {
+		return NON_RULE;
+	}
 
+	const Rules& rules = it->second;
+	for (size_t i = 0; i < rules.size(); i++) {
+		const Rule& rule = rules[i];
+
+		bool is_nullable = true;
+		for (size_t j = 0; j < rule.size() && is_nullable; j++) {
+			const Token& right = rule[j];
+			if (right.type != TokenType::NONTERMINAL) {
+				is_nullable = false;
+				if (right == next) {
+					return rule;
+				}
+			} else {
+				std::map<Token, Tokens>::const_iterator tit = _first.find(right);
+				assert(tit != _first.end());
+				if (tit->second.find(next) != tit->second.end()) {
+					return rule;
+				}
+
+				std::map<Token, bool>::const_iterator bit = _nullable.find(right);
+				assert(bit != _nullable.end());
+				is_nullable = bit->second;
+			}
+		}
+		if (is_nullable) {
+			std::map<Token, Tokens>::const_iterator tit = _follow.find(token);
+			assert(tit != _follow.end());
+			if (tit->second.find(next) != tit->second.end()) {
+				return rule;
+			}
+		}
+	}
+
+	return NON_RULE;
 }
 
 } // namespace parser
 } // namespace mpl
 
-#if 1
-
+#if 0
 
 #include "../lexer/token.h"
+#include <stack>
 
 using namespace std;
 
 int main() {
 	::mpl::parser::Gramma<::mpl::lexer::Token> gramma;
 	::mpl::parser::Gramma<::mpl::lexer::Token>::Rule rule;
+
+#if 0
 
 	::mpl::lexer::Token goal(::mpl::lexer::Token::TokenType::NONTERMINAL, "goal");
 	::mpl::lexer::Token expr(::mpl::lexer::Token::TokenType::NONTERMINAL, "expr");
@@ -513,8 +652,79 @@ int main() {
 	rule.push_back(num);
 	gramma.add(factor, rule);
 
+#endif
+
+#if 1
+
+	::mpl::lexer::Token T(::mpl::lexer::Token::TokenType::NONTERMINAL, "T");
+	::mpl::lexer::Token R(::mpl::lexer::Token::TokenType::NONTERMINAL, "R");
+	::mpl::lexer::Token a(::mpl::lexer::Token::TokenType::TT_ID, "a");
+	::mpl::lexer::Token b(::mpl::lexer::Token::TokenType::TT_ID, "b");
+	::mpl::lexer::Token c(::mpl::lexer::Token::TokenType::TT_ID, "c");
+
+	rule.clear();
+	rule.push_back(R);
+	gramma.add(T, rule);
+
+	rule.clear();
+	rule.push_back(a);
+	rule.push_back(T);
+	rule.push_back(c);
+	gramma.add(T, rule);
+
+	rule.clear();
+	gramma.add(R, rule);
+
+	rule.clear();
+	rule.push_back(b);
+	rule.push_back(R);
+	gramma.add(R, rule);
+
+	std::vector<::mpl::lexer::Token> tokens;
+	tokens.push_back(a);
+	tokens.push_back(a);
+	tokens.push_back(b);
+	tokens.push_back(b);
+	tokens.push_back(b);
+	tokens.push_back(c);
+	tokens.push_back(c);
+
 	gramma.build();
 
+	std::stack<::mpl::lexer::Token> st;
+	st.push(gramma.start());
+	size_t current = 0;
+
+	while (!st.empty() && current < tokens.size()) {
+		::mpl::lexer::Token token = st.top();
+		st.pop();
+
+		std::cout << "expected: " << token.text << std::endl;
+
+		if (token.type != ::mpl::lexer::Token::TokenType::NONTERMINAL) {
+			if (token == tokens[current]) {
+				std::cout << "match" << std::endl;
+				current++;
+			} else {
+				std::cout << "not match" << std::endl;
+				std::cout << "actually: " << tokens[current].text << std::endl;
+				break;
+			}
+		} else {
+			::mpl::parser::Gramma<::mpl::lexer::Token>::Rule new_rule =
+					gramma.fetch(token, tokens[current]);
+			if (new_rule.empty()) {
+				std::cout << "match empty" << std::endl;
+				continue;
+			}
+
+			for (int i = new_rule.size() - 1; i >= 0; i--) {
+				st.push(new_rule[i]);
+			}
+		}
+	}
+
+#endif
 	return 0;
 }
 

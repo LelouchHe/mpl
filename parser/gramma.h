@@ -5,12 +5,17 @@
 #include <map>
 #include <set>
 
+#include "../lexer/token.h"
+#include "../lexer/GeneratedLexer.h"
+
 namespace mpl {
 namespace parser {
 
 template <typename Token>
 class Gramma {
 public:
+	// typedef ::mpl::lexer::Token Token;
+	// typedef ::mpl::lexer::GeneratedLexer::Token Token;
 	typedef typename Token::TokenType TokenType;
 	typedef std::vector<Token> Rule;
 	typedef std::set<Token> Tokens;
@@ -23,8 +28,8 @@ public:
 	void add(const Token& token, const Rule& rule);
 	bool build();
 
-	const Token& start();
-	const Rule& fetch(const Token& token, const Token& next);
+	const Token& start() const;
+	const Rule& fetch(const Token& token, const Token& next) const;
 
 	void debug();
 
@@ -50,6 +55,7 @@ private:
 	std::map<Token, Tokens> _follow;
 
 	Token _start;
+	static const Rule NON_RULE;
 };
 
 } // namespace parser

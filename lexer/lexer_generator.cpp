@@ -349,7 +349,7 @@ bool LexerGenerator::generate_token(std::FILE* out) {
 	}
 
 	fprintf(out, "\n\t\t");
-	fprintf(out, "EOS, EPSILON, NONTERNIMAL, ERROR, SKIP, LAST_TOKEN\n");
+	fprintf(out, "EOS, EPSILON, NONTERMINAL, ERROR, SKIP, LAST_TOKEN\n");
 
 	fprintf(out, "\t};\n");
 

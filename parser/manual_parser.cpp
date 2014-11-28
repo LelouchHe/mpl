@@ -127,7 +127,7 @@ void ManualParser<Lexer>::parse() {
 using namespace std;
 
 int main() {
-	const char* file_name = "test.txt";
+	const char* file_name = "lexer.txt";
 
 	::mpl::FileReader fr(file_name);
 
