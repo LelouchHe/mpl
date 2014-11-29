@@ -5,18 +5,16 @@
 #include <map>
 #include <set>
 
-#include "../lexer/token.h"
-#include "../lexer/GeneratedLexer.h"
+#include "../config.h"
 
 namespace mpl {
 namespace parser {
 
-template <typename Token>
 class Gramma {
 public:
-	// typedef ::mpl::lexer::Token Token;
-	// typedef ::mpl::lexer::GeneratedLexer::Token Token;
-	typedef typename Token::TokenType TokenType;
+	typedef ::mpl::Lexer::Token Token;
+
+	typedef Token::TokenType TokenType;
 	typedef std::vector<Token> Rule;
 	typedef std::set<Token> Tokens;
 

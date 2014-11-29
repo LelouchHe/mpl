@@ -24,7 +24,7 @@ const ManualLexer::Token& ManualLexer::next() {
 	}
 
 	_next.type = lex();
-	_next.text = _buff.str();
+	_next.text = _buf.str();
 
 	return _next;
 }
@@ -33,10 +33,20 @@ const ManualLexer::Token& ManualLexer::next() {
 const ManualLexer::Token& ManualLexer::lookahead() {
 	if (_ahead.type == EOS) {
 		_ahead.type = lex();
-		_ahead.text = _buff.str();
+		_ahead.text = _buf.str();
 	}
 
 	return _ahead;
+}
+
+ManualLexer::TokenType ManualLexer::token_type(const std::string& name) {
+	std::map<const char *, TokenType>::const_iterator it =
+		TOKEN_TYPES.find(name.c_str());
+	if (it != TOKEN_TYPES.end()) {
+		return it->second;
+	} else {
+		return TokenType::ERROR;
+	}
 }
 
 bool ManualLexer::eof() {
@@ -49,20 +59,20 @@ void ManualLexer::new_line(bool should_save) {
 		if (ch == '\n') {
 			// "\r\n" -> windows
 			if (should_save) {
-				_buff << "\r\n";
+				_buf << "\r\n";
 			}
 			_current = _reader.next();
 		} else {
 			// "\r" -> Mac
 			if (should_save) {
-				_buff << '\r';
+				_buf << '\r';
 			}
 			_current = ch;
 		}
 	} else {
 		// "\n" -> linux
 		if (should_save) {
-			_buff << '\n';
+			_buf << '\n';
 		}
 		_current = ch;
 	}
@@ -72,7 +82,7 @@ void ManualLexer::new_line(bool should_save) {
 
 // 保存当前值,并取下一个值
 void ManualLexer::save_and_next() {
-	_buff << _current;
+	_buf << _current;
 	_current = _reader.next();
 }
 
@@ -90,10 +100,10 @@ int ManualLexer::count_nosave(char ch) {
 	return n;
 }
 
-// lex将得到的字符传到_buff,并返回类型,不处理_next/_ahead
+// lex将得到的字符传到_buf,并返回类型,不处理_next/_ahead
 // _current保存下一个字符,或者'\0',表示尚没有读取
 ManualLexer::TokenType ManualLexer::lex() {
-	_buff.str("");
+	_buf.str("");
 
 	if (_current == '\0') {
 		_current = _reader.next();
@@ -125,7 +135,7 @@ ManualLexer::TokenType ManualLexer::lex() {
 					return TT_STRING;
 				} else {
 					assert(sep == 0);
-					_buff << '[';
+					_buf << '[';
 					return TT_LEFT_SQUARE;
 				}
 			}
@@ -177,7 +187,7 @@ ManualLexer::TokenType ManualLexer::lex() {
 				read_comment();
 				return TT_COMMENT;
 			} else {
-				_buff << '-';
+				_buf << '-';
 				return TT_MINUS;
 			}
 
@@ -273,7 +283,7 @@ ManualLexer::TokenType ManualLexer::lex() {
 			{
 				read_id();
 				std::map<const char *, TokenType>::const_iterator it =
-						TOKEN_RE_KEYS.find(_buff.str().c_str());
+						TOKEN_RE_KEYS.find(_buf.str().c_str());
 				if (it != TOKEN_RE_KEYS.end()) {
 					return it->second;
 				}
@@ -282,6 +292,7 @@ ManualLexer::TokenType ManualLexer::lex() {
 		}
 	}
 
+	_buf << "$";
 	return EOS;
 }
 
@@ -311,7 +322,7 @@ void ManualLexer::escape() {
 				ch = ch * 16 + hexvalue(_current);
 			}
 			assert(ch <= 255);
-			_buff << (char)ch;
+			_buf << (char)ch;
 		}
 		break;
 
@@ -324,13 +335,13 @@ void ManualLexer::escape() {
 				assert(std::isxdigit(_current));
 				code = code * 16 + decvalue(_current);
 			}
-			_buff << "(unicode: " << code << ")";
+			_buf << "(unicode: " << code << ")";
 		}
 		break;
 
 	// '\'本身
 	case '\\':
-		_buff << '\\';
+		_buf << '\\';
 		break;
 
 	// \DDD
@@ -352,33 +363,33 @@ void ManualLexer::escape() {
 				ch = ch * 10 + decvalue(_current);
 			}
 			assert(ch <= 255);
-			_buff << (char)ch;
+			_buf << (char)ch;
 		}
 		break;
 
 	// 单字符转义
 	case 't':
-		_buff << '\a';
+		_buf << '\a';
 		nosave_and_next();
 		break;
 
 	case 'r':
-		_buff << '\r';
+		_buf << '\r';
 		nosave_and_next();
 		break;
 
 	case 'n':
-		_buff << '\n';
+		_buf << '\n';
 		nosave_and_next();
 		break;
 
 	case '\'':
-		_buff << '\'';
+		_buf << '\'';
 		nosave_and_next();
 		break;
 
 	case '"':
-		_buff << '"';
+		_buf << '"';
 		nosave_and_next();
 		break;
 
@@ -443,7 +454,7 @@ void ManualLexer::read_long_string(int sep) {
 					nosave_and_next();
 					return;
 				} else {
-					_buff << "]" << std::string(nsep, '=');
+					_buf << "]" << std::string(nsep, '=');
 					save_and_next();
 				}
 			}
@@ -497,9 +508,9 @@ static bool is_base_digit(int base, char ch) {
 	}
 }
 
-// _buff里可能有fallthrough的'.'
+// _buf里可能有fallthrough的'.'
 void ManualLexer::read_number() {
-	bool has_dot = !_buff.str().empty();
+	bool has_dot = !_buf.str().empty();
 	bool has_exp = false;
 	char exp = 'e';
 	int base = 10;
@@ -553,7 +564,7 @@ void ManualLexer::read_comment() {
 			read_long_string(sep);
 			return;
 		} else {
-			_buff << '[' << std::string(sep, '=');
+			_buf << '[' << std::string(sep, '=');
 		}
 	}
 

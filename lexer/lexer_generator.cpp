@@ -16,7 +16,7 @@ LexerGenerator::LexerGenerator() {
 	reset();
 
 	_privates.push_back("TokenType lex();");
-	_privates.push_back("TokenType token_type(int tag);");
+	_privates.push_back("TokenType tag_type(int tag);");
 	_privates.push_back("::mpl::Reader& _reader;");
 	_privates.push_back("std::ostringstream _buf;");
 	_privates.push_back("char _current;");
@@ -291,9 +291,10 @@ bool LexerGenerator::generate_header(const char* lexer_name) {
 
 	generate_token(out);
 
-	fprintf(out, "    bool parse();\n");
+	fprintf(out, "    bool run();\n");
 	fprintf(out, "    const Token& next();\n");
 	fprintf(out, "    const Token& lookahead();\n");
+	fprintf(out, "    static TokenType token_type(const std::string& name);\n");
 
 	if (!_globals.empty()) {
 		fprintf(out, "public:\n");
@@ -334,11 +335,10 @@ bool LexerGenerator::generate_token(std::FILE* out) {
 	size_t size = _priorities.size();
 	assert(size == _definitions.size());
 
-	fprintf(out, "\tenum TokenType {\n");
+	fprintf(out, "\tenum TokenType {");
 
-	fprintf(out, "\t\t");
 	for (size_t i = 0; i < size; i++) {
-		if (i % 6 == 5) {
+		if (i % 5 == 0) {
 			fprintf(out, "\n\t\t");
 		}
 		fprintf(out, "TT_%s", _priorities[i].c_str());
@@ -377,6 +377,8 @@ bool LexerGenerator::generate_token_comparison(std::FILE* out, const char* lexer
 	fprintf(out, "inline bool operator<(const %s::Token& a, const %s::Token& b) {\n", lexer_name, lexer_name);
 	fprintf(out, "    if (a.type < b.type) {\n");
 	fprintf(out, "        return true;\n");
+	fprintf(out, "    } else if (a.type > b.type) {\n");
+	fprintf(out, "        return false;\n");
 	fprintf(out, "    }\n");
 	fprintf(out, "    return a.text < b.text;\n");
 	fprintf(out, "}\n");
@@ -417,6 +419,8 @@ bool LexerGenerator::generate_source(const char* lexer_name) {
 	fprintf(out, "%s::~%s() {}\n", lexer_name, lexer_name);
 
 	generate_dfa(out);
+
+	generate_token_types(out, lexer_name);
 
 	generate_action(out, lexer_name);
 
@@ -515,6 +519,24 @@ bool LexerGenerator::generate_start_last(std::FILE* out, const ::mpl::lexer::det
 	return true;
 }
 
+bool LexerGenerator::generate_token_types(std::FILE* out, const char* lexer_name) {
+	size_t size = _priorities.size();
+	assert(size == _definitions.size());
+
+	fprintf(out, "static const std::map<const char *, %s::TokenType> s_token_types = {", lexer_name);
+
+	for (size_t i = 0; i < size; i++) {
+		if (i % 2 == 0) {
+			fprintf(out, "\n\t");
+		}
+		fprintf(out, "{ \"%s\", %s::TokenType::TT_%s }, ",
+				_priorities[i].c_str(), lexer_name, _priorities[i].c_str());
+	}
+
+	fprintf(out, "\n};\n");
+	return true;
+}
+
 bool LexerGenerator::generate_action(std::FILE* out, const char* lexer_name) {
 	fprintf(out, "typedef void (%s::*ActionType)(%s::Token&);\n", lexer_name, lexer_name);
 	fprintf(out, "static const std::map<%s::TokenType, ActionType> s_actions = {\n", lexer_name);
@@ -540,9 +562,10 @@ bool LexerGenerator::generate_action(std::FILE* out, const char* lexer_name) {
 }
 
 bool LexerGenerator::generate_interface(std::FILE* out, const char* lexer_name) {
-	generate_token_type(out, lexer_name);
-	generate_parse(out, lexer_name);
+	generate_tag_type(out, lexer_name);
 	generate_lex(out, lexer_name);
+	generate_run(out, lexer_name);
+	generate_token_type(out, lexer_name);
 
 	fprintf(out, "const %s::Token& %s::next() {\n", lexer_name, lexer_name);
 	fprintf(out, "    if (_ahead.type != EOS) {\n");
@@ -569,8 +592,8 @@ bool LexerGenerator::generate_interface(std::FILE* out, const char* lexer_name) 
 	return true;
 }
 
-bool LexerGenerator::generate_token_type(std::FILE* out, const char* lexer_name) {
-	fprintf(out, "%s::TokenType %s::token_type(int tag) {\n", lexer_name, lexer_name);
+bool LexerGenerator::generate_tag_type(std::FILE* out, const char* lexer_name) {
+	fprintf(out, "%s::TokenType %s::tag_type(int tag) {\n", lexer_name, lexer_name);
 
 	fprintf(out, "    TokenType type = (TokenType)tag;\n");
 	fprintf(out, "    std::map<TokenType, ActionType>::const_iterator it = s_actions.find(type);\n");
@@ -622,6 +645,7 @@ bool LexerGenerator::generate_lex(std::FILE* out, const char* lexer_name) {
 	fprintf(out, "    }\n");
 	fprintf(out, "    if (pre == -1) {\n");
 	fprintf(out, "        if (_reader.eof()) {\n");
+	fprintf(out, "            _buf << \"$\";\n");
 	fprintf(out, "            return EOS;\n");
 	fprintf(out, "        } else {\n");
 	fprintf(out, "            return ERROR;\n");
@@ -629,7 +653,7 @@ bool LexerGenerator::generate_lex(std::FILE* out, const char* lexer_name) {
 	fprintf(out, "    }\n");
 	fprintf(out, "    std::map<size_t, int>::const_iterator it = s_tags.find(pre);\n");
 	fprintf(out, "    assert(it != s_tags.end());\n");
-	fprintf(out, "    TokenType type = token_type(it->second);\n");
+	fprintf(out, "    TokenType type = tag_type(it->second);\n");
 	fprintf(out, "    if (type == SKIP) {\n");
 	fprintf(out, "        return lex();\n");
 	fprintf(out, "    } else {\n");
@@ -640,12 +664,11 @@ bool LexerGenerator::generate_lex(std::FILE* out, const char* lexer_name) {
 	return true;
 }
 
-bool LexerGenerator::generate_parse(std::FILE* out, const char* lexer_name) {
-	fprintf(out, "bool %s::parse() {\n", lexer_name);
+bool LexerGenerator::generate_run(std::FILE* out, const char* lexer_name) {
+	fprintf(out, "bool %s::run() {\n", lexer_name);
 
-	fprintf(out, "    Token token;\n");
 	fprintf(out, "    while (true) {\n");
-	fprintf(out, "        token = next();\n");
+	fprintf(out, "        const Token& token = next();\n");
 	fprintf(out, "        if (token.type == ERROR) {\n");
 	fprintf(out, "            return false;\n");
 	fprintf(out, "        } else if (token.type == EOS) {\n");
@@ -653,6 +676,21 @@ bool LexerGenerator::generate_parse(std::FILE* out, const char* lexer_name) {
 	fprintf(out, "        }\n");
 	fprintf(out, "    }\n");
 	fprintf(out, "    return true;\n");
+
+	fprintf(out, "}\n");
+	return true;
+}
+
+bool LexerGenerator::generate_token_type(std::FILE* out, const char* lexer_name) {
+	fprintf(out, "%s::TokenType %s::token_type(const std::string& name) {\n", lexer_name, lexer_name);
+
+	fprintf(out, "    std::map<const char *, TokenType>::const_iterator it =\n");
+	fprintf(out, "            s_token_types.find(name.c_str());\n");
+	fprintf(out, "    if (it != s_token_types.end()) {\n");
+	fprintf(out, "        return it->second;\n");
+	fprintf(out, "    } else {\n");
+	fprintf(out, "        return TokenType::ERROR;\n");
+	fprintf(out, "    }\n");
 
 	fprintf(out, "}\n");
 	return true;

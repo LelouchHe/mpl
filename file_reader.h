@@ -12,7 +12,11 @@ public:
 	FileReader(const std::string& file_name)
 		: _ifs(file_name, std::ifstream::in) {
 	}
+	~FileReader() {
 
+	}
+
+public:
 	virtual char next() {
 		_current = _ifs.get();
 		return _current;

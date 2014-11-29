@@ -1,76 +1,128 @@
 #include "auto_parser.h"
 
+#include <map>
 #include <stack>
 #include <iostream>
+#include <cassert>
+
 #include "../reader.h"
+#include "../string_reader.h"
+#include "gramma.h"
 
 namespace mpl {
 namespace parser {
 
-template <typename Lexer>
-AutoParser<Lexer>::AutoParser(::mpl::Reader& reader) :
+static Gramma s_gramma;
+static bool s_init = false;
+
+static const std::vector<std::pair<std::string, std::string> > s_rules = {
+	{ "T", "R" },
+	{ "T", "'a' T 'c'" },
+	{ "R", "" },
+	{ "R", "'b' R" },
+};
+
+// Ç°ºó×·¸Ï
+static std::vector<std::string> split(const std::string& str, char delim) {
+	std::vector<std::string> strs;
+
+	size_t begin = 0;
+	size_t end = begin;
+	while (end < str.size()) {
+		if (str[end] == delim) {
+			while (begin < end && str[begin] == delim) {
+				begin++;
+			}
+			if (begin != end) {
+				strs.push_back(str.substr(begin, end - begin));
+				begin = end;
+			}
+		}
+		end++;
+	}
+	while (begin < end && str[begin] == delim) {
+		begin++;
+	}
+	if (begin != end) {
+		strs.push_back(str.substr(begin, end - begin));
+	}
+
+	return strs;
+}
+
+static void init() {
+	for (size_t i = 0; i < s_rules.size(); i++) {
+		Gramma::Token left(Gramma::TokenType::NONTERMINAL, s_rules[i].first);
+
+		Gramma::Rule rule;
+		std::vector<std::string> strs = split(s_rules[i].second, ' ');
+		for (size_t j = 0; j < strs.size(); j++) {
+			const std::string& str = strs[j];
+			if (str.empty()) {
+				continue;
+			}
+
+			Gramma::Token token;
+			if (str[0] == '\'') {
+				assert(str[str.size() - 1] == '\'');
+
+				::mpl::StringReader reader(str.substr(1, str.size() - 2));
+				AutoParser::Lexer lexer(reader);
+				token = lexer.next();
+				assert(lexer.lookahead().type == Gramma::TokenType::EOS);
+			} else {
+				Gramma::TokenType type = Lexer::token_type(str);
+				if (type != Gramma::TokenType::ERROR) {
+					token.type = type;	
+				} else {
+					token.type = Gramma::TokenType::NONTERMINAL;
+				}
+				token.text = str;
+			}
+
+			rule.push_back(token);
+		}
+
+		s_gramma.add(left, rule);
+	}
+
+	s_gramma.build();
+}
+
+AutoParser::AutoParser(::mpl::Reader& reader) :
 		_lexer(reader) {
-	init();
+	if (!s_init) {
+		init();
+		s_init = true;
+	}
 }
 
-template <typename Lexer>
-AutoParser<Lexer>::~AutoParser() {
+AutoParser::~AutoParser() {
 
 }
 
-template <typename Lexer>
-void AutoParser<Lexer>::init() {
-	Gramma<Token>::Rule rule;
-	Token T(TokenType::NONTERMINAL, "T");
-	Token R(TokenType::NONTERMINAL, "R");
-	Token a(TokenType::TT_ID, "a");
-	Token b(TokenType::TT_ID, "b");
-	Token c(TokenType::TT_ID, "c");
-
-	rule.clear();
-	rule.push_back(R);
-	_gramma.add(T, rule);
-
-	rule.clear();
-	rule.push_back(a);
-	rule.push_back(T);
-	rule.push_back(c);
-	_gramma.add(T, rule);
-
-	rule.clear();
-	_gramma.add(R, rule);
-
-	rule.clear();
-	rule.push_back(b);
-	rule.push_back(R);
-	_gramma.add(R, rule);
-
-	_gramma.build();
-}
-
-template <typename Lexer>
-void AutoParser<Lexer>::parse() {
+void AutoParser::parse() {
 	std::stack<Token> st;
-	st.push(_gramma.start());
+	st.push(s_gramma.start());
 
-	while (!st.empty() && _lexer.lookahead().type != TokenType::ERROR) {
+	Token current = _lexer.next();
+	while (!st.empty() && current.type != TokenType::ERROR) {
 		Token token = st.top();
 		st.pop();
-
-		const Token& current = _lexer.next();
 
 		std::cout << "expected: " << token.text << std::endl;
 
 		if (token.type != TokenType::NONTERMINAL) {
 			if (token == current) {
 				std::cout << "match" << std::endl;
+				current = _lexer.next();
 			} else {
 				std::cout << "not match" << std::endl;
 				std::cout << "actually: " << current.text << std::endl;
 				break;
 			}
 		} else {
-			Gramma<Token>::Rule new_rule = _gramma.fetch(token, current);
+			Gramma::Rule new_rule = s_gramma.fetch(token, current);
 			if (new_rule.empty()) {
 				std::cout << "match empty" << std::endl;
 				continue;
@@ -88,17 +140,16 @@ void AutoParser<Lexer>::parse() {
 
 #if 1
 
-#include "../lexer/GeneratedLexer.h"
 #include "../file_reader.h"
+#include "../string_reader.h"
 
 using namespace std;
 
 int main() {
-	const char* file_name = "parser.txt";
+	// ::mpl::FileReader reader("parser.txt");
+	::mpl::StringReader reader("a a b b b c c");
 
-	::mpl::FileReader fr(file_name);
-
-	::mpl::parser::AutoParser<::mpl::lexer::GeneratedLexer> parser(fr);
+	::mpl::parser::AutoParser parser(reader);
 
 	parser.parse();
 

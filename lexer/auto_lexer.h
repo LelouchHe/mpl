@@ -3,8 +3,6 @@
 
 #include <sstream>
 #include "token.h"
-#include "detail/dfa_generator.h"
-#include "detail/dfa_merger.h"
 
 namespace mpl {
 class Reader;
@@ -22,17 +20,12 @@ public:
 
 	const Token& next();
 	const Token& lookahead();
-
-	Token parse(const char* beign, char** end);
+	static TokenType token_type(const std::string& name);
 
 private:
-	void init();
 	TokenType lex();
 
 private:
-	::mpl::lexer::detail::DFAGenerator _generator;
-	::mpl::lexer::detail::DFAMerger _merger;
-
 	::mpl::Reader& _reader;
 	std::ostringstream _buf;
 	char _current;

@@ -7,21 +7,17 @@
 namespace mpl {
 namespace parser {
 
-template <typename Token>
-const typename Gramma<Token>::Rule Gramma<Token>::NON_RULE;
+const Gramma::Rule Gramma::NON_RULE;
 
-template <typename Token>
-Gramma<Token>::Gramma() {
+Gramma::Gramma() {
 
 }
 
-template <typename Token>
-Gramma<Token>::~Gramma() {
+Gramma::~Gramma() {
 
 }
 
-template <typename Token>
-void Gramma<Token>::debug() {
+void Gramma::debug() {
 	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
 			it != _gramma.end(); ++it) {
 		const Token& left = it->first;
@@ -63,8 +59,7 @@ void Gramma<Token>::debug() {
 	}
 }
 
-template <typename Token>
-void Gramma<Token>::add(const Token& token, const Rule& rule) {
+void Gramma::add(const Token& token, const Rule& rule) {
 	assert(token.type == TokenType::NONTERMINAL);
 	if (_start.type == TokenType::EOS) {
 		_start = token;
@@ -72,8 +67,7 @@ void Gramma<Token>::add(const Token& token, const Rule& rule) {
 	_gramma[token].push_back(rule);
 }
 
-template <typename Token>
-bool Gramma<Token>::build() {
+bool Gramma::build() {
 
 	debug();
 
@@ -122,8 +116,7 @@ bool Gramma<Token>::build() {
 	return true;
 }
 
-template <typename Token>
-bool Gramma<Token>::dedup() {
+bool Gramma::dedup() {
 	std::map<Token, Rules> new_gramma;
 	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
 			it != _gramma.end(); ++it) {
@@ -143,8 +136,7 @@ bool Gramma<Token>::dedup() {
 
 // 没有显示的提供EPSILON,而是以empty为标识
 // 左递归消除会代码很多额外规则(因为进行了替换),应该可以对那些没有参与递归转换的规则,再转换回去
-template <typename Token>
-bool Gramma<Token>::left_recursion() {
+bool Gramma::left_recursion() {
 	std::map<Token, Rules> new_gramma;
 	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
 			it != _gramma.end(); ++it) {
@@ -222,8 +214,7 @@ bool Gramma<Token>::left_recursion() {
 	return true;
 }
 
-template <typename Token>
-bool Gramma<Token>::left_factor() {
+bool Gramma::left_factor() {
 	std::map<Token, Rules> new_gramma;
 	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
 			it != _gramma.end(); ++it) {
@@ -237,8 +228,7 @@ bool Gramma<Token>::left_factor() {
 	return true;
 }
 
-template <typename Token>
-bool Gramma<Token>::left_factor_token(
+bool Gramma::left_factor_token(
 		const Token& token, 
 		const Rules& rules,
 		std::string* suffix,
@@ -286,8 +276,7 @@ bool Gramma<Token>::left_factor_token(
 	return true;
 }
 
-template <typename Token>
-void Gramma<Token>::merge(const std::map<Token, Rules>& g, bool append) {
+void Gramma::merge(const std::map<Token, Rules>& g, bool append) {
 	for (std::map<Token, Rules>::const_iterator it = g.begin();
 			it != g.end(); ++it) {
 		if (append) {
@@ -298,8 +287,7 @@ void Gramma<Token>::merge(const std::map<Token, Rules>& g, bool append) {
 	}
 }
 
-template <typename Token>
-void Gramma<Token>::add_fake_start() {
+void Gramma::add_fake_start() {
 	Token new_start(_start.type, "*" + _start.text);
 	Rule rule;
 	rule.push_back(_start);
@@ -318,8 +306,7 @@ nullable(a | b) = nullable(a) || nullable(b)
 
 #endif
 
-template <typename Token>
-bool Gramma<Token>::generate_nullable() {
+bool Gramma::generate_nullable() {
 	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
 			it != _gramma.end(); ++it) {
 		assert(it->first.type == TokenType::NONTERMINAL);
@@ -377,8 +364,7 @@ first(a | b) = first(a) + first(b)
 
 #endif
 
-template <typename Token>
-bool Gramma<Token>::generate_first() {
+bool Gramma::generate_first() {
 	// 可以加一个bool位标,表示是否变动,作为优化
 	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
 			it != _gramma.end(); ++it) {
@@ -448,8 +434,7 @@ follow(b) = first(c)
 
 #endif
 
-template <typename Token>
-bool Gramma<Token>::generate_follow() {
+bool Gramma::generate_follow() {
 	for (std::map<Token, Rules>::const_iterator it = _gramma.begin();
 			it != _gramma.end(); ++it) {
 		assert(it->first.type == TokenType::NONTERMINAL);
@@ -524,13 +509,11 @@ bool Gramma<Token>::generate_follow() {
 	return true;
 }
 
-template <typename Token>
-const Token& Gramma<Token>::start() const {
+const Gramma::Token& Gramma::start() const {
 	return _start;
 }
 
-template <typename Token>
-const typename Gramma<Token>::Rule& Gramma<Token>::fetch(const Token& token, const Token& next) const {
+const Gramma::Rule& Gramma::fetch(const Token& token, const Token& next) const {
 	std::map<Token, Rules>::const_iterator it = _gramma.find(token);
 	if (it == _gramma.end()) {
 		return NON_RULE;
@@ -583,8 +566,8 @@ const typename Gramma<Token>::Rule& Gramma<Token>::fetch(const Token& token, con
 using namespace std;
 
 int main() {
-	::mpl::parser::Gramma<::mpl::lexer::Token> gramma;
-	::mpl::parser::Gramma<::mpl::lexer::Token>::Rule rule;
+	::mpl::parser::Gramma gramma;
+	::mpl::parser::Gramma::Rule rule;
 
 #if 0
 
@@ -711,8 +694,7 @@ int main() {
 				break;
 			}
 		} else {
-			::mpl::parser::Gramma<::mpl::lexer::Token>::Rule new_rule =
-					gramma.fetch(token, tokens[current]);
+			::mpl::parser::Gramma::Rule new_rule = gramma.fetch(token, tokens[current]);
 			if (new_rule.empty()) {
 				std::cout << "match empty" << std::endl;
 				continue;

@@ -22,6 +22,8 @@ public:
 	const Token& next();
 	const Token& lookahead();
 
+	static TokenType token_type(const std::string& name);
+
 private:
 	TokenType lex();
 
@@ -46,7 +48,7 @@ private:
 
 private:
 	::mpl::Reader& _reader;
-	std::ostringstream _buff;
+	std::ostringstream _buf;
 	char _current;
 
 	int _line_num;

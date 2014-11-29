@@ -42,6 +42,7 @@ private:
 	bool generate_token(std::FILE* out);
 	bool generate_token_comparison(std::FILE* out, const char* lexer_name);
 	bool generate_dfa(std::FILE* out);
+	bool generate_token_types(std::FILE* out, const char* lexer_name);
 	bool generate_trans(std::FILE* out, const ::mpl::lexer::detail::DFA& dfa);
 	bool generate_tags(std::FILE* out, const ::mpl::lexer::detail::DFA& dfa);
 	bool generate_start_last(std::FILE* out, const ::mpl::lexer::detail::DFA& dfa);
@@ -49,9 +50,10 @@ private:
 	bool generate_action(std::FILE* out, const char* lexer_name);
 
 	bool generate_interface(std::FILE* out, const char* lexer_name);
-	bool generate_token_type(std::FILE* out, const char* lexer_name);
+	bool generate_tag_type(std::FILE* out, const char* lexer_name);
 	bool generate_lex(std::FILE* out, const char* lexer_name);
-	bool generate_parse(std::FILE* out, const char* lexer_name);
+	bool generate_run(std::FILE* out, const char* lexer_name);
+	bool generate_token_type(std::FILE* out, const char* lexer_name);
 
 private:
 	typedef std::vector<std::string> Statment;

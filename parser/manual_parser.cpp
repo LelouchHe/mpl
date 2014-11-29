@@ -7,13 +7,11 @@
 namespace mpl {
 namespace parser {
 
-template <typename Lexer>
-ManualParser<Lexer>::ManualParser(::mpl::Reader& reader) :
+ManualParser::ManualParser(::mpl::Reader& reader) :
 	_lexer(reader) {
 }
 
-template <typename Lexer>
-ManualParser<Lexer>::~ManualParser() {
+ManualParser::~ManualParser() {
 
 }
 
@@ -28,8 +26,7 @@ term  -> NUM | ID | '(' value ')'
 
 #endif
 
-template <typename Lexer>
-int ManualParser<Lexer>::term() {
+int ManualParser::term() {
 	Token t = _lexer.next();
 
 	switch (t.type) {
@@ -56,8 +53,7 @@ int ManualParser<Lexer>::term() {
 	return 0;
 }
 
-template <typename Lexer>
-int ManualParser<Lexer>::prod() {
+int ManualParser::prod() {
 	int n = term();
 
 	Token ahead = _lexer.lookahead();
@@ -74,8 +70,7 @@ int ManualParser<Lexer>::prod() {
 	return n;
 }
 
-template <typename Lexer>
-int ManualParser<Lexer>::value() {
+int ManualParser::value() {
 	int n = prod();
 
 	Token ahead = _lexer.lookahead();
@@ -92,8 +87,7 @@ int ManualParser<Lexer>::value() {
 	return n;
 }
 
-template <typename Lexer>
-void ManualParser<Lexer>::expr() {
+void ManualParser::expr() {
 	Token t = _lexer.next();
 	if (t.type == TokenType::TT_ASSIGN) {
 		std::cout << value() << std::endl;
@@ -106,8 +100,7 @@ void ManualParser<Lexer>::expr() {
 	}
 }
 
-template <typename Lexer>
-void ManualParser<Lexer>::parse() {
+void ManualParser::parse() {
 	while (_lexer.lookahead().type != TokenType::EOS) {
 		expr();
 	}
@@ -120,34 +113,15 @@ void ManualParser<Lexer>::parse() {
 
 #include <iostream>
 #include "../file_reader.h"
-#include "../lexer/manual_lexer.h"
-#include "../lexer/auto_lexer.h"
-#include "../lexer/GeneratedLexer.h"
 
 using namespace std;
 
 int main() {
 	const char* file_name = "lexer.txt";
 
-	::mpl::FileReader fr(file_name);
+	::mpl::FileReader reader(file_name);
 
-	/*
-	::mpl::lexer::GeneratedLexer lexer(fr);
-	while (true) {
-		::mpl::lexer::GeneratedLexer::Token t = lexer.next();
-		if (t.type == ::mpl::lexer::GeneratedLexer::TokenType::EOS) {
-			break;
-		} else if (t.type == ::mpl::lexer::GeneratedLexer::TokenType::ERROR) {
-			cout << "error" << endl;
-			break;
-		}
-		cout << t.type << ": " << t.text << endl;
-	}
-	*/
-
-	//::mpl::parser::ManualParser< ::mpl::lexer::ManualLexer> parser(fr);
-	//::mpl::parser::ManualParser<::mpl::lexer::AutoLexer> parser(fr);
-	::mpl::parser::ManualParser<::mpl::lexer::GeneratedLexer> parser(fr);
+	::mpl::parser::ManualParser parser(reader);
 
 	parser.parse();
 

@@ -1408,6 +1408,35 @@ static const States s_last = {
 	116, 117, 118, 119, 120, 
 	121, 122, 
 };
+static const std::map<const char *, GeneratedLexer::TokenType> s_token_types = {
+	{ "AND", GeneratedLexer::TokenType::TT_AND }, { "BREAK", GeneratedLexer::TokenType::TT_BREAK }, 
+	{ "DO", GeneratedLexer::TokenType::TT_DO }, { "ELSE", GeneratedLexer::TokenType::TT_ELSE }, 
+	{ "END", GeneratedLexer::TokenType::TT_END }, { "FALSE", GeneratedLexer::TokenType::TT_FALSE }, 
+	{ "FOR", GeneratedLexer::TokenType::TT_FOR }, { "FUNCTION", GeneratedLexer::TokenType::TT_FUNCTION }, 
+	{ "GOTO", GeneratedLexer::TokenType::TT_GOTO }, { "IF", GeneratedLexer::TokenType::TT_IF }, 
+	{ "IN", GeneratedLexer::TokenType::TT_IN }, { "LOCAL", GeneratedLexer::TokenType::TT_LOCAL }, 
+	{ "NIL", GeneratedLexer::TokenType::TT_NIL }, { "NOT", GeneratedLexer::TokenType::TT_NOT }, 
+	{ "OR", GeneratedLexer::TokenType::TT_OR }, { "REPEAT", GeneratedLexer::TokenType::TT_REPEAT }, 
+	{ "RETURN", GeneratedLexer::TokenType::TT_RETURN }, { "THEN", GeneratedLexer::TokenType::TT_THEN }, 
+	{ "TRUE", GeneratedLexer::TokenType::TT_TRUE }, { "UNTIL", GeneratedLexer::TokenType::TT_UNTIL }, 
+	{ "WHILE", GeneratedLexer::TokenType::TT_WHILE }, { "LEFT_PARENTHESIS", GeneratedLexer::TokenType::TT_LEFT_PARENTHESIS }, 
+	{ "RIGHT_PARENTHESIS", GeneratedLexer::TokenType::TT_RIGHT_PARENTHESIS }, { "LEFT_SQUARE", GeneratedLexer::TokenType::TT_LEFT_SQUARE }, 
+	{ "RIGHT_SQUARE", GeneratedLexer::TokenType::TT_RIGHT_SQUARE }, { "LEFT_BRACE", GeneratedLexer::TokenType::TT_LEFT_BRACE }, 
+	{ "RIGHT_BRACE", GeneratedLexer::TokenType::TT_RIGHT_BRACE }, { "EXP", GeneratedLexer::TokenType::TT_EXP }, 
+	{ "MUL", GeneratedLexer::TokenType::TT_MUL }, { "DIV", GeneratedLexer::TokenType::TT_DIV }, 
+	{ "MOD", GeneratedLexer::TokenType::TT_MOD }, { "PLUS", GeneratedLexer::TokenType::TT_PLUS }, 
+	{ "MINUS", GeneratedLexer::TokenType::TT_MINUS }, { "LESS", GeneratedLexer::TokenType::TT_LESS }, 
+	{ "LESS_EQUAL", GeneratedLexer::TokenType::TT_LESS_EQUAL }, { "GREATER", GeneratedLexer::TokenType::TT_GREATER }, 
+	{ "GREATER_EQUAL", GeneratedLexer::TokenType::TT_GREATER_EQUAL }, { "EQUAL", GeneratedLexer::TokenType::TT_EQUAL }, 
+	{ "NOT_EQUAL", GeneratedLexer::TokenType::TT_NOT_EQUAL }, { "ASSIGN", GeneratedLexer::TokenType::TT_ASSIGN }, 
+	{ "LEN", GeneratedLexer::TokenType::TT_LEN }, { "COMMA", GeneratedLexer::TokenType::TT_COMMA }, 
+	{ "SEMICOLON", GeneratedLexer::TokenType::TT_SEMICOLON }, { "COLON", GeneratedLexer::TokenType::TT_COLON }, 
+	{ "LABEL", GeneratedLexer::TokenType::TT_LABEL }, { "DOT", GeneratedLexer::TokenType::TT_DOT }, 
+	{ "CONCAT", GeneratedLexer::TokenType::TT_CONCAT }, { "VARARG", GeneratedLexer::TokenType::TT_VARARG }, 
+	{ "SPACE", GeneratedLexer::TokenType::TT_SPACE }, { "NEWLINE", GeneratedLexer::TokenType::TT_NEWLINE }, 
+	{ "ID", GeneratedLexer::TokenType::TT_ID }, { "NUMBER", GeneratedLexer::TokenType::TT_NUMBER }, 
+	{ "STRING", GeneratedLexer::TokenType::TT_STRING }, { "COMMENT", GeneratedLexer::TokenType::TT_COMMENT }, 
+};
 typedef void (GeneratedLexer::*ActionType)(GeneratedLexer::Token&);
 static const std::map<GeneratedLexer::TokenType, ActionType> s_actions = {
 	{ GeneratedLexer::TT_NEWLINE, &GeneratedLexer::NEWLINE_action },
@@ -1420,7 +1449,7 @@ void GeneratedLexer::NEWLINE_action(GeneratedLexer::Token& token) {
 void GeneratedLexer::SPACE_action(GeneratedLexer::Token& token) {
     token.type = SKIP;
 }
-GeneratedLexer::TokenType GeneratedLexer::token_type(int tag) {
+GeneratedLexer::TokenType GeneratedLexer::tag_type(int tag) {
     TokenType type = (TokenType)tag;
     std::map<TokenType, ActionType>::const_iterator it = s_actions.find(type);
     if (it == s_actions.end()) {
@@ -1432,18 +1461,6 @@ GeneratedLexer::TokenType GeneratedLexer::token_type(int tag) {
     (this->*(it->second))(token);
     _buf.str(token.text);
     return token.type;
-}
-bool GeneratedLexer::parse() {
-    Token token;
-    while (true) {
-        token = next();
-        if (token.type == ERROR) {
-            return false;
-        } else if (token.type == EOS) {
-            break;
-        }
-    }
-    return true;
 }
 GeneratedLexer::TokenType GeneratedLexer::lex() {
     _buf.str("");
@@ -1476,6 +1493,7 @@ GeneratedLexer::TokenType GeneratedLexer::lex() {
     }
     if (pre == -1) {
         if (_reader.eof()) {
+            _buf << "$";
             return EOS;
         } else {
             return ERROR;
@@ -1483,11 +1501,31 @@ GeneratedLexer::TokenType GeneratedLexer::lex() {
     }
     std::map<size_t, int>::const_iterator it = s_tags.find(pre);
     assert(it != s_tags.end());
-    TokenType type = token_type(it->second);
+    TokenType type = tag_type(it->second);
     if (type == SKIP) {
         return lex();
     } else {
         return type;
+    }
+}
+bool GeneratedLexer::run() {
+    while (true) {
+        const Token& token = next();
+        if (token.type == ERROR) {
+            return false;
+        } else if (token.type == EOS) {
+            break;
+        }
+    }
+    return true;
+}
+GeneratedLexer::TokenType GeneratedLexer::token_type(const std::string& name) {
+    std::map<const char *, TokenType>::const_iterator it =
+            s_token_types.find(name.c_str());
+    if (it != s_token_types.end()) {
+        return it->second;
+    } else {
+        return TokenType::ERROR;
     }
 }
 const GeneratedLexer::Token& GeneratedLexer::next() {

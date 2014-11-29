@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 
+#include "../config.h"
+
 namespace mpl {
 
 class Reader;
@@ -11,15 +13,16 @@ class Reader;
 namespace parser {
 
 // Lexer需要满足的具体要求,见 lexer.h
-template <typename Lexer>
 class ManualParser {
 public:
 	ManualParser(::mpl::Reader& reader);
 	~ManualParser();
 
 public:
-	typedef typename Lexer::Token Token;
-	typedef typename Token::TokenType TokenType;
+	typedef ::mpl::Lexer Lexer;
+
+	typedef Lexer::Token Token;
+	typedef Token::TokenType TokenType;
 
 	void parse();
 

@@ -43,6 +43,8 @@ extern const char* TOKEN_RE_NUMBER;
 extern const char* TOKEN_RE_STRING;
 extern const char* TOKEN_RE_COMMENT;
 
+extern const std::map<const char*, TokenType> TOKEN_TYPES;
+
 class Token{
 public:
 	typedef TokenType TokenType;
