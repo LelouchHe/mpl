@@ -12,28 +12,28 @@ static ::mpl::lexer::detail::DFAMerger s_merger;
 static bool s_init = false;
 
 static void init() {
-	for (std::map<const char *, TokenType>::const_iterator it = TOKEN_RE_KEYS.begin();
-		it != TOKEN_RE_KEYS.end(); ++it) {
-		s_generator.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
+	for (std::map<std::string, TokenType>::const_iterator it = TOKEN_RE_KEYS.begin();
+			it != TOKEN_RE_KEYS.end(); ++it) {
+		s_generator.parse((::mpl::lexer::detail::Byte *)it->first.c_str(), (int)it->second);
 		s_merger.add(s_generator);
 	}
 
-	for (std::map<const char *, TokenType>::const_iterator it = TOKEN_RE_SYMBOLS.begin();
-		it != TOKEN_RE_SYMBOLS.end(); ++it) {
-		s_generator.parse((::mpl::lexer::detail::Byte *)it->first, (int)it->second);
+	for (std::map<std::string, TokenType>::const_iterator it = TOKEN_RE_SYMBOLS.begin();
+			it != TOKEN_RE_SYMBOLS.end(); ++it) {
+		s_generator.parse((::mpl::lexer::detail::Byte *)it->first.c_str(), (int)it->second);
 		s_merger.add(s_generator);
 	}
 
-	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_ID, (int)TT_ID);
+	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_ID.c_str(), (int)TT_ID);
 	s_merger.add(s_generator);
 
-	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_NUMBER, (int)TT_NUMBER);
+	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_NUMBER.c_str(), (int)TT_NUMBER);
 	s_merger.add(s_generator);
 
-	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_STRING, (int)TT_STRING);
+	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_STRING.c_str(), (int)TT_STRING);
 	s_merger.add(s_generator);
 
-	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_COMMENT, (int)TT_COMMENT);
+	s_generator.parse((::mpl::lexer::detail::Byte *)TOKEN_RE_COMMENT.c_str(), (int)TT_COMMENT);
 	s_merger.add(s_generator);
 
 	// 二者好像结果一样,应该需要再看看
@@ -147,8 +147,8 @@ const AutoLexer::Token& AutoLexer::lookahead() {
 }
 
 AutoLexer::TokenType AutoLexer::token_type(const std::string& name) {
-	std::map<const char *, TokenType>::const_iterator it =
-			TOKEN_TYPES.find(name.c_str());
+	std::map<std::string, TokenType>::const_iterator it =
+			TOKEN_TYPES.find(name);
 	if (it != TOKEN_TYPES.end()) {
 		return it->second;
 	} else {

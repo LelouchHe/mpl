@@ -69,39 +69,22 @@ void Gramma::add(const Token& token, const Rule& rule) {
 
 bool Gramma::build() {
 
-	debug();
-
 	std::cout << " ---- " << std::endl;
+	debug();
 
 	if (!dedup()) {
 		return false;
 	}
 
-	debug();
-
-	std::cout << " ---- " << std::endl;
-
 	if (!left_recursion()) {
 		return false;
 	}
-
-	debug();
-
-	std::cout << " ---- " << std::endl;
 
 	if (!left_factor()) {
 		return false;
 	}
 
-	debug();
-
-	std::cout << " ---- " << std::endl;
-
 	add_fake_start();
-
-	debug();
-
-	std::cout << " ---- " << std::endl;
 
 	generate_nullable();
 
@@ -109,6 +92,7 @@ bool Gramma::build() {
 
 	generate_follow();
 
+	std::cout << " ---- " << std::endl;
 	debug();
 
 	std::cout << " ---- " << std::endl;

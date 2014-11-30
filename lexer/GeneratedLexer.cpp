@@ -1408,7 +1408,7 @@ static const States s_last = {
 	116, 117, 118, 119, 120, 
 	121, 122, 
 };
-static const std::map<const char *, GeneratedLexer::TokenType> s_token_types = {
+static const std::map<std::string, GeneratedLexer::TokenType> s_token_types = {
 	{ "AND", GeneratedLexer::TokenType::TT_AND }, { "BREAK", GeneratedLexer::TokenType::TT_BREAK }, 
 	{ "DO", GeneratedLexer::TokenType::TT_DO }, { "ELSE", GeneratedLexer::TokenType::TT_ELSE }, 
 	{ "END", GeneratedLexer::TokenType::TT_END }, { "FALSE", GeneratedLexer::TokenType::TT_FALSE }, 
@@ -1520,8 +1520,8 @@ bool GeneratedLexer::run() {
     return true;
 }
 GeneratedLexer::TokenType GeneratedLexer::token_type(const std::string& name) {
-    std::map<const char *, TokenType>::const_iterator it =
-            s_token_types.find(name.c_str());
+    std::map<std::string, TokenType>::const_iterator it =
+            s_token_types.find(name);
     if (it != s_token_types.end()) {
         return it->second;
     } else {

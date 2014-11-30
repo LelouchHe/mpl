@@ -371,6 +371,9 @@ bool LexerGenerator::generate_token_comparison(std::FILE* out, const char* lexer
 	fprintf(out, "    if (a.type != b.type) {\n");
 	fprintf(out, "        return false;\n");
 	fprintf(out, "    }\n");
+	fprintf(out, "    if (a.type != %s::TokenType::NONTERMINAL) {\n", lexer_name);
+	fprintf(out, "        return true;\n");
+	fprintf(out, "    }\n");
 	fprintf(out, "    return a.text == b.text;\n");
 	fprintf(out, "}\n");
 
@@ -378,6 +381,9 @@ bool LexerGenerator::generate_token_comparison(std::FILE* out, const char* lexer
 	fprintf(out, "    if (a.type < b.type) {\n");
 	fprintf(out, "        return true;\n");
 	fprintf(out, "    } else if (a.type > b.type) {\n");
+	fprintf(out, "        return false;\n");
+	fprintf(out, "    }\n");
+	fprintf(out, "    if (a.type != %s::TokenType::NONTERMINAL) {\n", lexer_name);
 	fprintf(out, "        return false;\n");
 	fprintf(out, "    }\n");
 	fprintf(out, "    return a.text < b.text;\n");
@@ -523,7 +529,7 @@ bool LexerGenerator::generate_token_types(std::FILE* out, const char* lexer_name
 	size_t size = _priorities.size();
 	assert(size == _definitions.size());
 
-	fprintf(out, "static const std::map<const char *, %s::TokenType> s_token_types = {", lexer_name);
+	fprintf(out, "static const std::map<std::string, %s::TokenType> s_token_types = {", lexer_name);
 
 	for (size_t i = 0; i < size; i++) {
 		if (i % 2 == 0) {
@@ -684,8 +690,8 @@ bool LexerGenerator::generate_run(std::FILE* out, const char* lexer_name) {
 bool LexerGenerator::generate_token_type(std::FILE* out, const char* lexer_name) {
 	fprintf(out, "%s::TokenType %s::token_type(const std::string& name) {\n", lexer_name, lexer_name);
 
-	fprintf(out, "    std::map<const char *, TokenType>::const_iterator it =\n");
-	fprintf(out, "            s_token_types.find(name.c_str());\n");
+	fprintf(out, "    std::map<std::string, TokenType>::const_iterator it =\n");
+	fprintf(out, "            s_token_types.find(name);\n");
 	fprintf(out, "    if (it != s_token_types.end()) {\n");
 	fprintf(out, "        return it->second;\n");
 	fprintf(out, "    } else {\n");

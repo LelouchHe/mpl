@@ -40,8 +40,8 @@ const ManualLexer::Token& ManualLexer::lookahead() {
 }
 
 ManualLexer::TokenType ManualLexer::token_type(const std::string& name) {
-	std::map<const char *, TokenType>::const_iterator it =
-		TOKEN_TYPES.find(name.c_str());
+	std::map<std::string, TokenType>::const_iterator it =
+			TOKEN_TYPES.find(name);
 	if (it != TOKEN_TYPES.end()) {
 		return it->second;
 	} else {
@@ -282,8 +282,8 @@ ManualLexer::TokenType ManualLexer::lex() {
 		default:
 			{
 				read_id();
-				std::map<const char *, TokenType>::const_iterator it =
-						TOKEN_RE_KEYS.find(_buf.str().c_str());
+				std::map<std::string, TokenType>::const_iterator it =
+						TOKEN_RE_KEYS.find(_buf.str());
 				if (it != TOKEN_RE_KEYS.end()) {
 					return it->second;
 				}

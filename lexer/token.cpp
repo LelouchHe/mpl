@@ -3,7 +3,7 @@
 namespace mpl {
 namespace lexer {
 
-const std::map<const char*, TokenType> TOKEN_RE_KEYS = {
+const std::map<std::string, TokenType> TOKEN_RE_KEYS = {
 	{ "and", TT_AND }, { "break", TT_BREAK }, { "do", TT_DO },
 	{ "else", TT_ELSE }, { "end", TT_END }, { "false", TT_FALSE },
 	{ "for", TT_FOR }, { "function", TT_FUNCTION }, { "goto", TT_GOTO },
@@ -14,7 +14,7 @@ const std::map<const char*, TokenType> TOKEN_RE_KEYS = {
 	{ "while", TT_WHILE }
 };
 
-const std::map<const char*, TokenType> TOKEN_RE_SYMBOLS = {
+const std::map<std::string, TokenType> TOKEN_RE_SYMBOLS = {
 	{ "\\(", TT_LEFT_PARENTHESIS }, { "\\)", TT_RIGHT_PARENTHESIS },
 	{ "\\[", TT_LEFT_SQUARE }, { "\\]", TT_RIGHT_SQUARE },
 	{ "{", TT_LEFT_BRACE }, { "}", TT_RIGHT_BRACE },
@@ -28,15 +28,15 @@ const std::map<const char*, TokenType> TOKEN_RE_SYMBOLS = {
 	{ "\\s+", TT_SPACE }, { "\\n", TT_NEWLINE }
 };
 
-const char* TOKEN_RE_ID = "[_\\a][\\w]*";
+const std::string TOKEN_RE_ID = "[_\\a][\\w]*";
 // 目前只处理十进制实数
-const char* TOKEN_RE_NUMBER = "\\-?((\\d+)|(\\d*\\.\\d+)([eE][\\-\\+]?\\d+)?)";
+const std::string TOKEN_RE_NUMBER = "\\-?((\\d+)|(\\d*\\.\\d+)([eE][\\-\\+]?\\d+)?)";
 // 目前只处理单引号
-const char* TOKEN_RE_STRING = "'[^']*'";
+const std::string TOKEN_RE_STRING = "'[^']*'";
 // 目前只处理单行注释
-const char* TOKEN_RE_COMMENT = "\\-\\-[^\\n]*";
+const std::string TOKEN_RE_COMMENT = "\\-\\-[^\\n]*";
 
-const std::map<const char*, TokenType> TOKEN_TYPES = {
+const std::map<std::string, TokenType> TOKEN_TYPES = {
 	{ "AND", TT_AND }, { "BREAK", TT_BREAK }, { "DO", TT_DO },
 	{ "ELSE", TT_ELSE }, { "END", TT_END }, { "FALSE", TT_FALSE },
 	{ "FOR", TT_FOR }, { "FUNCTION", TT_FUNCTION }, { "GOTO", TT_GOTO },
@@ -58,7 +58,6 @@ const std::map<const char*, TokenType> TOKEN_TYPES = {
 	{ "DOT", TT_DOT }, { "CONCAT", TT_CONCAT }, { "VARARG", TT_VARARG },
 	{ "SPACE", TT_SPACE }, { "NEWLINE", TT_NEWLINE },
 
-	// 统称
 	{ "ID", TT_ID }, { "NUMBER", TT_NUMBER }, { "STRING", TT_STRING }, { "COMMENT", TT_COMMENT },
 };
 

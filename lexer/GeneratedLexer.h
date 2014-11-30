@@ -51,9 +51,13 @@ private:
     Token _next;
     Token _ahead;
 };
+
 inline bool operator==(const GeneratedLexer::Token& a, const GeneratedLexer::Token& b) {
     if (a.type != b.type) {
         return false;
+    }
+    if (a.type != GeneratedLexer::TokenType::NONTERMINAL) {
+        return true;
     }
     return a.text == b.text;
 }
@@ -63,11 +67,15 @@ inline bool operator<(const GeneratedLexer::Token& a, const GeneratedLexer::Toke
     } else if (a.type > b.type) {
         return false;
     }
+    if (a.type != GeneratedLexer::TokenType::NONTERMINAL) {
+        return false;
+    }
     return a.text < b.text;
 }
 inline bool operator<=(const GeneratedLexer::Token& a, const GeneratedLexer::Token& b) {
     return a < b || a == b;
 }
+
 } // namespace lexer
 } // namespace mpl
 #endif // MPL_LEXER_GeneratedLexer_H

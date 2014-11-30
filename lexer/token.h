@@ -36,14 +36,14 @@ enum TokenType {
 	EOS, EPSILON, NONTERMINAL, ERROR, SKIP, LAST_TOKEN,
 };
 
-extern const std::map<const char*, TokenType> TOKEN_RE_KEYS;
-extern const std::map<const char*, TokenType> TOKEN_RE_SYMBOLS;
-extern const char* TOKEN_RE_ID;
-extern const char* TOKEN_RE_NUMBER;
-extern const char* TOKEN_RE_STRING;
-extern const char* TOKEN_RE_COMMENT;
+extern const std::map<std::string, TokenType> TOKEN_RE_KEYS;
+extern const std::map<std::string, TokenType> TOKEN_RE_SYMBOLS;
+extern const std::string TOKEN_RE_ID;
+extern const std::string TOKEN_RE_NUMBER;
+extern const std::string TOKEN_RE_STRING;
+extern const std::string TOKEN_RE_COMMENT;
 
-extern const std::map<const char*, TokenType> TOKEN_TYPES;
+extern const std::map<std::string, TokenType> TOKEN_TYPES;
 
 class Token{
 public:
@@ -67,6 +67,10 @@ inline bool operator==(const Token& left, const Token& right) {
 		return false;
 	}
 
+	if (left.type != TokenType::NONTERMINAL) {
+		return true;
+	}
+
 	return left.text == right.text;
 }
 
@@ -74,6 +78,10 @@ inline bool operator<(const Token& left, const Token& right) {
 	if (left.type < right.type) {
 		return true;
 	} else if (left.type > right.type) {
+		return false;
+	}
+
+	if (left.type != TokenType::NONTERMINAL) {
 		return false;
 	}
 

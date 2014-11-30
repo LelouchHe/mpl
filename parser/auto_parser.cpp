@@ -16,10 +16,23 @@ static Gramma s_gramma;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
+	{ "goal", "expr" },
+	{ "expr", "expr '+' term" },
+	{ "expr", "expr '-' term" },
+	{ "expr", "term" },
+	{ "term", "term '*' factor" },
+	{ "term", "term '/' factor" },
+	{ "term", "factor" },
+	{ "factor", "'(' expr ')'" },
+	{ "factor", "NUMBER" },
+	{ "factor", "ID" },
+
+	/*
 	{ "T", "R" },
-	{ "T", "'a' T 'c'" },
+	{ "T", "ID T 'c'" },
 	{ "R", "" },
 	{ "R", "'b' R" },
+	*/
 };
 
 // Ç°ºó×·¸Ï
@@ -110,15 +123,14 @@ void AutoParser::parse() {
 		Token token = st.top();
 		st.pop();
 
-		std::cout << "expected: " << token.text << std::endl;
+		std::cout << "expected: (" << token.type << ", " << token.text << ")" << std::endl;
 
 		if (token.type != TokenType::NONTERMINAL) {
 			if (token == current) {
-				std::cout << "match" << std::endl;
+				std::cout << "match: (" << current.type << ", " << current.text << ")" << std::endl;
 				current = _lexer.next();
 			} else {
-				std::cout << "not match" << std::endl;
-				std::cout << "actually: " << current.text << std::endl;
+				std::cout << "not match: (" << current.type << ", " << current.text << ")" << std::endl;
 				break;
 			}
 		} else {
@@ -147,7 +159,7 @@ using namespace std;
 
 int main() {
 	// ::mpl::FileReader reader("parser.txt");
-	::mpl::StringReader reader("a a b b b c c");
+	::mpl::StringReader reader("2+3*4");
 
 	::mpl::parser::AutoParser parser(reader);
 
