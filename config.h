@@ -15,14 +15,6 @@
 
 namespace mpl {
 
-namespace lexer {
-
-class ManualLexer;
-class LLLexer;
-class GeneratedLexer;
-
-} // namespace lexer
-
 #if LEXER_MANUAL
 typedef ::mpl::lexer::ManualLexer Lexer;
 #elif LEXER_AUTO
