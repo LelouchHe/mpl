@@ -28,9 +28,10 @@ const std::map<std::string, TokenType> TOKEN_RE_SYMBOLS = {
 	{ "\\s+", TT_SPACE }, { "\\n", TT_NEWLINE }
 };
 
-const std::string TOKEN_RE_ID = "[_\\a][\\w]*";
 // 目前只处理十进制实数
 const std::string TOKEN_RE_NUMBER = "\\-?((\\d+)|(\\d*\\.\\d+)([eE][\\-\\+]?\\d+)?)";
+
+const std::string TOKEN_RE_ID = "[_\\a][\\w]*";
 // 目前只处理单引号
 const std::string TOKEN_RE_STRING = "'[^']*'";
 // 目前只处理单行注释

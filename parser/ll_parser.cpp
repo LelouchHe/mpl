@@ -158,10 +158,10 @@ void LLParser::parse() {
 using namespace std;
 
 int main() {
-	// ::mpl::FileReader reader("parser.txt");
-	::mpl::StringReader reader("2+3*4");
+	::mpl::FileReader fr("parser.txt");
+	::mpl::StringReader sr("2+3*4");
 
-	::mpl::parser::LLParser parser(reader);
+	::mpl::parser::LLParser parser(sr);
 
 	parser.parse();
 

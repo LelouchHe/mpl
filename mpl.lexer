@@ -75,8 +75,8 @@ VARARG: \.\.\.
 SPACE: \s+
 NEWLINE: \n
 
-ID: [_\a]\w*
 NUMBER: \-?((\d+)|(\d*\.\d+)([eE][\-\+]?\d+)?)
+ID: [_\a]\w*
 STRING: '[^']*'
 COMMENT: \-\-[^\n]*
 

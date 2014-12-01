@@ -30,7 +30,7 @@ enum TokenType {
 	TT_SPACE, TT_NEWLINE,
 
 	// 统称
-	TT_ID, TT_NUMBER, TT_STRING, TT_COMMENT,
+	TT_NUMBER, TT_ID, TT_STRING, TT_COMMENT,
 
 	// 保留token,主要用于控制和与Generator兼容
 	EOS, EPSILON, NONTERMINAL, ERROR, SKIP, LAST_TOKEN,
@@ -38,8 +38,8 @@ enum TokenType {
 
 extern const std::map<std::string, TokenType> TOKEN_RE_KEYS;
 extern const std::map<std::string, TokenType> TOKEN_RE_SYMBOLS;
-extern const std::string TOKEN_RE_ID;
 extern const std::string TOKEN_RE_NUMBER;
+extern const std::string TOKEN_RE_ID;
 extern const std::string TOKEN_RE_STRING;
 extern const std::string TOKEN_RE_COMMENT;
 

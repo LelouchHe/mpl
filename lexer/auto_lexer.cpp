@@ -66,8 +66,6 @@ static AutoLexer::TokenType tag_type(const ::mpl::lexer::detail::Tag& tag) {
 	return (AutoLexer::TokenType)min;
 }
 
-// 因为基本上mpl词法是LL(1),所以不需要大的缓冲
-// TODO: 需要强化成LL(k),加一个缓冲stack应该就可以了
 TokenType AutoLexer::lex() {
 	::mpl::lexer::detail::DFA& dfa = s_generator;
 	_buf.str("");
@@ -164,6 +162,7 @@ AutoLexer::TokenType AutoLexer::token_type(const std::string& name) {
 
 #include <iostream>
 #include "../file_reader.h"
+#include "../string_reader.h"
 
 static void print_token(const ::mpl::lexer::AutoLexer::Token& t) {
 	std::cout << t.type << "\t" << t.text << std::endl;
@@ -171,8 +170,9 @@ static void print_token(const ::mpl::lexer::AutoLexer::Token& t) {
 
 int main() {
 	::mpl::FileReader fr("test.txt");
+	::mpl::StringReader sr("break and breakand");
 
-	::mpl::lexer::AutoLexer lexer(fr);
+	::mpl::lexer::AutoLexer lexer(sr);
 
 	while (true) {
 		const ::mpl::lexer::AutoLexer::Token& t = lexer.next();
