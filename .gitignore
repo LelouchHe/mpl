@@ -6,3 +6,5 @@
 *.vcxproj
 *.filters
 *.user
+parser/lemon.cpp
+parser/lempar.c

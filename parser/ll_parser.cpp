@@ -1,4 +1,4 @@
-#include "auto_parser.h"
+#include "ll_parser.h"
 
 #include <map>
 #include <stack>
@@ -80,7 +80,7 @@ static void init() {
 				assert(str[str.size() - 1] == '\'');
 
 				::mpl::StringReader reader(str.substr(1, str.size() - 2));
-				AutoParser::Lexer lexer(reader);
+				LLParser::Lexer lexer(reader);
 				token = lexer.next();
 				assert(lexer.lookahead().type == Gramma::TokenType::EOS);
 			} else {
@@ -102,7 +102,7 @@ static void init() {
 	s_gramma.build();
 }
 
-AutoParser::AutoParser(::mpl::Reader& reader) :
+LLParser::LLParser(::mpl::Reader& reader) :
 		_lexer(reader) {
 	if (!s_init) {
 		init();
@@ -110,11 +110,11 @@ AutoParser::AutoParser(::mpl::Reader& reader) :
 	}
 }
 
-AutoParser::~AutoParser() {
+LLParser::~LLParser() {
 
 }
 
-void AutoParser::parse() {
+void LLParser::parse() {
 	std::stack<Token> st;
 	st.push(s_gramma.start());
 
@@ -161,7 +161,7 @@ int main() {
 	// ::mpl::FileReader reader("parser.txt");
 	::mpl::StringReader reader("2+3*4");
 
-	::mpl::parser::AutoParser parser(reader);
+	::mpl::parser::LLParser parser(reader);
 
 	parser.parse();
 

@@ -67,6 +67,7 @@ static AutoLexer::TokenType tag_type(const ::mpl::lexer::detail::Tag& tag) {
 }
 
 // 因为基本上mpl词法是LL(1),所以不需要大的缓冲
+// TODO: 需要强化成LL(k),加一个缓冲stack应该就可以了
 TokenType AutoLexer::lex() {
 	::mpl::lexer::detail::DFA& dfa = s_generator;
 	_buf.str("");

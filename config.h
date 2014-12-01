@@ -18,7 +18,7 @@ namespace mpl {
 namespace lexer {
 
 class ManualLexer;
-class AutoLexer;
+class LLLexer;
 class GeneratedLexer;
 
 } // namespace lexer
