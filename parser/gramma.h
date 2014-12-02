@@ -10,13 +10,29 @@
 namespace mpl {
 namespace parser {
 
+class GrammaOption {
+public:
+	GrammaOption() : left_recursion(true), left_factor(true) {
+
+	}
+
+	bool left_recursion;
+	bool left_factor;
+};
+
 class Gramma {
 public:
-	typedef ::mpl::Lexer::Token Token;
-
+	typedef ::mpl::Lexer Lexer;
+	
+	typedef Lexer::Token Token;
 	typedef Token::TokenType TokenType;
 	typedef std::vector<Token> Rule;
-	typedef std::set<Token> Tokens;
+
+	// 主要为了序列化建表方便
+	// >= 0: terminal
+	// <  0: |x| nonterminal
+	typedef std::vector<int> InnerRule;
+	typedef std::map<TokenType, size_t> Tran;
 
 public:
 	Gramma();
@@ -24,16 +40,20 @@ public:
 
 public:
 	void add(const Token& token, const Rule& rule);
-	bool build();
+	bool build(GrammaOption option = GrammaOption());
 
-	const Token& start() const;
-	const Rule& fetch(const Token& token, const Token& next) const;
+	size_t size() const;
+	const Tran& operator[](int token) const;
+	const std::string& name(int token) const;
+	const InnerRule& rule(int token, size_t index) const;
+
+	int start() const;
 
 	void debug();
 
 private:
 
-	typedef std::vector<Rule> Rules;
+	typedef std::vector<InnerRule> InnerRules;
 
 	bool dedup();
 	bool left_recursion();
@@ -41,18 +61,33 @@ private:
 	bool generate_nullable();
 	bool generate_first();
 	bool generate_follow();
-	bool left_factor_token(const Token& token, const Rules& rules, std::string* suffix, std::map<Token, Rules>* g);
+	bool generate_trans();
 
-	void merge(const std::map<Token, Rules>& g, bool append);
 	void add_fake_start();
 
-private:
-	std::map<Token, Rules> _gramma;
-	std::map<Token, bool> _nullable;
-	std::map<Token, Tokens> _first;
-	std::map<Token, Tokens> _follow;
+	bool left_factor_token(size_t token);
 
-	Token _start;
+
+	size_t new_nonternimal(const std::string& name);
+
+private:
+	typedef std::set<TokenType> Tokens;
+	
+
+	std::vector<std::string> _nonterminals;
+	std::vector<InnerRules> _rules;
+
+	std::vector<Tran> _trans;
+
+	std::vector<bool> _nullable;
+	std::vector<std::vector<bool> > _rule_nullable;
+
+	std::vector<Tokens> _first;
+	std::vector<std::vector<Tokens> > _rule_first;
+
+	std::vector<Tokens> _follow;
+
+	int _start;
 	static const Rule NON_RULE;
 };
 

@@ -155,6 +155,14 @@ AutoLexer::TokenType AutoLexer::token_type(const std::string& name) {
 	}
 }
 
+static const std::string& token_name(TokenType type) {
+	if ((size_t)type >= TOKEN_NAMES.size()) {
+		type = TokenType::ERROR;
+	}
+
+	return TOKEN_NAMES[type];
+}
+
 } // namespace lexer
 } // namepsace mpl
 

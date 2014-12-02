@@ -295,6 +295,7 @@ bool LexerGenerator::generate_header(const char* lexer_name) {
 	fprintf(out, "    const Token& next();\n");
 	fprintf(out, "    const Token& lookahead();\n");
 	fprintf(out, "    static TokenType token_type(const std::string& name);\n");
+	fprintf(out, "    static const std::string& token_name(TokenType type);\n");
 
 	if (!_globals.empty()) {
 		fprintf(out, "public:\n");
@@ -427,6 +428,7 @@ bool LexerGenerator::generate_source(const char* lexer_name) {
 	generate_dfa(out);
 
 	generate_token_types(out, lexer_name);
+	generate_token_names(out, lexer_name);
 
 	generate_action(out, lexer_name);
 
@@ -543,6 +545,25 @@ bool LexerGenerator::generate_token_types(std::FILE* out, const char* lexer_name
 	return true;
 }
 
+bool LexerGenerator::generate_token_names(std::FILE* out, const char* lexer_name) {
+	size_t size = _priorities.size();
+	assert(size == _definitions.size());
+
+	fprintf(out, "static const std::vector<std::string> s_token_names = {\n", lexer_name);
+
+	fprintf(out, "\t");
+	for (size_t i = 0; i < size; i++) {
+		if (i % 6 == 5) {
+			fprintf(out, "\n\t");
+		}
+		fprintf(out, "\"%s\", ", _priorities[i].c_str());
+	}
+	fprintf(out, "\n\t\"$\", \"\", \"NONTERMINAL\", \"ERROR\"");
+
+	fprintf(out, "\n};\n");
+	return true;
+}
+
 bool LexerGenerator::generate_action(std::FILE* out, const char* lexer_name) {
 	fprintf(out, "typedef void (%s::*ActionType)(%s::Token&);\n", lexer_name, lexer_name);
 	fprintf(out, "static const std::map<%s::TokenType, ActionType> s_actions = {\n", lexer_name);
@@ -572,6 +593,7 @@ bool LexerGenerator::generate_interface(std::FILE* out, const char* lexer_name) 
 	generate_lex(out, lexer_name);
 	generate_run(out, lexer_name);
 	generate_token_type(out, lexer_name);
+	generate_token_name(out, lexer_name);
 
 	fprintf(out, "const %s::Token& %s::next() {\n", lexer_name, lexer_name);
 	fprintf(out, "    if (_ahead.type != EOS) {\n");
@@ -697,6 +719,18 @@ bool LexerGenerator::generate_token_type(std::FILE* out, const char* lexer_name)
 	fprintf(out, "    } else {\n");
 	fprintf(out, "        return TokenType::ERROR;\n");
 	fprintf(out, "    }\n");
+
+	fprintf(out, "}\n");
+	return true;
+}
+
+bool LexerGenerator::generate_token_name(std::FILE* out, const char* lexer_name) {
+	fprintf(out, "const std::string& %s::token_name(TokenType type) {\n", lexer_name, lexer_name);
+
+	fprintf(out, "    if ((size_t)type >= s_token_names.size()) {\n");
+	fprintf(out, "        type = TokenType::ERROR;\n");
+	fprintf(out, "    }\n");
+	fprintf(out, "    return s_token_names[type];\n");
 
 	fprintf(out, "}\n");
 	return true;

@@ -49,6 +49,14 @@ ManualLexer::TokenType ManualLexer::token_type(const std::string& name) {
 	}
 }
 
+static const std::string& token_name(TokenType type) {
+	if ((size_t)type >= TOKEN_NAMES.size()) {
+		type = TokenType::ERROR;
+	}
+
+	return TOKEN_NAMES[type];
+}
+
 bool ManualLexer::eof() {
 	return _reader.eof();
 }

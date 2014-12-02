@@ -21,6 +21,7 @@ public:
 	const Token& next();
 	const Token& lookahead();
 	static TokenType token_type(const std::string& name);
+	static const std::string& token_name(TokenType type);
 
 private:
 	TokenType lex();

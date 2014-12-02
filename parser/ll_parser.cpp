@@ -115,18 +115,16 @@ LLParser::~LLParser() {
 }
 
 void LLParser::parse() {
-	std::stack<Token> st;
+	std::stack<int> st;
 	st.push(s_gramma.start());
 
 	Token current = _lexer.next();
 	while (!st.empty() && current.type != TokenType::ERROR) {
-		Token token = st.top();
+		int token = st.top();
 		st.pop();
-
-		std::cout << "expected: (" << token.type << ", " << token.text << ")" << std::endl;
-
-		if (token.type != TokenType::NONTERMINAL) {
-			if (token == current) {
+		std::cout << "expected: " << s_gramma.name(token) << std::endl;
+		if (token >= 0) {
+			if ((TokenType)token == current.type) {
 				std::cout << "match: (" << current.type << ", " << current.text << ")" << std::endl;
 				current = _lexer.next();
 			} else {
@@ -134,14 +132,20 @@ void LLParser::parse() {
 				break;
 			}
 		} else {
-			Gramma::Rule new_rule = s_gramma.fetch(token, current);
-			if (new_rule.empty()) {
+			const Gramma::Tran& tran = s_gramma[token];
+			Gramma::Tran::const_iterator it = tran.find(current.type);
+			if (it == tran.end()) {
+				std::cout << "not match" << std::endl;
+			}
+
+			const Gramma::InnerRule& rule = s_gramma.rule(token, it->second);
+			if (rule.empty()) {
 				std::cout << "match empty" << std::endl;
 				continue;
 			}
 
-			for (int i = new_rule.size() - 1; i >= 0; i--) {
-				st.push(new_rule[i]);
+			for (int i = rule.size() - 1; i >= 0; i--) {
+				st.push(rule[i]);
 			}
 		}
 	}

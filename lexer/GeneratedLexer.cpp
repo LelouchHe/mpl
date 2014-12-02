@@ -1437,6 +1437,19 @@ static const std::map<std::string, GeneratedLexer::TokenType> s_token_types = {
 	{ "NUMBER", GeneratedLexer::TokenType::TT_NUMBER }, { "ID", GeneratedLexer::TokenType::TT_ID }, 
 	{ "STRING", GeneratedLexer::TokenType::TT_STRING }, { "COMMENT", GeneratedLexer::TokenType::TT_COMMENT }, 
 };
+static const std::vector<std::string> s_token_names = {
+	"AND", "BREAK", "DO", "ELSE", "END", 
+	"FALSE", "FOR", "FUNCTION", "GOTO", "IF", "IN", 
+	"LOCAL", "NIL", "NOT", "OR", "REPEAT", "RETURN", 
+	"THEN", "TRUE", "UNTIL", "WHILE", "LEFT_PARENTHESIS", "RIGHT_PARENTHESIS", 
+	"LEFT_SQUARE", "RIGHT_SQUARE", "LEFT_BRACE", "RIGHT_BRACE", "EXP", "MUL", 
+	"DIV", "MOD", "PLUS", "MINUS", "LESS", "LESS_EQUAL", 
+	"GREATER", "GREATER_EQUAL", "EQUAL", "NOT_EQUAL", "ASSIGN", "LEN", 
+	"COMMA", "SEMICOLON", "COLON", "LABEL", "DOT", "CONCAT", 
+	"VARARG", "SPACE", "NEWLINE", "NUMBER", "ID", "STRING", 
+	"COMMENT", 
+	"$", "", "NONTERMINAL", "ERROR"
+};
 typedef void (GeneratedLexer::*ActionType)(GeneratedLexer::Token&);
 static const std::map<GeneratedLexer::TokenType, ActionType> s_actions = {
 	{ GeneratedLexer::TT_NEWLINE, &GeneratedLexer::NEWLINE_action },
@@ -1527,6 +1540,12 @@ GeneratedLexer::TokenType GeneratedLexer::token_type(const std::string& name) {
     } else {
         return TokenType::ERROR;
     }
+}
+const std::string& GeneratedLexer::token_name(TokenType type) {
+    if ((size_t)type >= s_token_names.size()) {
+        type = TokenType::ERROR;
+    }
+    return s_token_names[type];
 }
 const GeneratedLexer::Token& GeneratedLexer::next() {
     if (_ahead.type != EOS) {

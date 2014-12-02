@@ -2,6 +2,7 @@
 #define MPL_LEXER_TOKEN_H
 
 #include <string>
+#include <vector>
 #include <map>
 
 namespace mpl {
@@ -44,6 +45,7 @@ extern const std::string TOKEN_RE_STRING;
 extern const std::string TOKEN_RE_COMMENT;
 
 extern const std::map<std::string, TokenType> TOKEN_TYPES;
+extern const std::vector<std::string> TOKEN_NAMES;
 
 class Token{
 public:

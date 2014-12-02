@@ -62,5 +62,32 @@ const std::map<std::string, TokenType> TOKEN_TYPES = {
 	{ "ID", TT_ID }, { "NUMBER", TT_NUMBER }, { "STRING", TT_STRING }, { "COMMENT", TT_COMMENT },
 };
 
+const std::vector<std::string> TOKEN_NAMES = {
+	"AND", "BREAK", "DO",
+	"ELSE", "END", "FALSE",
+	"FOR", "FUNCTION", "GOTO",
+	"IF", "IN", "LOCAL",
+	"NIL", "NOT", "OR",
+	"REPEAT", "RETURN", 
+	"THEN", "TRUE", "UNTIL",
+	"WHILE",
+
+	"LEFT_PARENTHESIS", "RIGHT_PARENTHESIS",
+	"LEFT_SQUARE", "RIGHT_SQUARE", 
+	"LEFT_BRACE", "RIGHT_BRACE", 
+	"EXP", "MUL", "DIV", "MOD", 
+	"PLUS", "MINUS",
+	"LESS", "LESS_EQUAL", "GREATER", "GREATER_EQUAL", 
+	"EQUAL", "NOT_EQUAL", "ASSIGN", 
+	"LEN", "COMMA", "SEMICOLON", 
+	"COLON", "LABEL",
+	"DOT", "CONCAT", "VARARG", 
+	"SPACE", "NEWLINE",
+
+	"ID", "NUMBER", "STRING", "COMMENT", 
+
+	"$", "", "NONTERMINAL", "ERROR", "SKIP", "LAST_TOKEN",
+};
+
 } // namespace lexer
 } // namespace mpl
