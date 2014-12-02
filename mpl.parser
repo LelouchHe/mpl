@@ -6,8 +6,8 @@
 
 goal: expr
 
-expr: expr '+' expr
-expr: expr '-' expr
+expr: expr '+' term
+expr: expr '-' term
 expr: term
 
 term: term '*' factor
@@ -17,3 +17,5 @@ term: factor
 factor: '(' expr ')'
 factor: NUMBER
 factor: ID
+
+%%

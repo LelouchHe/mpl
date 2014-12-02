@@ -1,8 +1,10 @@
 #include "llparser_generator.h"
 
-#include <cstdio>
 #include <cstring>
 #include <cassert>
+#include <algorithm>
+
+#include "../string_reader.h"
 
 namespace mpl {
 namespace parser {
@@ -24,7 +26,11 @@ bool LLParserGenerator::build(const char* parser_file, const char* parser_name) 
 		return false;
 	}
 
-	return generate(parser_name);
+	if (!generate(parser_name)) {
+		return false;
+	}
+
+	return true;
 }
 
 static bool is_next_state(const char* buf, size_t len) {
@@ -101,7 +107,7 @@ bool LLParserGenerator::parse(const char* parser_file) {
 				value.assign(begin, len - (begin - buf));
 
 				_definitions[name].push_back(value);
-				if (_priorities.empty() || _priorities.back() != name) {
+				if (std::find(_priorities.begin(), _priorities.end(), name) == _priorities.end()) {
 					_priorities.push_back(name);
 				}
 			}
@@ -120,18 +126,303 @@ bool LLParserGenerator::parse(const char* parser_file) {
 	return true;
 }
 
+static std::vector<std::string> split(const std::string& str, char delim) {
+	std::vector<std::string> strs;
+
+	size_t begin = 0;
+	size_t end = begin;
+	while (end < str.size()) {
+		if (str[end] == delim) {
+			while (begin < end && str[begin] == delim) {
+				begin++;
+			}
+			if (begin != end) {
+				strs.push_back(str.substr(begin, end - begin));
+				begin = end;
+			}
+		}
+		end++;
+	}
+	while (begin < end && str[begin] == delim) {
+		begin++;
+	}
+	if (begin != end) {
+		strs.push_back(str.substr(begin, end - begin));
+	}
+
+	return strs;
+}
+
 bool LLParserGenerator::build() {
+	size_t size = _priorities.size();
+	for (size_t i = 0; i < size; i++) {
+		Gramma::Token left(Gramma::TokenType::NONTERMINAL, _priorities[i]);
+
+		const Definition& definition = _definitions[_priorities[i]];
+
+		for (Definition::const_iterator it = definition.begin();
+				it != definition.end(); ++it) {
+			Gramma::Rule rule;
+
+			std::vector<std::string> strs = split(*it, ' ');
+			for (size_t j = 0; j < strs.size(); j++) {
+				const std::string& str = strs[j];
+				if (str.empty()) {
+					continue;
+				}
+
+				Gramma::Token token;
+				if (str[0] == '\'') {
+					assert(str[str.size() - 1] == '\'');
+
+					::mpl::StringReader reader(str.substr(1, str.size() - 2));
+					Lexer lexer(reader);
+					token = lexer.next();
+					assert(lexer.lookahead().type == Gramma::TokenType::EOS);
+				} else {
+					Gramma::TokenType type = Lexer::token_type(str);
+					if (type != Gramma::TokenType::ERROR) {
+						token.type = type;
+					} else {
+						token.type = Gramma::TokenType::NONTERMINAL;
+					}
+					token.text = str;
+				}
+
+				rule.push_back(token);
+			}
+
+			_gramma.add(left, rule);
+		}
+	}
+	_gramma.build();
+
 	return true;
 }
 
 bool LLParserGenerator::generate(const char* parser_name) {
+	if (!generate_header(parser_name)) {
+		return false;
+	}
+
+	if (!generate_source(parser_name)) {
+		return false;
+	}
+
+	return true;
+}
+
+bool LLParserGenerator::generate_header(const char* parser_name) {
+	std::string header_filename;
+	header_filename.append("parser/");
+	header_filename.append(parser_name);
+	header_filename.append(".h");
+
+	std::FILE* out = NULL;
+	//out = fopen(header_filename.c_str(), "w");
+	fopen_s(&out, header_filename.c_str(), "w");
+
+	fprintf(out, "#ifndef MPL_PARSER_%s_H\n", parser_name);
+	fprintf(out, "#define MPL_PARSER_%s_H\n", parser_name);
+
+	fprintf(out, "#include \"../config.h\"\n");
+
+	fprintf(out, "namespace mpl {\n");
+	fprintf(out, "class Reader;\n");
+	fprintf(out, "namespace parser {\n");
+
+	fprintf(out, "class %s {\n", parser_name);
+
+	fprintf(out, "public:\n");
+	fprintf(out, "    %s(::mpl::Reader& reader);\n", parser_name);
+	fprintf(out, "    ~%s();\n", parser_name);
+
+	fprintf(out, "public:\n");
+	fprintf(out, "    typedef ::mpl::Lexer Lexer;\n");
+	fprintf(out, "    typedef Lexer::Token Token;\n");
+	fprintf(out, "    typedef Token::TokenType TokenType;\n");
+	fprintf(out, "    void parse();\n");
+
+	fprintf(out, "private:\n");
+	fprintf(out, "    Lexer _lexer;\n");
+
+	fprintf(out, "};\n");
+
+	fprintf(out, "} // namespace parser\n");
+	fprintf(out, "} // namespace mpl\n");
+
+	fprintf(out, "#endif // MPL_LEXER_%s_H\n", parser_name);
+
+	std::fclose(out);
+	return true;
+}
+
+bool LLParserGenerator::generate_source(const char* parser_name) {
+	std::string header_filename;
+	header_filename.append("parser/");
+	header_filename.append(parser_name);
+	header_filename.append(".cpp");
+
+	std::FILE* out = NULL;
+	//out = fopen(header_filename.c_str(), "w");
+	fopen_s(&out, header_filename.c_str(), "w");
+
+	fprintf(out, "#include \"%s.h\"\n", parser_name);
+	fprintf(out, "#include <stack>\n");
+	fprintf(out, "#include <vector>\n");
+	fprintf(out, "#include <string>\n");
+	fprintf(out, "#include <map>\n");
+	fprintf(out, "#include <iostream>\n");
+	fprintf(out, "#include <cassert>\n");
+
+	fprintf(out, "namespace mpl {\n");
+	fprintf(out, "namespace parser {\n");
+
+	generate_gramma(out);
+
+	fprintf(out, "%s::%s(::mpl::Reader& reader) :\n", parser_name, parser_name);
+	fprintf(out, "        _lexer(reader) {\n");
+	fprintf(out, "}\n");
+
+	fprintf(out, "%s::~%s() {\n", parser_name, parser_name);
+	fprintf(out, "}\n");
+
+	generate_name(out);
+	generate_parse(out, parser_name);
+
+	fprintf(out, "} // namespace parser\n");
+	fprintf(out, "} // namespace mpl\n");
+
+
+	std::fclose(out);
+	return true;
+}
+
+bool LLParserGenerator::generate_gramma(std::FILE* out) {
+	size_t size = _gramma.size();
+
+	const std::vector<std::string>& nonterminals = _gramma.nonterminals();
+	
+	fprintf(out, "static const std::vector<std::string> s_nonterminals = {\n");
+	fprintf(out, "\t");
+	for (size_t i = 0; i < size; i++) {
+		if (i % 6 == 5) {
+			fprintf(out, "\n\t");
+		}
+		fprintf(out, "\"%s\", ", nonterminals[i].c_str());
+	}
+	fprintf(out, "\n};\n");
+
+	const std::vector<Gramma::InnerRules>& all_rules = _gramma.rules();
+
+	fprintf(out, "static const std::vector<std::vector<std::vector<int> > > s_rules = {\n");
+	for (size_t left = 0; left < size; left++) {
+		fprintf(out, "{\n");
+
+		const Gramma::InnerRules& rules = all_rules[left];
+		for (size_t i = 0; i < rules.size(); i++) {
+			fprintf(out, "\t{");
+
+			const Gramma::InnerRule& rule = rules[i];
+			for (size_t j = 0; j < rule.size(); j++) {
+				fprintf(out, "%d, ", rule[j]);
+			}
+
+			fprintf(out, "},\n");
+		}
+
+		fprintf(out, "},\n");
+	}
+	fprintf(out, "};\n");
+
+	fprintf(out, "static const int s_start = %d;\n", _gramma.start());
+
+	const std::vector<Gramma::Tran>& trans = _gramma.trans();
+	fprintf(out, "static const std::vector<std::map<int, int> > s_trans = {\n");
+	for (size_t left = 0; left < size; left++) {
+		fprintf(out, "{\n");
+
+		int num = 0;
+		const Gramma::Tran& tran = trans[left];
+		fprintf(out, "\t");
+		for (Gramma::Tran::const_iterator it = tran.begin();
+				it != tran.end(); ++it) {
+			if (num >= 5) {
+				fprintf(out, "\n\t");
+				num = 0;
+			}
+			fprintf(out, "{%d, %d}, ", (int)it->first, it->second);
+			num++;
+		}
+
+		fprintf(out, "\n},\n");
+	}
+	fprintf(out, "};\n");
+
+	return true;
+}
+
+bool LLParserGenerator::generate_name(std::FILE* out) {
+	fprintf(out, "static const std::string& name(int token) {\n");
+	
+	fprintf(out, "    if (token >= 0) {\n");
+	fprintf(out, "        return ::mpl::Lexer::token_name((::mpl::Lexer::TokenType)token);\n");
+	fprintf(out, "    } else {\n");
+	fprintf(out, "        token = -token;\n");
+	fprintf(out, "        assert(token > 0 && (size_t)token < s_nonterminals.size());\n");
+	fprintf(out, "        return s_nonterminals[token];\n");
+	fprintf(out, "    }\n");
+
+	fprintf(out, "}\n");
+
+	return true;
+}
+
+bool LLParserGenerator::generate_parse(std::FILE* out, const char* parser_name) {
+	fprintf(out, "void %s::parse() {\n", parser_name);
+
+	fprintf(out, "    std::stack<int> st;\n");
+	fprintf(out, "    st.push(s_start);\n");
+	fprintf(out, "    Token current = _lexer.next();\n");
+	fprintf(out, "    while (!st.empty() && current.type != TokenType::ERROR) {\n");
+	fprintf(out, "        int token = st.top();\n");
+	fprintf(out, "        st.pop();\n");
+	fprintf(out, "        std::cout << \"expected: \" << name(token) << std::endl;");
+	fprintf(out, "        if (token >= 0) {\n");
+	fprintf(out, "            if ((TokenType)token == current.type) {\n");
+	fprintf(out, "                std::cout << \"match: (\" << current.type << \", \" << current.text << \")\" << std::endl;\n");
+	fprintf(out, "                current = _lexer.next();\n");
+	fprintf(out, "            } else {\n");
+	fprintf(out, "                std::cout << \"not match : (\" << current.type << \", \" << current.text << \")\" << std::endl;\n");
+	fprintf(out, "                break;\n");
+	fprintf(out, "            }\n");
+	fprintf(out, "        } else {\n");
+	fprintf(out, "            token = -token;\n");
+	fprintf(out, "            const std::map<int, int>& tran = s_trans[token];\n");
+	fprintf(out, "            std::map<int, int>::const_iterator it = tran.find(current.type);\n");
+	fprintf(out, "            if (it == tran.end()) {\n");
+	fprintf(out, "                std::cout << \"not match\" << std::endl;\n");
+	fprintf(out, "                break;\n");
+	fprintf(out, "            }\n");
+	fprintf(out, "            const std::vector<int>& rule = s_rules[token][it->second];\n");
+	fprintf(out, "            if (rule.empty()) {\n");
+	fprintf(out, "                std::cout << \"match empty\" << std::endl;\n");
+	fprintf(out, "                continue;\n");
+	fprintf(out, "            }\n");
+	fprintf(out, "            for (std::vector<int>::const_reverse_iterator rit = rule.rbegin(); rit != rule.rend(); ++rit) {\n");
+	fprintf(out, "                st.push(*rit);\n");
+	fprintf(out, "            }\n");
+	fprintf(out, "        }\n");
+	fprintf(out, "    }\n");
+	
+	fprintf(out, "}\n");
 	return true;
 }
 
 } // namespace parser
 } // namespace mpl
 
-#if 1
+#if 0
 
 int main() {
 	const char* parser_file = "mpl.parser";

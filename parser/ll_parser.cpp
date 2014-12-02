@@ -156,18 +156,19 @@ void LLParser::parse() {
 } // namespace parser
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include "../file_reader.h"
 #include "../string_reader.h"
+#include "GeneratedLLParser.h"
 
 using namespace std;
 
 int main() {
 	::mpl::FileReader fr("parser.txt");
-	::mpl::StringReader sr("2+3**4");
+	::mpl::StringReader sr("2+3*4");
 
-	::mpl::parser::LLParser parser(sr);
+	::mpl::parser::GeneratedLLParser parser(sr);
 
 	parser.parse();
 

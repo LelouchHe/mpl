@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <cstdio>
 #include "gramma.h"
 
 namespace mpl {
@@ -27,7 +28,15 @@ private:
 	bool build();
 	bool generate(const char* parser_name);
 
+	bool generate_header(const char* parser_name);
+	bool generate_source(const char* parser_name);
+
+	bool generate_gramma(std::FILE* out);
+	bool generate_name(std::FILE* out);
+	bool generate_parse(std::FILE* out, const char* parser_name);
+
 private:
+	typedef ::mpl::Lexer Lexer;
 	typedef std::vector<std::string> Definition;
 	std::map<std::string, Definition> _definitions;
 	std::vector<std::string> _priorities;

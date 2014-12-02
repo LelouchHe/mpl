@@ -32,6 +32,7 @@ public:
 	// >= 0: terminal
 	// <  0: |x| nonterminal
 	typedef std::vector<int> InnerRule;
+	typedef std::vector<InnerRule> InnerRules;
 	typedef std::map<TokenType, size_t> Tran;
 
 public:
@@ -51,10 +52,12 @@ public:
 
 	void debug();
 
+	// 以下是generator需要的接口
+	const std::vector<std::string>& nonterminals() const;
+	const std::vector<InnerRules>& rules() const;
+	const std::vector<Tran>& trans() const;
+
 private:
-
-	typedef std::vector<InnerRule> InnerRules;
-
 	bool dedup();
 	bool left_recursion();
 	bool left_factor();
@@ -67,13 +70,11 @@ private:
 
 	bool left_factor_token(size_t token);
 
-
 	size_t new_nonternimal(const std::string& name);
 
 private:
 	typedef std::set<TokenType> Tokens;
 	
-
 	std::vector<std::string> _nonterminals;
 	std::vector<InnerRules> _rules;
 

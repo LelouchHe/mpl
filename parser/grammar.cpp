@@ -14,7 +14,6 @@ static const size_t NONTERMINAL_START = 1;
 
 static inline int token2index(int token) {
 	assert(token < 0);
-
 	return -token;
 }
 
@@ -128,6 +127,7 @@ const Gramma::Tran& Gramma::operator[](int token) const {
 
 	return _trans[token];
 }
+
 const std::string& Gramma::name(int token) const {
 	if (token >= 0) {
 		return Lexer::token_name((TokenType)token);
@@ -137,6 +137,7 @@ const std::string& Gramma::name(int token) const {
 		return _nonterminals[token];
 	}
 }
+
 const Gramma::InnerRule& Gramma::rule(int token, size_t index) const {
 	token = token2index(token);
 	assert(token > 0 && (size_t)token < _nonterminals.size());
@@ -183,7 +184,6 @@ bool Gramma::build(GrammaOption option) {
 
 	return true;
 }
-
 
 bool Gramma::dedup() {
 	size_t size = _rules.size();
@@ -595,6 +595,19 @@ bool Gramma::generate_trans() {
 	}
 	
 	return true;
+}
+
+// 以下是generator需要的接口
+const std::vector<std::string>& Gramma::nonterminals() const {
+	return _nonterminals;
+}
+
+const std::vector<Gramma::InnerRules>& Gramma::rules() const {
+	return _rules;
+}
+
+const std::vector<Gramma::Tran>& Gramma::trans() const {
+	return _trans;
 }
 
 } // namespace parser
