@@ -4,5 +4,16 @@
 - 也可以是re
 - 所以lexer需要提供parse(const char* begin, char** end)来辅助解析
 
-expr: ID + ID
-    | 'define' '(' ID ')'
+goal: expr
+
+expr: expr '+' expr
+expr: expr '-' expr
+expr: term
+
+term: term '*' factor
+term: term '/' factor
+term: factor
+
+factor: '(' expr ')'
+factor: NUMBER
+factor: ID

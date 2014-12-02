@@ -51,11 +51,7 @@ bool LexerGenerator::build(const char* lexer_file, const char* lexer_name) {
 		return false;
 	}
 
-	if (!generate(lexer_name)) {
-		return false;
-	}
-
-	return true;
+	return generate(lexer_name);
 }
 
 bool LexerGenerator::build() {

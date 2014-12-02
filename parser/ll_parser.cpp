@@ -136,6 +136,7 @@ void LLParser::parse() {
 			Gramma::Tran::const_iterator it = tran.find(current.type);
 			if (it == tran.end()) {
 				std::cout << "not match" << std::endl;
+				break;
 			}
 
 			const Gramma::InnerRule& rule = s_gramma.rule(token, it->second);
@@ -155,7 +156,7 @@ void LLParser::parse() {
 } // namespace parser
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include "../file_reader.h"
 #include "../string_reader.h"
@@ -164,7 +165,7 @@ using namespace std;
 
 int main() {
 	::mpl::FileReader fr("parser.txt");
-	::mpl::StringReader sr("2+3*4");
+	::mpl::StringReader sr("2+3**4");
 
 	::mpl::parser::LLParser parser(sr);
 
