@@ -144,8 +144,9 @@ void LLParser::parse() {
 				continue;
 			}
 
-			for (int i = rule.size() - 1; i >= 0; i--) {
-				st.push(rule[i]);
+			for (Gramma::InnerRule::const_reverse_iterator rit = rule.rbegin();
+					rit != rule.rend(); ++rit) {
+				st.push(*rit);
 			}
 		}
 	}
