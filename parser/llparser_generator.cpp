@@ -156,46 +156,14 @@ static std::vector<std::string> split(const std::string& str, char delim) {
 bool LLParserGenerator::build() {
 	size_t size = _priorities.size();
 	for (size_t i = 0; i < size; i++) {
-		Gramma::Token left(Gramma::TokenType::NONTERMINAL, _priorities[i]);
-
-		const Definition& definition = _definitions[_priorities[i]];
-
+		const std::string& left = _priorities[i];
+		const Definition& definition = _definitions[left];
 		for (Definition::const_iterator it = definition.begin();
 				it != definition.end(); ++it) {
-			Gramma::Rule rule;
-
-			std::vector<std::string> strs = split(*it, ' ');
-			for (size_t j = 0; j < strs.size(); j++) {
-				const std::string& str = strs[j];
-				if (str.empty()) {
-					continue;
-				}
-
-				Gramma::Token token;
-				if (str[0] == '\'') {
-					assert(str[str.size() - 1] == '\'');
-
-					::mpl::StringReader reader(str.substr(1, str.size() - 2));
-					Lexer lexer(reader);
-					token = lexer.next();
-					assert(lexer.lookahead().type == Gramma::TokenType::EOS);
-				} else {
-					Gramma::TokenType type = Lexer::token_type(str);
-					if (type != Gramma::TokenType::ERROR) {
-						token.type = type;
-					} else {
-						token.type = Gramma::TokenType::NONTERMINAL;
-					}
-					token.text = str;
-				}
-
-				rule.push_back(token);
-			}
-
-			_gramma.add(left, rule);
+			_grammar.add(left, *it);
 		}
 	}
-	_gramma.build();
+	_grammar.build();
 
 	return true;
 }
@@ -299,9 +267,9 @@ bool LLParserGenerator::generate_source(const char* parser_name) {
 }
 
 bool LLParserGenerator::generate_gramma(std::FILE* out) {
-	size_t size = _gramma.size();
+	size_t size = _grammar.size();
 
-	const std::vector<std::string>& nonterminals = _gramma.nonterminals();
+	const std::vector<std::string>& nonterminals = _grammar.nonterminals();
 	
 	fprintf(out, "static const std::vector<std::string> s_nonterminals = {\n");
 	fprintf(out, "\t");
@@ -313,17 +281,17 @@ bool LLParserGenerator::generate_gramma(std::FILE* out) {
 	}
 	fprintf(out, "\n};\n");
 
-	const std::vector<Gramma::InnerRules>& all_rules = _gramma.rules();
+	const std::vector<::mpl::parser::detail::LLGrammar::InnerRules>& all_rules = _grammar.rules();
 
 	fprintf(out, "static const std::vector<std::vector<std::vector<int> > > s_rules = {\n");
 	for (size_t left = 0; left < size; left++) {
 		fprintf(out, "{\n");
 
-		const Gramma::InnerRules& rules = all_rules[left];
+		const ::mpl::parser::detail::LLGrammar::InnerRules& rules = all_rules[left];
 		for (size_t i = 0; i < rules.size(); i++) {
 			fprintf(out, "\t{");
 
-			const Gramma::InnerRule& rule = rules[i];
+			const ::mpl::parser::detail::LLGrammar::InnerRule& rule = rules[i];
 			for (size_t j = 0; j < rule.size(); j++) {
 				fprintf(out, "%d, ", rule[j]);
 			}
@@ -335,17 +303,17 @@ bool LLParserGenerator::generate_gramma(std::FILE* out) {
 	}
 	fprintf(out, "};\n");
 
-	fprintf(out, "static const int s_start = %d;\n", _gramma.start());
+	fprintf(out, "static const int s_start = %d;\n", _grammar.start());
 
-	const std::vector<Gramma::Tran>& trans = _gramma.trans();
+	const std::vector<::mpl::parser::detail::LLGrammar::Tran>& trans = _grammar.trans();
 	fprintf(out, "static const std::vector<std::map<int, int> > s_trans = {\n");
 	for (size_t left = 0; left < size; left++) {
 		fprintf(out, "{\n");
 
 		int num = 0;
-		const Gramma::Tran& tran = trans[left];
+		const ::mpl::parser::detail::LLGrammar::Tran& tran = trans[left];
 		fprintf(out, "\t");
-		for (Gramma::Tran::const_iterator it = tran.begin();
+		for (::mpl::parser::detail::LLGrammar::Tran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
 			if (num >= 5) {
 				fprintf(out, "\n\t");

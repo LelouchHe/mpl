@@ -7,12 +7,12 @@
 
 #include "../reader.h"
 #include "../string_reader.h"
-#include "gramma.h"
+#include "detail/ll_grammar.h"
 
 namespace mpl {
 namespace parser {
 
-static Gramma s_gramma;
+static ::mpl::parser::detail::LLGrammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
@@ -35,71 +35,12 @@ static const std::vector<std::pair<std::string, std::string> > s_rules = {
 	*/
 };
 
-// Ç°ºó×·¸Ï
-static std::vector<std::string> split(const std::string& str, char delim) {
-	std::vector<std::string> strs;
-
-	size_t begin = 0;
-	size_t end = begin;
-	while (end < str.size()) {
-		if (str[end] == delim) {
-			while (begin < end && str[begin] == delim) {
-				begin++;
-			}
-			if (begin != end) {
-				strs.push_back(str.substr(begin, end - begin));
-				begin = end;
-			}
-		}
-		end++;
-	}
-	while (begin < end && str[begin] == delim) {
-		begin++;
-	}
-	if (begin != end) {
-		strs.push_back(str.substr(begin, end - begin));
-	}
-
-	return strs;
-}
-
 static void init() {
 	for (size_t i = 0; i < s_rules.size(); i++) {
-		Gramma::Token left(Gramma::TokenType::NONTERMINAL, s_rules[i].first);
-
-		Gramma::Rule rule;
-		std::vector<std::string> strs = split(s_rules[i].second, ' ');
-		for (size_t j = 0; j < strs.size(); j++) {
-			const std::string& str = strs[j];
-			if (str.empty()) {
-				continue;
-			}
-
-			Gramma::Token token;
-			if (str[0] == '\'') {
-				assert(str[str.size() - 1] == '\'');
-
-				::mpl::StringReader reader(str.substr(1, str.size() - 2));
-				LLParser::Lexer lexer(reader);
-				token = lexer.next();
-				assert(lexer.lookahead().type == Gramma::TokenType::EOS);
-			} else {
-				Gramma::TokenType type = Lexer::token_type(str);
-				if (type != Gramma::TokenType::ERROR) {
-					token.type = type;	
-				} else {
-					token.type = Gramma::TokenType::NONTERMINAL;
-				}
-				token.text = str;
-			}
-
-			rule.push_back(token);
-		}
-
-		s_gramma.add(left, rule);
+		s_grammar.add(s_rules[i].first, s_rules[i].second);
 	}
 
-	s_gramma.build();
+	s_grammar.build();
 }
 
 LLParser::LLParser(::mpl::Reader& reader) :
@@ -115,14 +56,16 @@ LLParser::~LLParser() {
 }
 
 void LLParser::parse() {
+	typedef ::mpl::parser::detail::LLGrammar LLGrammar;
+
 	std::stack<int> st;
-	st.push(s_gramma.start());
+	st.push(s_grammar.start());
 
 	Token current = _lexer.next();
 	while (!st.empty() && current.type != TokenType::ERROR) {
 		int token = st.top();
 		st.pop();
-		std::cout << "expected: " << s_gramma.name(token) << std::endl;
+		std::cout << "expected: " << s_grammar.name(token) << std::endl;
 		if (token >= 0) {
 			if ((TokenType)token == current.type) {
 				std::cout << "match: (" << current.type << ", " << current.text << ")" << std::endl;
@@ -132,20 +75,20 @@ void LLParser::parse() {
 				break;
 			}
 		} else {
-			const Gramma::Tran& tran = s_gramma[token];
-			Gramma::Tran::const_iterator it = tran.find(current.type);
+			const LLGrammar::Tran& tran = s_grammar[token];
+			LLGrammar::Tran::const_iterator it = tran.find(current.type);
 			if (it == tran.end()) {
 				std::cout << "not match" << std::endl;
 				break;
 			}
 
-			const Gramma::InnerRule& rule = s_gramma.rule(token, it->second);
+			const LLGrammar::InnerRule& rule = s_grammar.rule(token, it->second);
 			if (rule.empty()) {
 				std::cout << "match empty" << std::endl;
 				continue;
 			}
 
-			for (Gramma::InnerRule::const_reverse_iterator rit = rule.rbegin();
+			for (LLGrammar::InnerRule::const_reverse_iterator rit = rule.rbegin();
 					rit != rule.rend(); ++rit) {
 				st.push(*rit);
 			}
@@ -156,7 +99,7 @@ void LLParser::parse() {
 } // namespace parser
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include "../file_reader.h"
 #include "../string_reader.h"
@@ -168,7 +111,9 @@ int main() {
 	::mpl::FileReader fr("parser.txt");
 	::mpl::StringReader sr("2+3*4");
 
-	::mpl::parser::GeneratedLLParser parser(sr);
+	//::mpl::parser::GeneratedLLParser parser(sr);
+	::mpl::parser::LLParser parser(sr);
+
 
 	parser.parse();
 

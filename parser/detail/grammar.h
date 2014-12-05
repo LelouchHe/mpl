@@ -1,84 +1,77 @@
-#ifndef MPL_PARSER_GRAMMA_H
-#define MPL_PARSER_GRAMMA_H
+#ifndef MPL_PARSER_DETAIL_GRAMMAR_H
+#define MPL_PARSER_DETAIL_GRAMMAR_H
 
 #include <vector>
 #include <map>
-#include <set>
+#include <string>
+#include <cassert>
 
-#include "../config.h"
+#include "../../config.h"
 
 namespace mpl {
 namespace parser {
+namespace detail {
 
-class GrammaOption {
+class Grammar {
 public:
-	GrammaOption() : left_recursion(true), left_factor(true) {
+	/*
+	Grammar();
+	~Grammar();
+	*/
 
-	}
-
-	bool left_recursion;
-	bool left_factor;
-};
-
-class Gramma {
 public:
 	typedef ::mpl::Lexer Lexer;
-	
+
 	typedef Lexer::Token Token;
 	typedef Token::TokenType TokenType;
-	typedef std::vector<Token> Rule;
+	typedef std::set<TokenType> Tokens;
 
 	// 主要为了序列化建表方便
 	// >= 0: terminal
 	// <  0: |x| nonterminal
 	typedef std::vector<int> InnerRule;
 	typedef std::vector<InnerRule> InnerRules;
-	typedef std::map<TokenType, size_t> Tran;
 
-public:
-	Gramma();
-	~Gramma();
-
-public:
-	void add(const Token& token, const Rule& rule);
-	bool build(GrammaOption option = GrammaOption());
+	void add(const std::string& token, const std::string& rule);
 
 	size_t size() const;
-	const Tran& operator[](int token) const;
 	const std::string& name(int token) const;
 	const InnerRule& rule(int token, size_t index) const;
 
 	int start() const;
-
-	void debug();
-
-	// 以下是generator需要的接口
 	const std::vector<std::string>& nonterminals() const;
 	const std::vector<InnerRules>& rules() const;
-	const std::vector<Tran>& trans() const;
 
-private:
+	void debug() const;
+
+protected:
+	Grammar();
+	~Grammar();
+
+	// 一些公共操作
+	void add_fake_start();
+
 	bool dedup();
-	bool left_recursion();
-	bool left_factor();
 	bool generate_nullable();
 	bool generate_first();
 	bool generate_follow();
-	bool generate_trans();
 
-	void add_fake_start();
-
-	bool left_factor_token(size_t token);
+	int token2index(int token) const {
+		assert(token < 0);
+		return -token;
+	}
+	int index2token(int index) const {
+		assert(index > 0);
+		return -index;
+	}
 
 	size_t new_nonternimal(const std::string& name);
 
-private:
-	typedef std::set<TokenType> Tokens;
-	
+protected:
 	std::vector<std::string> _nonterminals;
 	std::vector<InnerRules> _rules;
 
-	std::vector<Tran> _trans;
+	int _start;
 
 	std::vector<bool> _nullable;
 	std::vector<std::vector<bool> > _rule_nullable;
@@ -88,11 +81,12 @@ private:
 
 	std::vector<Tokens> _follow;
 
-	int _start;
-	static const Rule NON_RULE;
+	// static const int可以在class初始化
+	static const size_t NONTERMINAL_START = 1;
 };
 
+} // namespace detail
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_GRAMMA_H
+#endif // MPL_PARSER_DETAIL_GRAMMAR_H
