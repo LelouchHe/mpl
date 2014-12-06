@@ -194,9 +194,20 @@ static const vector<pair<string, string> > s_rules = {
 	{ "factor", "ID" },
 	*/
 
+
+	// LR0
+	/*
 	{ "s", "e" },
 	{ "e", "t ';'" },
 	{ "e", "t '+' e" },
+	{ "t", "NUMBER" },
+	{ "t", "'(' e ')'" },
+	*/
+
+	// LR1
+	{ "s", "e" },
+	{ "e", "t" },
+	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
 };
