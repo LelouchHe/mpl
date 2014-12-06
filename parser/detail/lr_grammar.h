@@ -18,9 +18,11 @@ public:
 	~LRGrammar();
 
 public:
-	// <token, ith rule>
-	typedef std::pair<int, int> Item;
-	typedef set<Item> State;
+	// <token, ith>
+	typedef std::pair<int, int> Rule;
+	// <Rule, pos>
+	typedef std::pair<Rule, int> Handle;
+	typedef std::set<Handle> State;
 
 	bool build();
 
@@ -28,6 +30,9 @@ public:
 
 private:
 	size_t new_state();
+
+	void fill(const Handle& handle, State* s);
+	size_t expand(const State& from, int token);
 
 private:
 	std::vector<State> _states;
