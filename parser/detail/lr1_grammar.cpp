@@ -266,7 +266,7 @@ size_t LR1Grammar::expand(const State& from, int token) {
 } // namespace parser
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <vector>
 #include <string>

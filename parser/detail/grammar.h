@@ -37,8 +37,8 @@ public:
 	size_t size() const;
 	const std::string& name(int token) const;
 	const InnerRule& rule(int token, size_t index) const;
-
 	int start() const;
+
 	const std::vector<std::string>& nonterminals() const;
 	const std::vector<InnerRules>& rules() const;
 

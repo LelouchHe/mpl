@@ -73,24 +73,31 @@ bool LR0Grammar::generate_trans() {
 		q.pop();
 
 		std::set<int> tokens;
+		bool is_reduced = false;
 		for (State::const_iterator it = _states[cur].begin();
 				it != _states[cur].end(); ++it) {
 			int left = it->first.first;
-			const InnerRule& rule = _rules[token2index(left)][it->first.second];
+			int rule_no = it->first.second;
+			const InnerRule& rule = _rules[token2index(left)][rule_no];
 			int pos = it->second;
 
 			if (pos == rule.size()) {
+				_trans[cur][TokenType::EPSILON] = { left, rule_no };
+				is_reduced = true;
 				continue;
 			}
 
 			tokens.insert(rule[pos]);
 		}
 
+		// lr0语法要求无歧义
+		assert(is_reduced == tokens.empty());
+
 		for (std::set<int>::const_iterator it = tokens.begin();
 				it != tokens.end(); ++it) {
 			size_t end = _states.size();
 			size_t to = expand(_states[cur], *it);
-			_trans[cur][*it] = to;
+			_trans[cur][*it] = { 0, to };
 
 			// 感觉有些trick
 			if (to == end) {
@@ -172,6 +179,12 @@ size_t LR0Grammar::expand(const State& from, int token) {
 		_states[new_s] = st;
 		return new_s;
 	}
+}
+
+const LR0Grammar::Tran& LR0Grammar::operator[](size_t state) const {
+	assert(state < _trans.size());
+
+	return _trans[state];
 }
 
 } // namespace detail
