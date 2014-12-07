@@ -49,6 +49,7 @@ protected:
 	~Grammar();
 
 	// 一些公共操作
+	// add_eos为了简化某些操作,这有trick,重构时考虑去掉
 	void add_fake_start(bool add_eos = true);
 
 	bool dedup();
