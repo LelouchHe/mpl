@@ -58,7 +58,9 @@ bool LLGrammar::build(LLGrammaOption option) {
 	add_fake_start();
 
 	generate_nullable();
+	generate_rule_nullable();
 	generate_first();
+	generate_rule_first();
 	generate_follow();
 
 	generate_trans();
@@ -195,6 +197,61 @@ bool LLGrammar::left_factor_token(size_t token) {
 	return true;
 }
 
+bool LLGrammar::generate_rule_nullable() {
+	size_t size = _nonterminals.size();
+
+	_rule_nullable.resize(size);
+	for (size_t left = NONTERMINAL_START; left < size; left++) {
+		const InnerRules& rules = _rules[left];
+		_rule_nullable[left].resize(rules.size());
+
+		for (size_t i = 0; i < rules.size(); i++) {
+			const InnerRule& rule = rules[i];
+
+			bool is_nullable = true;
+			for (size_t j = 0; j < rule.size() && is_nullable; j++) {
+				if (rule[j] >= 0) {
+					is_nullable = false;
+				} else {
+					is_nullable = _nullable[token2index(rule[j])];
+				}
+			}
+
+			_rule_nullable[left][i] = is_nullable;
+		}
+	}
+
+	return true;
+}
+
+bool LLGrammar::generate_rule_first() {
+	size_t size = _nonterminals.size();
+
+	_rule_first.resize(size);
+	for (size_t left = NONTERMINAL_START; left < size; left++) {
+		const InnerRules& rules = _rules[left];
+		_rule_first[left].resize(rules.size());
+
+		for (size_t i = 0; i < rules.size(); i++) {
+			const InnerRule& rule = rules[i];
+
+			bool is_nullable = true;
+			for (size_t j = 0; j < rule.size() && is_nullable; j++) {
+				if (rule[j] >= 0) {
+					_rule_first[left][i].insert((TokenType)rule[j]);
+					is_nullable = false;
+				} else {
+					const Tokens& first = _first[token2index(rule[j])];
+					_rule_first[left][i].insert(first.begin(), first.end());
+					is_nullable = _nullable[token2index(rule[j])];
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
 #if 0
 
 a ->(c) b
@@ -214,6 +271,8 @@ bool LLGrammar::generate_trans() {
 		for (size_t i = 0; i < rules.size(); i++) {
 			const InnerRule& rule = rules[i];
 			const Tokens& right_first = _rule_first[left][i];
+
+			bool is_nullable = false;
 			for (Tokens::const_iterator it = right_first.begin();
 					it != right_first.end(); ++it) {
 				_trans[left][*it] = i;

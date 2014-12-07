@@ -40,12 +40,20 @@ public:
 private:
 	bool left_recursion();
 	bool left_factor();
+
+	bool generate_rule_nullable();
+	bool generate_rule_first();
+
 	bool generate_trans();
+
 
 	bool left_factor_token(size_t token);
 
 private:
 	std::vector<Tran> _trans;
+
+	std::vector<std::vector<bool> > _rule_nullable;
+	std::vector<std::vector<Tokens> > _rule_first;
 };
 
 } // namespace detail

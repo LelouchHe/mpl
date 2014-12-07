@@ -181,11 +181,13 @@ void Grammar::debug() const {
 	}
 }
 
-void Grammar::add_fake_start() {
+void Grammar::add_fake_start(bool add_eos) {
 	int new_start = new_nonternimal("*" + name(_start));
 	InnerRule rule;
 	rule.push_back(_start);
-	rule.push_back(TokenType::EOS);
+	if (add_eos) {
+		rule.push_back(TokenType::EOS);
+	}
 
 	_rules[new_start].push_back(rule);
 
@@ -250,27 +252,6 @@ bool Grammar::generate_nullable() {
 		}
 	}
 
-	_rule_nullable.resize(size);
-	for (size_t left = NONTERMINAL_START; left < size; left++) {
-		const InnerRules& rules = _rules[left];
-		_rule_nullable[left].resize(rules.size());
-
-		for (size_t i = 0; i < rules.size(); i++) {
-			const InnerRule& rule = rules[i];
-
-			bool is_nullable = true;
-			for (size_t j = 0; j < rule.size() && is_nullable; j++) {
-				if (rule[j] >= 0) {
-					is_nullable = false;
-				} else {
-					is_nullable = _nullable[token2index(rule[j])];
-				}
-			}
-
-			_rule_nullable[left][i] = is_nullable;
-		}
-	}
-
 	return true;
 }
 
@@ -332,28 +313,6 @@ bool Grammar::generate_first() {
 						}
 						is_nullable = _nullable[token2index(rule[j])];
 					}
-				}
-			}
-		}
-	}
-
-	_rule_first.resize(size);
-	for (size_t left = NONTERMINAL_START; left < size; left++) {
-		const InnerRules& rules = _rules[left];
-		_rule_first[left].resize(rules.size());
-
-		for (size_t i = 0; i < rules.size(); i++) {
-			const InnerRule& rule = rules[i];
-
-			bool is_nullable = true;
-			for (size_t j = 0; j < rule.size() && is_nullable; j++) {
-				if (rule[j] >= 0) {
-					_rule_first[left][i].insert((TokenType)rule[j]);
-					is_nullable = false;
-				} else {
-					const Tokens& first = _first[token2index(rule[j])];
-					_rule_first[left][i].insert(first.begin(), first.end());
-					is_nullable = _nullable[token2index(rule[j])];
 				}
 			}
 		}

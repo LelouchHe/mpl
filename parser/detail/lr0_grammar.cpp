@@ -1,4 +1,4 @@
-#include "lr_grammar.h"
+#include "lr0_grammar.h"
 
 #include <iostream>
 #include <queue>
@@ -8,19 +8,61 @@ namespace mpl {
 namespace parser {
 namespace detail {
 	
-LRGrammar::LRGrammar() {
+LR0Grammar::LR0Grammar() {
 
 }
 
-LRGrammar::~LRGrammar() {
+LR0Grammar::~LR0Grammar() {
 
 }
 
-bool LRGrammar::build() {
+bool LR0Grammar::build() {
 	// add_fake_start();
 
+	generate_trans();
+
+	return true;
+}
+
+void LR0Grammar::debug() const {
+	Grammar::debug();
+
+	for (size_t i = 0; i < _states.size(); i++) {
+		std::cout << "state[" << i << "]:" << std::endl;
+
+		const State& state = _states[i];
+		for (State::const_iterator it = state.begin();
+				it != state.end(); ++it) {
+			int left = it->first.first;
+			const InnerRule& rule = _rules[token2index(left)][it->first.second];
+			int pos = it->second;
+
+			std::cout << name(left) << " : ";
+			for (size_t j = 0; j < rule.size(); j++) {
+				if (j == pos) {
+					std::cout << "@";
+				}
+				std::cout << name(rule[j]) << " ";
+			}
+			if (pos == rule.size()) {
+				std::cout << "@";
+			}
+			std::cout << std::endl;
+		}
+	}
+}
+
+size_t LR0Grammar::new_state() {
+	size_t size = _states.size();
+	_states.resize(size + 1);
+	_trans.resize(size + 1);
+
+	return size;
+}
+
+bool LR0Grammar::generate_trans() {
 	Handle handle = { { _start, 0 }, 0 };
-	
+
 	size_t cur = new_state();
 	fill(handle, &_states[cur]);
 
@@ -60,44 +102,8 @@ bool LRGrammar::build() {
 	return true;
 }
 
-void LRGrammar::debug() const {
-	Grammar::debug();
-
-	for (size_t i = 0; i < _states.size(); i++) {
-		std::cout << "state[" << i << "]:" << std::endl;
-
-		const State& state = _states[i];
-		for (State::const_iterator it = state.begin();
-				it != state.end(); ++it) {
-			int left = it->first.first;
-			const InnerRule& rule = _rules[token2index(left)][it->first.second];
-			int pos = it->second;
-
-			std::cout << name(left) << " : ";
-			for (size_t j = 0; j < rule.size(); j++) {
-				if (j == pos) {
-					std::cout << "@";
-				}
-				std::cout << name(rule[j]) << " ";
-			}
-			if (pos == rule.size()) {
-				std::cout << "@";
-			}
-			std::cout << std::endl;
-		}
-	}
-}
-
-size_t LRGrammar::new_state() {
-	size_t size = _states.size();
-	_states.resize(size + 1);
-	_trans.resize(size + 1);
-
-	return size;
-}
-
 // 扩充handle
-void LRGrammar::fill(const Handle& handle, State* s) {
+void LR0Grammar::fill(const Handle& handle, State* s) {
 	s->insert(handle);
 
 	std::queue<Handle> q;
@@ -136,7 +142,7 @@ void LRGrammar::fill(const Handle& handle, State* s) {
 }
 
 // 根据返回值判断是否新增了一个状态
-size_t LRGrammar::expand(const State& from, int token) {
+size_t LR0Grammar::expand(const State& from, int token) {
 	State st;
 
 	for (State::const_iterator it = from.begin();
@@ -172,7 +178,7 @@ size_t LRGrammar::expand(const State& from, int token) {
 } // namespace parser
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <vector>
 #include <string>
@@ -194,26 +200,24 @@ static const vector<pair<string, string> > s_rules = {
 	{ "factor", "ID" },
 	*/
 
-
-	// LR0
-	/*
 	{ "s", "e" },
 	{ "e", "t ';'" },
 	{ "e", "t '+' e" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
-	*/
 
 	// LR1
+	/*
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
+	*/
 };
 
 int main() {
-	::mpl::parser::detail::LRGrammar grammar;
+	::mpl::parser::detail::LR0Grammar grammar;
 
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);

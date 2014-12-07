@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_DETAIL_LR_GRAMMAR_H
-#define MPL_PARSER_DETAIL_LR_GRAMMAR_H
+#ifndef MPL_PARSER_DETAIL_LR0_GRAMMAR_H
+#define MPL_PARSER_DETAIL_LR0_GRAMMAR_H
 
 #include "grammar.h"
 
@@ -12,10 +12,10 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
-class LRGrammar : public Grammar {
+class LR0Grammar : public Grammar {
 public:
-	LRGrammar();
-	~LRGrammar();
+	LR0Grammar();
+	~LR0Grammar();
 
 public:
 	// <token, ith>
@@ -23,6 +23,7 @@ public:
 	// <Rule, pos>
 	typedef std::pair<Rule, int> Handle;
 	typedef std::set<Handle> State;
+	typedef std::map<int, size_t> Tran;
 
 	bool build();
 
@@ -31,16 +32,18 @@ public:
 private:
 	size_t new_state();
 
+	bool generate_trans();
+
 	void fill(const Handle& handle, State* s);
 	size_t expand(const State& from, int token);
 
 private:
 	std::vector<State> _states;
-	std::vector<std::map<int, int> > _trans;
+	std::vector<Tran> _trans;
 };
 
 } // namespace detail
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_DETAIL_LR_GRAMMAR_H
+#endif // MPL_PARSER_DETAIL_LR0_GRAMMAR_H

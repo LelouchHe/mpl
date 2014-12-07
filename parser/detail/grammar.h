@@ -49,7 +49,7 @@ protected:
 	~Grammar();
 
 	// 一些公共操作
-	void add_fake_start();
+	void add_fake_start(bool add_eos = true);
 
 	bool dedup();
 	bool generate_nullable();
@@ -72,13 +72,11 @@ protected:
 	std::vector<InnerRules> _rules;
 
 	int _start;
-
+	
+	// nullable可以单独拿出,也可以作为first的一部分
+	// 后者可以节约计算时间,不过这个可以放到最后优化时考虑
 	std::vector<bool> _nullable;
-	std::vector<std::vector<bool> > _rule_nullable;
-
 	std::vector<Tokens> _first;
-	std::vector<std::vector<Tokens> > _rule_first;
-
 	std::vector<Tokens> _follow;
 
 	// static const int可以在class初始化
