@@ -3,6 +3,7 @@
 *.tlog
 *.idb
 *.pdb
+*.vcxproj
 *.filters
 *.user
 parser/lemon.cpp
