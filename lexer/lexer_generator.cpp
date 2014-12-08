@@ -540,6 +540,9 @@ bool LexerGenerator::generate_token_types(std::FILE* out, const char* lexer_name
 		fprintf(out, "{ \"%s\", %s::TokenType::TT_%s }, ",
 				_priorities[i].c_str(), lexer_name, _priorities[i].c_str());
 	}
+	fprintf(out, "\n\t");
+	fprintf(out, "{ \"$\", %s::TokenType::EOS }, ", lexer_name);
+	fprintf(out, "{ \"\", %s::TokenType::EPSILON }, ", lexer_name);
 
 	fprintf(out, "\n};\n");
 	return true;

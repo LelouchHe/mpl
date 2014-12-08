@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_LR_PARSER_H
-#define MPL_PARSER_LR_PARSER_H
+#ifndef MPL_PARSER_SLR_PARSER_H
+#define MPL_PARSER_SLR_PARSER_H
 
 #include "../config.h"
 
@@ -9,10 +9,10 @@ class Reader;
 
 namespace parser {
 
-class LRParser {
+class SLRParser {
 public:
-	LRParser(::mpl::Reader& reader);
-	~LRParser();
+	SLRParser(::mpl::Reader& reader);
+	~SLRParser();
 
 public:
 	typedef ::mpl::Lexer Lexer;
@@ -29,4 +29,4 @@ private:
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_LR_PARSER_H
+#endif // MPL_PARSER_SLR_PARSER_H

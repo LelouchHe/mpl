@@ -57,8 +57,8 @@ size_t LR1Grammar::new_state() {
 	return size;
 }
 
-bool LR1Grammar::build() {
-	//add_fake_start(false);
+bool LR1Grammar::build(LR1GrammaOption option) {
+	add_fake_start(!option.add_fake);
 
 	generate_nullable();
 	generate_partial_rule_nullable();
@@ -172,7 +172,12 @@ bool LR1Grammar::generate_trans() {
 				it != tokens.end(); ++it) {
 			size_t end = _states.size();
 			size_t to = expand(_states[cur], *it);
-			_trans[cur][*it] = { 0, to };
+			
+			if ((TokenType)*it == TokenType::EOS) {
+				_trans[cur][*it] = { ACCEPT, to };
+			} else {
+				_trans[cur][*it] = { SHIFT, to };
+			}
 
 			// ¸Ð¾õÓÐÐ©trick
 			if (to == end) {

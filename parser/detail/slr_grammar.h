@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_DETAIL_LR1_GRAMMAR_H
-#define MPL_PARSER_DETAIL_LR1_GRAMMAR_H
+#ifndef MPL_PARSER_DETAIL_SLR_GRAMMAR_H
+#define MPL_PARSER_DETAIL_SLR_GRAMMAR_H
 
 #include "grammar.h"
 
@@ -12,9 +12,9 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
-class LR1GrammaOption {
+class SLRGrammaOption {
 public:
-	LR1GrammaOption() : add_fake(false) {
+	SLRGrammaOption() : add_fake(false) {
 
 	}
 
@@ -23,18 +23,16 @@ public:
 	bool add_fake;
 };
 
-class LR1Grammar : public Grammar {
+class SLRGrammar : public Grammar {
 public:
-	LR1Grammar();
-	~LR1Grammar();
+	SLRGrammar();
+	~SLRGrammar();
 
 public:
 	// <token, ith>
 	typedef std::pair<int, int> Rule;
 	// <Rule, pos>
-	typedef std::pair<Rule, int> Item;
-	// <Item, suffix>
-	typedef std::pair<Item, Tokens> Handle;
+	typedef std::pair<Rule, int> Handle;
 	typedef std::set<Handle> State;
 
 	// first >  0: shift, goto second
@@ -47,7 +45,7 @@ public:
 	// ×¢ÒâÇø·Ö
 	typedef std::map<int, Action> Tran;
 
-	bool build(LR1GrammaOption options = LR1GrammaOption());
+	bool build(SLRGrammaOption options = SLRGrammaOption());
 
 	const Tran& operator[](size_t state) const;
 
@@ -59,8 +57,6 @@ public:
 private:
 	size_t new_state();
 
-	bool generate_partial_rule_nullable();
-	bool generate_partial_rule_first();
 	bool generate_trans();
 
 	void fill(const Handle& handle, State* s);
@@ -69,14 +65,10 @@ private:
 private:
 	std::vector<State> _states;
 	std::vector<Tran> _trans;
-
-	// [token][ith rule][pos]
-	std::vector<std::vector<std::vector<bool> > > _partial_rule_nullable;
-	std::vector<std::vector<std::vector<Tokens> > > _partial_rule_first;
 };
 
 } // namespace detail
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_DETAIL_LR1_GRAMMAR_H
+#endif // MPL_PARSER_DETAIL_SLR_GRAMMAR_H

@@ -12,6 +12,17 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
+class LR0GrammaOption {
+public:
+	LR0GrammaOption() : add_fake(false) {
+
+	}
+
+	// true : 增加一个伪头
+	// false: 对第一个条规则后加'$'
+	bool add_fake;
+};
+
 class LR0Grammar : public Grammar {
 public:
 	LR0Grammar();
@@ -24,7 +35,8 @@ public:
 	typedef std::pair<Rule, int> Handle;
 	typedef std::set<Handle> State;
 
-	// first >= 0: shift, goto second
+	// first >  0: shift, goto second
+	// first == 0: accept
 	// first <  0: reduce, first as token, second as rule
 	typedef std::pair<int, int> Action;
 	// token, action
@@ -32,11 +44,14 @@ public:
 	// 因为lr0没有lookahead,所以只能拿EPSILON作为占位字符了
 	typedef std::map<int, Action> Tran;
 
-	bool build();
+	bool build(LR0GrammaOption option = LR0GrammaOption());
 
 	const Tran& operator[](size_t state) const;
 
 	void debug() const;
+
+	static const int ACCEPT = 0;
+	static const int SHIFT = 1;
 
 private:
 	size_t new_state();

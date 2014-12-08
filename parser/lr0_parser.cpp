@@ -57,7 +57,7 @@ void LR0Parser::parse() {
 
 
 	int token = TokenType::EPSILON;
-	while (!st.empty() && token != TokenType::EOS && token != s_grammar.start()) {
+	while (!st.empty()) {
 		size_t state = st.top();
 
 		std::cout << "state: " << state << "\taction: ";
@@ -83,8 +83,13 @@ void LR0Parser::parse() {
 
 			it = tran.find(token);
 			assert(it != tran.end());
-
 			assert(it->second.first >= 0);
+
+			if (it->second.first == s_grammar.ACCEPT) {
+				std::cout << "accept" << std::endl;
+				break;
+			}
+
 			st.push(it->second.second);
 			std::cout << "shift (" << it->second.second << ")" << std::endl;
 
@@ -96,7 +101,7 @@ void LR0Parser::parse() {
 } // namespace parser
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include "../file_reader.h"
 #include "../string_reader.h"

@@ -1,23 +1,34 @@
-#include "lr1_parser.h"
+#include "slr_parser.h"
 
 #include <iostream>
 #include <stack>
 
-#include "detail/lr1_grammar.h"
+#include "detail/slr_grammar.h"
 
 namespace mpl {
 namespace parser {
 
 	
-static ::mpl::parser::detail::LR1Grammar s_grammar;
+static ::mpl::parser::detail::SLRGrammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
+	// SLR
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
+
+	// LR1
+	/*
+	{ "s", "e" },
+	{ "e", "l '=' r" },
+	{ "e", "r" },
+	{ "l", "ID" },
+	{ "l", "'*' ID" },
+	{ "r", "l" },
+	*/
 };
 
 static void init() {
@@ -26,9 +37,11 @@ static void init() {
 	}
 
 	s_grammar.build();
+
+	s_grammar.debug();
 }
 
-LR1Parser::LR1Parser(::mpl::Reader& reader) :
+SLRParser::SLRParser(::mpl::Reader& reader) :
 		_lexer(reader) {
 	if (!s_init) {
 		init();
@@ -36,24 +49,27 @@ LR1Parser::LR1Parser(::mpl::Reader& reader) :
 	}
 }
 
-LR1Parser::~LR1Parser() {
+SLRParser::~SLRParser() {
 
 }
 
-void LR1Parser::parse() {
-	typedef ::mpl::parser::detail::LR1Grammar LR1Grammar;
+void SLRParser::parse() {
+	typedef ::mpl::parser::detail::SLRGrammar SLRGrammar;
 
 	std::stack<size_t> st;
 	st.push(0);
 
 
 	int token = TokenType::EPSILON;
+
+	// 有lookahead的EOS处理貌似都有问题,需要考虑下
+	// 应该是缺少 accept状态所致
 	while (!st.empty()) {
 		size_t state = st.top();
 
 		std::cout << "state: " << state << "\t";
 
-		const LR1Grammar::Tran& tran = s_grammar[state];
+		const SLRGrammar::Tran& tran = s_grammar[state];
 		
 		bool should_next = false;
 		if (token == TokenType::EPSILON) {
@@ -64,13 +80,13 @@ void LR1Parser::parse() {
 
 		std::cout << "token: " << s_grammar.name(token) << "\t";
 
-		LR1Grammar::Tran::const_iterator it = tran.find(token);
+		SLRGrammar::Tran::const_iterator it = tran.find(token);
 		assert(it != tran.end());
 		if (it->second.first < 0) {
 			int left = it->second.first;
 			int rule_no = it->second.second;
 
-			const LR1Grammar::InnerRule& rule = s_grammar.rule(left, rule_no);
+			const SLRGrammar::InnerRule& rule = s_grammar.rule(left, rule_no);
 			for (size_t i = 0; i < rule.size(); i++) {
 				st.pop();
 			}
@@ -103,10 +119,11 @@ void LR1Parser::parse() {
 using namespace std;
 
 int main() {
+	// ::mpl::StringReader sr("a = * a");
 	::mpl::StringReader sr("2 + (2 + 2 + 2)");
 
 	//::mpl::parser::GeneratedLR0Parser parser(sr);
-	::mpl::parser::LR1Parser parser(sr);
+	::mpl::parser::SLRParser parser(sr);
 
 	parser.parse();
 

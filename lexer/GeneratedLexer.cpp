@@ -1436,6 +1436,7 @@ static const std::map<std::string, GeneratedLexer::TokenType> s_token_types = {
 	{ "SPACE", GeneratedLexer::TokenType::TT_SPACE }, { "NEWLINE", GeneratedLexer::TokenType::TT_NEWLINE }, 
 	{ "NUMBER", GeneratedLexer::TokenType::TT_NUMBER }, { "ID", GeneratedLexer::TokenType::TT_ID }, 
 	{ "STRING", GeneratedLexer::TokenType::TT_STRING }, { "COMMENT", GeneratedLexer::TokenType::TT_COMMENT }, 
+	{ "$", GeneratedLexer::TokenType::EOS }, { "", GeneratedLexer::TokenType::EPSILON }, 
 };
 static const std::vector<std::string> s_token_names = {
 	"AND", "BREAK", "DO", "ELSE", "END", 

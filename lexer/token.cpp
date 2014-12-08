@@ -60,6 +60,11 @@ const std::map<std::string, TokenType> TOKEN_TYPES = {
 	{ "SPACE", TT_SPACE }, { "NEWLINE", TT_NEWLINE },
 
 	{ "ID", TT_ID }, { "NUMBER", TT_NUMBER }, { "STRING", TT_STRING }, { "COMMENT", TT_COMMENT },
+
+	{ "$", EOS }, { "", EPSILON }, 
+
+	// 下面不是必须的
+	{ "NONTERMINAL", NONTERMINAL }, { "ERROR", ERROR }, { "SKIP", SKIP }, { "LAST_TOKEN", LAST_TOKEN },
 };
 
 const std::vector<std::string> TOKEN_NAMES = {
@@ -86,7 +91,10 @@ const std::vector<std::string> TOKEN_NAMES = {
 
 	"ID", "NUMBER", "STRING", "COMMENT", 
 
-	"$", "", "NONTERMINAL", "ERROR", "SKIP", "LAST_TOKEN",
+	"$", "", 
+	
+	// 下面不是必须的
+	"NONTERMINAL", "ERROR", "SKIP", "LAST_TOKEN",
 };
 
 } // namespace lexer

@@ -181,17 +181,21 @@ void Grammar::debug() const {
 	}
 }
 
-void Grammar::add_fake_start(bool add_eos) {
-	int new_start = new_nonternimal("*" + name(_start));
-	InnerRule rule;
-	rule.push_back(_start);
-	if (add_eos) {
-		rule.push_back(TokenType::EOS);
+void Grammar::add_fake_start(bool only_eos) {
+	if (only_eos) {
+		_rules[token2index(_start)][0].push_back(TokenType::EOS);
+	} else {
+		int new_start = new_nonternimal("*" + name(_start));
+		InnerRule rule;
+		rule.push_back(_start);
+		if (only_eos) {
+			rule.push_back(TokenType::EOS);
+		}
+
+		_rules[new_start].push_back(rule);
+
+		_start = index2token(new_start);
 	}
-
-	_rules[new_start].push_back(rule);
-
-	_start = index2token(new_start);
 }
 
 bool Grammar::dedup() {
@@ -266,6 +270,7 @@ first(a | b) = first(a) + first(b)
 
 #endif
 
+// need generate_nullable()
 bool Grammar::generate_first() {
 	// 可以加一个bool位标,表示是否变动,作为优化
 	size_t size = _nonterminals.size();
@@ -305,7 +310,7 @@ bool Grammar::generate_first() {
 					} else {
 						const Tokens& right_tokens = _first[token2index(rule[j])];
 						for (Tokens::const_iterator it = right_tokens.begin();
-							it != right_tokens.end(); ++it) {
+								it != right_tokens.end(); ++it) {
 							ret = tokens.insert(*it);
 							if (ret.second) {
 								is_changing = true;
@@ -329,6 +334,7 @@ follow(b) = first(c)
 
 #endif
 
+// need generate_nullable(), generate_first()
 bool Grammar::generate_follow() {
 	size_t size = _nonterminals.size();
 	_follow.resize(size);
@@ -366,8 +372,12 @@ bool Grammar::generate_follow() {
 						} else {
 							const Tokens& next_tokens = _first[token2index(next)];
 							for (Tokens::const_iterator it = next_tokens.begin();
-								it != next_tokens.end(); ++it) {
+									it != next_tokens.end(); ++it) {
 								ret = tokens.insert(*it);
+							}
+
+							if (!_nullable[token2index(next)]) {
+								is_nullable = false;
 							}
 						}
 					}
@@ -375,7 +385,7 @@ bool Grammar::generate_follow() {
 					if (is_nullable) {
 						const Tokens& left_tokens = _follow[left];
 						for (Tokens::const_iterator tit = left_tokens.begin();
-							tit != left_tokens.end(); tit++) {
+								tit != left_tokens.end(); tit++) {
 							ret = tokens.insert(*tit);
 							if (ret.second) {
 								is_changing = true;
