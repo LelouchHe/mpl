@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{98FB5133-432A-4EBB-9F48-D4EF9458CFE9}</ProjectGuid>
+    <RootNamespace>mpl</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="config.h" />
+    <ClInclude Include="file_reader.h" />
+    <ClInclude Include="lexer.h" />
+    <ClInclude Include="lexer\GeneratedLexer.h" />
+    <ClInclude Include="lexer\auto_lexer.h" />
+    <ClInclude Include="lexer\detail\dfa.h" />
+    <ClInclude Include="lexer\detail\dfa_converter.h" />
+    <ClInclude Include="lexer\detail\dfa_generator.h" />
+    <ClInclude Include="lexer\detail\dfa_merger.h" />
+    <ClInclude Include="lexer\detail\nfa_converter.h" />
+    <ClInclude Include="lexer\detail\regex.h" />
+    <ClInclude Include="lexer\detail\state.h" />
+    <ClInclude Include="lexer\lexer_generator.h" />
+    <ClInclude Include="lexer\manual_lexer.h" />
+    <ClInclude Include="lexer\token.h" />
+    <ClInclude Include="parser\detail\grammar.h" />
+    <ClInclude Include="parser\detail\ll_grammar.h" />
+    <ClInclude Include="parser\detail\lr0_grammar.h" />
+    <ClInclude Include="parser\detail\lr1_grammar.h" />
+    <ClInclude Include="parser\GeneratedLLParser.h" />
+    <ClInclude Include="parser\llparser_generator.h" />
+    <ClInclude Include="parser\ll_parser.h" />
+    <ClInclude Include="parser\lr0_parser.h" />
+    <ClInclude Include="parser\lr1_parser.h" />
+    <ClInclude Include="parser\lr_parser.h" />
+    <ClInclude Include="parser\manual_parser.h" />
+    <ClInclude Include="reader.h" />
+    <ClInclude Include="string_reader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lexer\GeneratedLexer.cpp" />
+    <ClCompile Include="lexer\auto_lexer.cpp" />
+    <ClCompile Include="lexer\detail\dfa.cpp" />
+    <ClCompile Include="lexer\detail\dfa_converter.cpp" />
+    <ClCompile Include="lexer\detail\dfa_generator.cpp" />
+    <ClCompile Include="lexer\detail\dfa_merger.cpp" />
+    <ClCompile Include="lexer\detail\nfa_converter.cpp" />
+    <ClCompile Include="lexer\detail\regex.cpp" />
+    <ClCompile Include="lexer\detail\state.cpp" />
+    <ClCompile Include="lexer\lexer_generator.cpp" />
+    <ClCompile Include="lexer\manual_lexer.cpp" />
+    <ClCompile Include="lexer\token.cpp" />
+    <ClCompile Include="parser\detail\grammar.cpp" />
+    <ClCompile Include="parser\detail\ll_grammar.cpp" />
+    <ClCompile Include="parser\detail\lr0_grammar.cpp" />
+    <ClCompile Include="parser\detail\lr1_grammar.cpp" />
+    <ClCompile Include="parser\GeneratedLLParser.cpp" />
+    <ClCompile Include="parser\llparser_generator.cpp" />
+    <ClCompile Include="parser\ll_parser.cpp" />
+    <ClCompile Include="parser\lr0_parser.cpp" />
+    <ClCompile Include="parser\lr1_parser.cpp" />
+    <ClCompile Include="parser\lr_parser.cpp" />
+    <ClCompile Include="parser\manual_parser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mpl.lexer" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
