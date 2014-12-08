@@ -25,9 +25,19 @@ public:
 	// <Item, suffix>
 	typedef std::pair<Item, Tokens> Handle;
 	typedef std::set<Handle> State;
-	typedef std::map<int, size_t> Tran;
+
+	// first >= 0: shift, goto second
+	// first <  0: reduce, first as token, second as rule
+	typedef std::pair<int, int> Action;
+	// token, action
+	// reduce时是lookahead
+	// shift时是next
+	// 注意区分
+	typedef std::map<int, Action> Tran;
 
 	bool build();
+
+	const Tran& operator[](size_t state) const;
 
 	void debug() const;
 

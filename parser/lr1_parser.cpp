@@ -1,32 +1,23 @@
-#include "lr0_parser.h"
+#include "lr1_parser.h"
 
 #include <iostream>
 #include <stack>
 
-#include "detail/lr0_grammar.h"
+#include "detail/lr1_grammar.h"
 
 namespace mpl {
 namespace parser {
 
 	
-static ::mpl::parser::detail::LR0Grammar s_grammar;
+static ::mpl::parser::detail::LR1Grammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
-	{ "s", "e" },
-	{ "e", "t ';'" },
-	{ "e", "t '+' e" },
-	{ "t", "NUMBER" },
-	{ "t", "'(' e ')'" },
-
-	// LR1
-	/*
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
-	*/
 };
 
 static void init() {
@@ -37,7 +28,7 @@ static void init() {
 	s_grammar.build();
 }
 
-LR0Parser::LR0Parser(::mpl::Reader& reader) :
+LR1Parser::LR1Parser(::mpl::Reader& reader) :
 		_lexer(reader) {
 	if (!s_init) {
 		init();
@@ -45,12 +36,12 @@ LR0Parser::LR0Parser(::mpl::Reader& reader) :
 	}
 }
 
-LR0Parser::~LR0Parser() {
+LR1Parser::~LR1Parser() {
 
 }
 
-void LR0Parser::parse() {
-	typedef ::mpl::parser::detail::LR0Grammar LR0Grammar;
+void LR1Parser::parse() {
+	typedef ::mpl::parser::detail::LR1Grammar LR1Grammar;
 
 	std::stack<size_t> st;
 	st.push(0);
@@ -60,35 +51,39 @@ void LR0Parser::parse() {
 	while (!st.empty() && token != TokenType::EOS && token != s_grammar.start()) {
 		size_t state = st.top();
 
-		std::cout << "state: " << state << "\taction: ";
+		std::cout << "state: " << state << "\t";
 
-		const LR0Grammar::Tran& tran = s_grammar[state];
-		LR0Grammar::Tran::const_iterator it = tran.find(TokenType::EPSILON);
-		if (it != tran.end()) {
-			assert(tran.size() == 1);
+		const LR1Grammar::Tran& tran = s_grammar[state];
+		
+		bool should_next = false;
+		if (token == TokenType::EPSILON) {
+			Token lookahead = _lexer.lookahead();
+			token = lookahead.type;
+			should_next = true;
+		}
+
+		std::cout << "token: " << s_grammar.name(token) << "\t";
+
+		LR1Grammar::Tran::const_iterator it = tran.find(token);
+		assert(it != tran.end());
+		if (it->second.first < 0) {
 			int left = it->second.first;
 			int rule_no = it->second.second;
 
-			const LR0Grammar::InnerRule& rule = s_grammar.rule(left, rule_no);
+			const LR1Grammar::InnerRule& rule = s_grammar.rule(left, rule_no);
 			for (size_t i = 0; i < rule.size(); i++) {
 				st.pop();
 			}
 			token = left;
-			std::cout << "reduce (" << s_grammar.name(left) << ")" << std::endl;
+			std::cout << "reduce: " << s_grammar.name(left) << std::endl;
 		} else {
-			if (token == TokenType::EPSILON) {
-				Token current = _lexer.next();
-				token = current.type;
-			}
-
-			it = tran.find(token);
-			assert(it != tran.end());
-
-			assert(it->second.first >= 0);
 			st.push(it->second.second);
-			std::cout << "shift (" << it->second.second << ")" << std::endl;
+			std::cout << "shift: " << it->second.second << std::endl;
 
 			token = TokenType::EPSILON;
+			if (should_next) {
+				_lexer.next();
+			}
 		}
 	}
 }
@@ -96,19 +91,19 @@ void LR0Parser::parse() {
 } // namespace parser
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include "../file_reader.h"
 #include "../string_reader.h"
-//#include "GeneratedLR0Parser.h"
+//#include "GeneratedLR1Parser.h"
 
 using namespace std;
 
 int main() {
-	::mpl::StringReader sr("2 + (2 + 2;);");
+	::mpl::StringReader sr("2 + (2 + 2 + 2)");
 
 	//::mpl::parser::GeneratedLR0Parser parser(sr);
-	::mpl::parser::LR0Parser parser(sr);
+	::mpl::parser::LR1Parser parser(sr);
 
 	parser.parse();
 

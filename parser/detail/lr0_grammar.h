@@ -29,6 +29,7 @@ public:
 	typedef std::pair<int, int> Action;
 	// token, action
 	// reduce when token = EPSILON
+	// 因为lr0没有lookahead,所以只能拿EPSILON作为占位字符了
 	typedef std::map<int, Action> Tran;
 
 	bool build();

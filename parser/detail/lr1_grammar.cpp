@@ -158,6 +158,10 @@ bool LR1Grammar::generate_trans() {
 			const Tokens& suffix = it->second;
 
 			if (pos == rule.size()) {
+				for (Tokens::const_iterator tit = suffix.begin();
+						tit != suffix.end(); ++tit) {
+					_trans[cur][*tit] = { left, rule_no };
+				}
 				continue;
 			}
 
@@ -168,7 +172,7 @@ bool LR1Grammar::generate_trans() {
 				it != tokens.end(); ++it) {
 			size_t end = _states.size();
 			size_t to = expand(_states[cur], *it);
-			_trans[cur][*it] = to;
+			_trans[cur][*it] = { 0, to };
 
 			// ¸Ð¾õÓÐÐ©trick
 			if (to == end) {
@@ -260,6 +264,12 @@ size_t LR1Grammar::expand(const State& from, int token) {
 		_states[new_s] = st;
 		return new_s;
 	}
+}
+
+const LR1Grammar::Tran& LR1Grammar::operator[](size_t state) const {
+	assert(state < _trans.size());
+
+	return _trans[state];
 }
 
 } // namespace detail
