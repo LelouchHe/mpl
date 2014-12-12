@@ -5,6 +5,7 @@
 
 #include <utility>
 #include <vector>
+#include <queue>
 #include <map>
 #include <set>
 
@@ -62,8 +63,8 @@ private:
 	bool generate_trans();
 
 	void fill(const Handle& handle, const Tokens& tokens, State* s);
-	size_t expand(const State& from, int token, std::vector<size_t>* expanded);
-	void merge(const State& from, size_t to, std::vector<size_t>* expanded);
+	size_t expand(const State& from, int token, std::queue<size_t>* q);
+	void merge(const State& from, size_t to, std::queue<size_t>* q);
 
 private:
 	std::vector<State> _states;

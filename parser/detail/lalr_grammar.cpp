@@ -191,20 +191,15 @@ bool LALRGrammar::generate_trans() {
 			tokens.insert(rule[pos]);
 		}
 
-		std::vector<size_t> expanded;
 		for (std::set<int>::const_iterator it = tokens.begin();
 				it != tokens.end(); ++it) {
-			size_t next = expand(_states[cur], *it, &expanded);
+			size_t next = expand(_states[cur], *it, &q);
 			
 			if ((TokenType)*it == TokenType::EOS) {
 				_trans[cur][*it] = { ACCEPT, next };
 			} else {
 				_trans[cur][*it] = { SHIFT, next };
 			}
-		}
-
-		for (size_t i = 0; i < expanded.size(); i++) {
-			q.push(expanded[i]);
 		}
 	}
 
@@ -288,7 +283,7 @@ static size_t find(const std::vector<LALRGrammar::State>& states, const LALRGram
 	return i;
 }
 
-size_t LALRGrammar::expand(const State& from, int token, std::vector<size_t>* expanded) {
+size_t LALRGrammar::expand(const State& from, int token, std::queue<size_t>* q) {
 	State st;
 
 	for (State::const_iterator it = from.begin();
@@ -314,19 +309,19 @@ size_t LALRGrammar::expand(const State& from, int token, std::vector<size_t>* ex
 
 	size_t new_s = find(_states, st);
 	if (new_s < _states.size()) {
-		merge(st, new_s, expanded);
+		merge(st, new_s, q);
 		return new_s;
 	} else {
 		size_t new_s = new_state();
 		_states[new_s] = st;
-		expanded->push_back(new_s);
+		q->push(new_s);
 		return new_s;
 	}
 }
 
 // 1. 状态的改变需要重复更新
 // 2. trans只针对reduce更新(shift的状态改变是固定唯一的)
-void LALRGrammar::merge(const State& from, size_t to, std::vector<size_t>* expanded) {
+void LALRGrammar::merge(const State& from, size_t to, std::queue<size_t>* q) {
 	bool is_updated = false;
 	for (State::const_iterator it = from.begin();
 			it != from.end(); ++it) {
@@ -352,7 +347,7 @@ void LALRGrammar::merge(const State& from, size_t to, std::vector<size_t>* expan
 	}
 
 	if (is_updated) {
-		expanded->push_back(to);
+		q->push(to);
 	}
 }
 
