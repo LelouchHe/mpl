@@ -1,4 +1,4 @@
-#include "lr1_grammar.h"
+#include "lalr_grammar.h"
 
 #include <iostream>
 #include <queue>
@@ -7,15 +7,15 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
-LR1Grammar::LR1Grammar() {
+LALRGrammar::LALRGrammar() {
 
 }
 
-LR1Grammar::~LR1Grammar() {
+LALRGrammar::~LALRGrammar() {
 
 }
 
-void LR1Grammar::debug() const {
+void LALRGrammar::debug() const {
 	Grammar::debug();
 
 	for (size_t i = 0; i < _states.size(); i++) {
@@ -49,7 +49,7 @@ void LR1Grammar::debug() const {
 		}
 	}
 }
-size_t LR1Grammar::new_state() {
+size_t LALRGrammar::new_state() {
 	size_t size = _states.size();
 	_states.resize(size + 1);
 	_trans.resize(size + 1);
@@ -57,7 +57,7 @@ size_t LR1Grammar::new_state() {
 	return size;
 }
 
-bool LR1Grammar::build(LR1GrammaOption option) {
+bool LALRGrammar::build(LALRGrammaOption option) {
 	add_fake_start(!option.add_fake);
 
 	generate_nullable();
@@ -71,7 +71,7 @@ bool LR1Grammar::build(LR1GrammaOption option) {
 }
 
 // 0 - size; 最后一位扩充
-bool LR1Grammar::generate_partial_rule_nullable() {
+bool LALRGrammar::generate_partial_rule_nullable() {
 	size_t size = _nonterminals.size();
 
 	_partial_rule_nullable.resize(size);
@@ -104,7 +104,7 @@ bool LR1Grammar::generate_partial_rule_nullable() {
 }
 
 // 0 - size; 最后一位扩充
-bool LR1Grammar::generate_partial_rule_first() {
+bool LALRGrammar::generate_partial_rule_first() {
 	size_t size = _nonterminals.size();
 
 	_partial_rule_first.resize(size);
@@ -136,11 +136,12 @@ bool LR1Grammar::generate_partial_rule_first() {
 	return true;
 }
 
-bool LR1Grammar::generate_trans() {
-	Handle handle = { { { _start, 0 }, 0 }, { TokenType::EOS } };
+bool LALRGrammar::generate_trans() {
+	Handle handle = { { _start, 0 }, 0 };
+	Tokens suffix = { TokenType::EOS };
 
 	size_t cur = new_state();
-	fill(handle, &_states[cur]);
+	fill(handle, suffix, &_states[cur]);
 
 	std::queue<size_t> q;
 	q.push(cur);
@@ -189,8 +190,8 @@ bool LR1Grammar::generate_trans() {
 	return true;
 }
 
-void LR1Grammar::fill(const Handle& handle, State* s) {
-	s->insert(handle);
+void LALRGrammar::fill(const Handle& handle, const Tokens& tokens, State* s) {
+	(*s)[handle].insert(tokens.begin(), tokens.end());
 
 	std::queue<Handle> q;
 	q.push(handle);
@@ -199,11 +200,11 @@ void LR1Grammar::fill(const Handle& handle, State* s) {
 		Handle h = q.front();
 		q.pop();
 
-		int left = h.first.first.first;
-		size_t rule_no = h.first.first.second;
+		int left = h.first.first;
+		size_t rule_no = h.first.second;
 		const InnerRule& rule = _rules[token2index(left)][rule_no];
-		size_t pos = h.first.second;
-		const Tokens& suffix = h.second;
+		size_t pos = h.second;
+		const Tokens& suffix = (*s)[h];
 
 		// 已经终结
 		if (pos == rule.size()) {
@@ -221,23 +222,52 @@ void LR1Grammar::fill(const Handle& handle, State* s) {
 		const InnerRules& right_rules = _rules[token2index(right)];
 		for (size_t i = 0; i < right_rules.size(); i++) {
 			const InnerRule& right_rule = right_rules[i];
-			Handle right_handle = { { { right, i }, 0 }, {} };
-
-			right_handle.second.insert(next_first.begin(), next_first.end());
+			Handle right_handle = { { right, i }, 0 };
+			Tokens right_suffix(next_first);
 
 			if (_partial_rule_nullable[token2index(left)][rule_no][pos + 1]) {
-				right_handle.second.insert(suffix.begin(), suffix.end());
+				right_suffix.insert(suffix.begin(), suffix.end());
 			}
 
-			std::pair<State::iterator, bool> ret = s->insert(right_handle);
-			if (ret.second) {
+			std::map<Handle, Tokens>::iterator ret = s->find(right_handle);
+			if (ret == s->end()) {
+				(*s)[right_handle] = right_suffix;
 				q.push(right_handle);
+			} else {
+				ret->second.insert(right_suffix.begin(), right_suffix.end());
 			}
 		}
 	}
 }
 
-size_t LR1Grammar::expand(const State& from, int token) {
+// 没找到的话,返回states.size()
+static size_t find(const std::vector<LALRGrammar::State>& states, const LALRGrammar::State& st) {
+	size_t i = 0;
+	for (i = 0; i < states.size(); i++) {
+		const LALRGrammar::State& t = states[i];
+		if (t.size() != st.size()) {
+			continue;
+		}
+
+		LALRGrammar::State::const_iterator t_it = t.begin();
+		LALRGrammar::State::const_iterator st_it = st.begin();
+		while (t_it != t.end() && st_it != st.end()) {
+			if (t_it->first != st_it->first) {
+				break;
+			}
+			t_it++;
+			st_it++;
+		}
+
+		if (t_it == t.end() && st_it == st.end()) {
+			break;
+		}
+	}
+
+	return i;
+}
+
+size_t LALRGrammar::expand(const State& from, int token) {
 	State st;
 
 	for (State::const_iterator it = from.begin();
@@ -257,13 +287,13 @@ size_t LR1Grammar::expand(const State& from, int token) {
 			continue;
 		}
 
-		Handle h = { { { left, rule_no }, pos + 1 }, suffix };
-		fill(h, &st);
+		Handle h = { { left, rule_no }, pos + 1 };
+		fill(h, suffix, &st);
 	}
 
-	std::vector<State>::iterator it = std::find(_states.begin(), _states.end(), st);
-	if (it != _states.end()) {
-		return it - _states.begin();
+	size_t new_s = find(_states, st);
+	if (new_s < _states.size()) {
+		return new_s;
 	} else {
 		size_t new_s = new_state();
 		_states[new_s] = st;
@@ -271,7 +301,7 @@ size_t LR1Grammar::expand(const State& from, int token) {
 	}
 }
 
-const LR1Grammar::Tran& LR1Grammar::operator[](size_t state) const {
+const LALRGrammar::Tran& LALRGrammar::operator[](size_t state) const {
 	assert(state < _trans.size());
 
 	return _trans[state];
@@ -281,7 +311,7 @@ const LR1Grammar::Tran& LR1Grammar::operator[](size_t state) const {
 } // namespace parser
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <vector>
 #include <string>
@@ -320,7 +350,7 @@ static const vector<pair<string, string> > s_rules = {
 };
 
 int main() {
-	::mpl::parser::detail::LR1Grammar grammar;
+	::mpl::parser::detail::LALRGrammar grammar;
 
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);
