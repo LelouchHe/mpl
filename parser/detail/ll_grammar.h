@@ -11,9 +11,9 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
-class LLGrammaOption {
+class LLGrammarOption {
 public:
-	LLGrammaOption() : left_recursion(true), left_factor(true) {
+	LLGrammarOption() : left_recursion(true), left_factor(true) {
 
 	}
 
@@ -29,7 +29,7 @@ public:
 public:
 	typedef std::map<TokenType, size_t> Tran;
 
-	bool build(LLGrammaOption option = LLGrammaOption());
+	bool build(LLGrammarOption option = LLGrammarOption());
 
 	const Tran& operator[](int token) const;
 

@@ -18,7 +18,7 @@ LALRGrammar::~LALRGrammar() {
 void LALRGrammar::debug() const {
 	Grammar::debug();
 	
-	std::cout << " ---- state ----" << std::endl;
+	std::cout << " -- state --" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -50,7 +50,7 @@ void LALRGrammar::debug() const {
 		}
 	}
 
-	std::cout << " ---- tran ----" << std::endl;
+	std::cout << " -- tran --" << std::endl;
 	for (size_t i = 0; i < _trans.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -79,7 +79,7 @@ size_t LALRGrammar::new_state() {
 	return size;
 }
 
-bool LALRGrammar::build(LALRGrammaOption option) {
+bool LALRGrammar::build(LALRGrammarOption option) {
 	add_fake_start(!option.add_fake);
 
 	generate_nullable();
@@ -159,11 +159,11 @@ bool LALRGrammar::generate_partial_rule_first() {
 }
 
 bool LALRGrammar::generate_trans() {
-	Handle handle = { { _start, 0 }, 0 };
-	Tokens suffix = { TokenType::EOS };
+	Handle start_handle = { { _start, 0 }, 0 };
+	Tokens start_suffix = { TokenType::EOS };
 
 	size_t cur = new_state();
-	fill(handle, suffix, &_states[cur]);
+	fill(start_handle, start_suffix, &_states[cur]);
 
 	std::queue<size_t> q;
 	q.push(cur);
@@ -191,21 +191,20 @@ bool LALRGrammar::generate_trans() {
 			tokens.insert(rule[pos]);
 		}
 
+		std::vector<size_t> expanded;
 		for (std::set<int>::const_iterator it = tokens.begin();
 				it != tokens.end(); ++it) {
-			size_t end = _states.size();
-			size_t to = expand(_states[cur], *it);
+			size_t next = expand(_states[cur], *it, &expanded);
 			
 			if ((TokenType)*it == TokenType::EOS) {
-				_trans[cur][*it] = { ACCEPT, to };
+				_trans[cur][*it] = { ACCEPT, next };
 			} else {
-				_trans[cur][*it] = { SHIFT, to };
+				_trans[cur][*it] = { SHIFT, next };
 			}
+		}
 
-			// 感觉有些trick
-			if (to == end) {
-				q.push(to);
-			}
+		for (size_t i = 0; i < expanded.size(); i++) {
+			q.push(expanded[i]);
 		}
 	}
 
@@ -289,7 +288,7 @@ static size_t find(const std::vector<LALRGrammar::State>& states, const LALRGram
 	return i;
 }
 
-size_t LALRGrammar::expand(const State& from, int token) {
+size_t LALRGrammar::expand(const State& from, int token, std::vector<size_t>* expanded) {
 	State st;
 
 	for (State::const_iterator it = from.begin();
@@ -315,11 +314,45 @@ size_t LALRGrammar::expand(const State& from, int token) {
 
 	size_t new_s = find(_states, st);
 	if (new_s < _states.size()) {
+		merge(st, new_s, expanded);
 		return new_s;
 	} else {
 		size_t new_s = new_state();
 		_states[new_s] = st;
+		expanded->push_back(new_s);
 		return new_s;
+	}
+}
+
+// 1. 状态的改变需要重复更新
+// 2. trans只针对reduce更新(shift的状态改变是固定唯一的)
+void LALRGrammar::merge(const State& from, size_t to, std::vector<size_t>* expanded) {
+	bool is_updated = false;
+	for (State::const_iterator it = from.begin();
+			it != from.end(); ++it) {
+		int left = it->first.first.first;
+		size_t rule_no = it->first.first.second;
+		const InnerRule& rule = _rules[token2index(left)][rule_no];
+		int pos = it->first.second;
+		const Tokens& suffix = it->second;
+
+		std::pair<Tokens::iterator, bool> ret;
+		for (Tokens::const_iterator tit = suffix.begin();
+				tit != suffix.end(); ++tit) {
+			if (pos == rule.size()) {
+				_trans[to][*tit] = { left, rule_no };
+			}
+
+			// 需要监控state有无更新
+			ret = _states[to][it->first].insert(*tit);
+			if (ret.second) {
+				is_updated = true;
+			}
+		}
+	}
+
+	if (is_updated) {
+		expanded->push_back(to);
 	}
 }
 
@@ -333,7 +366,7 @@ const LALRGrammar::Tran& LALRGrammar::operator[](size_t state) const {
 } // namespace parser
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <vector>
 #include <string>
@@ -355,20 +388,31 @@ static const vector<pair<string, string> > s_rules = {
 	{ "factor", "ID" },
 	*/
 
-	/*
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
-	*/
 
+	/*
 	{ "s", "e" },
 	{ "e", "l '=' r" },
 	{ "e", "r" },
 	{ "l", "ID" },
 	{ "l", "'*' r" },
 	{ "r", "l" },
+	*/
+
+	// LR1
+	// has reduce/reduce conflict
+	/*
+	{ "S", "NUMBER E NUMBER" },
+	{ "S", "STRING E STRING" },
+	{ "S", "NUMBER F STRING" },
+	{ "S", "STRING F NUMBER" },
+	{ "E", "ID" },
+	{ "F", "ID" },
+	*/
 };
 
 int main() {
@@ -377,7 +421,10 @@ int main() {
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);
 	}
-	grammar.build();
+
+	::mpl::parser::detail::LALRGrammarOption option;
+	option.add_fake = false;
+	grammar.build(option);
 
 	grammar.debug();
 

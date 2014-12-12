@@ -12,9 +12,9 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
-class LR0GrammaOption {
+class LR0GrammarOption {
 public:
-	LR0GrammaOption() : add_fake(false) {
+	LR0GrammarOption() : add_fake(false) {
 
 	}
 
@@ -44,7 +44,7 @@ public:
 	// 因为lr0没有lookahead,所以只能拿EPSILON作为占位字符了
 	typedef std::map<int, Action> Tran;
 
-	bool build(LR0GrammaOption option = LR0GrammaOption());
+	bool build(LR0GrammarOption option = LR0GrammarOption());
 
 	const Tran& operator[](size_t state) const;
 

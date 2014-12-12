@@ -18,7 +18,7 @@ SLRGrammar::~SLRGrammar() {
 void SLRGrammar::debug() const {
 	Grammar::debug();
 
-	std::cout << " ---- state ----" << std::endl;
+	std::cout << " -- state --" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -50,7 +50,7 @@ void SLRGrammar::debug() const {
 		}
 	}
 
-	std::cout << " ---- tran ----" << std::endl;
+	std::cout << " -- tran --" << std::endl;
 	for (size_t i = 0; i < _trans.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -79,7 +79,7 @@ size_t SLRGrammar::new_state() {
 	return size;
 }
 
-bool SLRGrammar::build(SLRGrammaOption options) {
+bool SLRGrammar::build(SLRGrammarOption options) {
 	add_fake_start(!options.add_fake);
 
 	generate_nullable();

@@ -167,12 +167,12 @@ void Grammar::debug() const {
 		}
 	}
 
-	std::cout << " --nullable--" << std::endl;
+	std::cout << " -- nullable --" << std::endl;
 	for (size_t i = NONTERMINAL_START; i < _nullable.size(); i++) {
 		std::cout << _nonterminals[i] << " : " << _nullable[i] << std::endl;
 	}
 
-	std::cout << " --first--" << std::endl;
+	std::cout << " -- first --" << std::endl;
 	for (size_t i = NONTERMINAL_START; i < _first.size(); i++) {
 		std::cout << _nonterminals[i] << " : ";
 		const Tokens& tokens = _first[i];
@@ -182,7 +182,7 @@ void Grammar::debug() const {
 		std::cout << std::endl;
 	}
 
-	std::cout << " --follow--" << std::endl;
+	std::cout << " -- follow --" << std::endl;
 	for (size_t i = NONTERMINAL_START; i < _follow.size(); i++) {
 		std::cout << _nonterminals[i] << " : ";
 		const Tokens& tokens = _follow[i];
@@ -200,9 +200,7 @@ void Grammar::add_fake_start(bool only_eos) {
 		int new_start = new_nonternimal("*" + name(_start));
 		InnerRule rule;
 		rule.push_back(_start);
-		if (only_eos) {
-			rule.push_back(TokenType::EOS);
-		}
+		rule.push_back(TokenType::EOS);
 
 		_rules[new_start].push_back(rule);
 

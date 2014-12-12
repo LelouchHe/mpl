@@ -18,7 +18,7 @@ LR1Grammar::~LR1Grammar() {
 void LR1Grammar::debug() const {
 	Grammar::debug();
 
-	std::cout << " ---- state ----" << std::endl;
+	std::cout << " -- state --" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -50,7 +50,7 @@ void LR1Grammar::debug() const {
 		}
 	}
 
-	std::cout << " ---- tran ----" << std::endl;
+	std::cout << " -- tran --" << std::endl;
 	for (size_t i = 0; i < _trans.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -79,7 +79,7 @@ size_t LR1Grammar::new_state() {
 	return size;
 }
 
-bool LR1Grammar::build(LR1GrammaOption option) {
+bool LR1Grammar::build(LR1GrammarOption option) {
 	add_fake_start(!option.add_fake);
 
 	generate_nullable();
@@ -333,12 +333,21 @@ static const vector<pair<string, string> > s_rules = {
 	{ "t", "'(' e ')'" },
 	*/
 
+	/*
 	{ "s", "e" },
 	{ "e", "l '=' r" },
 	{ "e", "r" },
 	{ "l", "ID" },
 	{ "l", "'*' r" },
 	{ "r", "l" },
+	*/
+
+	{ "S", "NUMBER E NUMBER" },
+	{ "S", "STRING E STRING" },
+	{ "S", "NUMBER F STRING" },
+	{ "S", "STRING F NUMBER" },
+	{ "E", "ID" },
+	{ "F", "ID" }
 };
 
 int main() {
@@ -347,7 +356,9 @@ int main() {
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);
 	}
-	grammar.build();
+	::mpl::parser::detail::LR1GrammarOption option;
+	option.add_fake = true;
+	grammar.build(option);
 
 	grammar.debug();
 

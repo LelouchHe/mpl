@@ -16,7 +16,7 @@ LR0Grammar::~LR0Grammar() {
 
 }
 
-bool LR0Grammar::build(LR0GrammaOption option) {
+bool LR0Grammar::build(LR0GrammarOption option) {
 	add_fake_start(!option.add_fake);
 
 	generate_trans();
@@ -27,7 +27,7 @@ bool LR0Grammar::build(LR0GrammaOption option) {
 void LR0Grammar::debug() const {
 	Grammar::debug();
 
-	std::cout << " ---- state ----" << std::endl;
+	std::cout << " -- state --" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -52,7 +52,7 @@ void LR0Grammar::debug() const {
 		}
 	}
 
-	std::cout << " ---- tran ----" << std::endl;
+	std::cout << " -- tran --" << std::endl;
 	for (size_t i = 0; i < _trans.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 

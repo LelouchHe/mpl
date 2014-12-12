@@ -12,9 +12,9 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
-class SLRGrammaOption {
+class SLRGrammarOption {
 public:
-	SLRGrammaOption() : add_fake(false) {
+	SLRGrammarOption() : add_fake(false) {
 
 	}
 
@@ -45,7 +45,7 @@ public:
 	// ×¢ÒâÇø·Ö
 	typedef std::map<int, Action> Tran;
 
-	bool build(SLRGrammaOption options = SLRGrammaOption());
+	bool build(SLRGrammarOption options = SLRGrammarOption());
 
 	const Tran& operator[](size_t state) const;
 

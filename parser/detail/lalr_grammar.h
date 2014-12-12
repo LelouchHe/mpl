@@ -12,9 +12,9 @@ namespace mpl {
 namespace parser {
 namespace detail {
 
-class LALRGrammaOption {
+class LALRGrammarOption {
 public:
-	LALRGrammaOption() : add_fake(false) {
+	LALRGrammarOption() : add_fake(false) {
 
 	}
 
@@ -45,7 +45,7 @@ public:
 	// ×¢ÒâÇø·Ö
 	typedef std::map<int, Action> Tran;
 
-	bool build(LALRGrammaOption options = LALRGrammaOption());
+	bool build(LALRGrammarOption options = LALRGrammarOption());
 
 	const Tran& operator[](size_t state) const;
 
@@ -62,7 +62,8 @@ private:
 	bool generate_trans();
 
 	void fill(const Handle& handle, const Tokens& tokens, State* s);
-	size_t expand(const State& from, int token);
+	size_t expand(const State& from, int token, std::vector<size_t>* expanded);
+	void merge(const State& from, size_t to, std::vector<size_t>* expanded);
 
 private:
 	std::vector<State> _states;

@@ -38,7 +38,7 @@ const LLGrammar::Tran& LLGrammar::operator[](int token) const {
 	return _trans[token];
 }
 
-bool LLGrammar::build(LLGrammaOption option) {
+bool LLGrammar::build(LLGrammarOption option) {
 
 	std::cout << " ---- " << std::endl;
 	debug();
