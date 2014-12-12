@@ -18,6 +18,7 @@ LR1Grammar::~LR1Grammar() {
 void LR1Grammar::debug() const {
 	Grammar::debug();
 
+	std::cout << " ---- state ----" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
 		std::cout << "state[" << i << "]:" << std::endl;
 
@@ -45,6 +46,27 @@ void LR1Grammar::debug() const {
 				std::cout << name(*tit) << ", ";
 			}
 			std::cout << ")";
+			std::cout << std::endl;
+		}
+	}
+
+	std::cout << " ---- tran ----" << std::endl;
+	for (size_t i = 0; i < _trans.size(); i++) {
+		std::cout << "state[" << i << "]:" << std::endl;
+
+		const Tran& tran = _trans[i];
+		for (Tran::const_iterator it = tran.begin();
+			it != tran.end(); ++it) {
+			std::cout << "(" << name(it->first) << "): ";
+			const Action& action = it->second;
+			if (action.first == ACCEPT) {
+				std::cout << "accept";
+			} else if (action.first == SHIFT) {
+				std::cout << "shift -> " << action.second;
+			} else {
+				std::cout << "reduce -> (" << name(action.first) << ", " << action.second << ")";
+			}
+
 			std::cout << std::endl;
 		}
 	}
