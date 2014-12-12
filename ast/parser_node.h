@@ -1,0 +1,4 @@
+#ifndef MPL_AST_PARSER_NODE_H
+#define MPL_AST_PARSER_NODE_H
+
+#endif // MPL_AST_PARSER_NODE_H

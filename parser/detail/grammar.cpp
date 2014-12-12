@@ -33,6 +33,28 @@ size_t Grammar::new_nonternimal(const std::string& name) {
 	}
 }
 
+Grammar::Token Grammar::parse_token(const std::string& str) {
+	Token token;
+	if (str[0] == '\'') {
+		assert(str[str.size() - 1] == '\'');
+
+		::mpl::StringReader reader(str.substr(1, str.size() - 2));
+		Lexer lexer(reader);
+		token = lexer.next();
+		assert(lexer.lookahead().type == TokenType::EOS);
+	} else {
+		TokenType type = Lexer::token_type(str);
+		if (type != TokenType::ERROR) {
+			token.type = type;
+		} else {
+			token.type = TokenType::NONTERMINAL;
+		}
+		token.text = str;
+	}
+
+	return token;
+}
+
 // Ç°ºó×·¸Ï
 static std::vector<std::string> split(const std::string& str, char delim) {
 	std::vector<std::string> strs;
@@ -75,23 +97,7 @@ void Grammar::add(const std::string& token, const std::string& rule) {
 			continue;
 		}
 
-		Token token;
-		if (str[0] == '\'') {
-			assert(str[str.size() - 1] == '\'');
-
-			::mpl::StringReader reader(str.substr(1, str.size() - 2));
-			Lexer lexer(reader);
-			token = lexer.next();
-			assert(lexer.lookahead().type == TokenType::EOS);
-		} else {
-			TokenType type = Lexer::token_type(str);
-			if (type != TokenType::ERROR) {
-				token.type = type;
-			} else {
-				token.type = TokenType::NONTERMINAL;
-			}
-			token.text = str;
-		}
+		Token token = parse_token(str);
 
 		if (token.type != TokenType::NONTERMINAL) {
 			inner_rule.push_back((int)token.type);
@@ -103,6 +109,12 @@ void Grammar::add(const std::string& token, const std::string& rule) {
 	_rules[left].push_back(inner_rule);
 }
 
+void Grammar::add(const std::string& token, int priority, int associativity) {
+	Token left = parse_token(token);
+	assert(left.type != TokenType::NONTERMINAL);
+
+	_attrs[left.type] = std::make_pair(priority, associativity);
+}
 
 size_t Grammar::size() const {
 	return _nonterminals.size();

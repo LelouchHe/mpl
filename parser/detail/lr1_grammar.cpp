@@ -281,7 +281,7 @@ const LR1Grammar::Tran& LR1Grammar::operator[](size_t state) const {
 } // namespace parser
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include <vector>
 #include <string>
@@ -303,11 +303,20 @@ static const vector<pair<string, string> > s_rules = {
 	{ "factor", "ID" },
 	*/
 
+	/*
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
+	*/
+
+	{ "s", "e" },
+	{ "e", "l '=' r" },
+	{ "e", "r" },
+	{ "l", "ID" },
+	{ "l", "'*' r" },
+	{ "r", "l" },
 };
 
 int main() {

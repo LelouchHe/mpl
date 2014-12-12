@@ -33,6 +33,7 @@ public:
 	typedef std::vector<InnerRule> InnerRules;
 
 	void add(const std::string& token, const std::string& rule);
+	void add(const std::string& token, int priority, int associativity);
 
 	size_t size() const;
 	const std::string& name(int token) const;
@@ -46,7 +47,7 @@ public:
 
 protected:
 	Grammar();
-	~Grammar();
+	virtual ~Grammar();
 
 	// 一些公共操作
 	// only_eos表示只增加$,而不增加新的符号
@@ -68,9 +69,15 @@ protected:
 
 	size_t new_nonternimal(const std::string& name);
 
+	Token parse_token(const std::string& str);
+
 protected:
+	typedef std::pair<int, int> Attribute;
+
 	std::vector<std::string> _nonterminals;
 	std::vector<InnerRules> _rules;
+
+	std::map<int, Attribute> _attrs;
 
 	int _start;
 	
