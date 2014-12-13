@@ -1,7 +1,7 @@
 #ifndef MPL_PARSER_DETAIL_LALR_GRAMMAR_H
 #define MPL_PARSER_DETAIL_LALR_GRAMMAR_H
 
-#include "grammar.h"
+#include "lr_grammar.h"
 
 #include <utility>
 #include <vector>
@@ -24,7 +24,7 @@ public:
 	bool add_fake;
 };
 
-class LALRGrammar : public Grammar {
+class LALRGrammar : public LRGrammar {
 public:
 	LALRGrammar();
 	~LALRGrammar();
@@ -36,24 +36,9 @@ public:
 	typedef std::pair<Rule, int> Handle;
 	typedef std::map<Handle, Tokens> State;
 
-	// first >  0: shift, goto second
-	// first == 0: accept
-	// first <  0: reduce, first as token, second as rule
-	typedef std::pair<int, int> Action;
-	// token, action
-	// reduce时是lookahead
-	// shift时是next
-	// 注意区分
-	typedef std::map<int, Action> Tran;
-
 	bool build(LALRGrammarOption options = LALRGrammarOption());
 
-	const Tran& operator[](size_t state) const;
-
 	void debug() const;
-
-	static const int ACCEPT = 0;
-	static const int SHIFT = 1;
 
 private:
 	size_t new_state();
@@ -66,11 +51,8 @@ private:
 	size_t expand(const State& from, int token, std::queue<size_t>* q);
 	void merge(const State& from, size_t to, std::queue<size_t>* q);
 
-	void set_tran(int token, int first, int second, Tran* tran);
-
 private:
 	std::vector<State> _states;
-	std::vector<Tran> _trans;
 
 	// [token][ith rule][pos]
 	std::vector<std::vector<std::vector<bool> > > _partial_rule_nullable;

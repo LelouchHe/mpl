@@ -16,7 +16,7 @@ LALRGrammar::~LALRGrammar() {
 }
 
 void LALRGrammar::debug() const {
-	Grammar::debug();
+	LRGrammar::debug();
 	
 	std::cout << " -- state --" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
@@ -46,27 +46,6 @@ void LALRGrammar::debug() const {
 				std::cout << name(*tit) << ", ";
 			}
 			std::cout << ")";
-			std::cout << std::endl;
-		}
-	}
-
-	std::cout << " -- tran --" << std::endl;
-	for (size_t i = 0; i < _trans.size(); i++) {
-		std::cout << "state[" << i << "]:" << std::endl;
-
-		const Tran& tran = _trans[i];
-		for (Tran::const_iterator it = tran.begin();
-				it != tran.end(); ++it) {
-			std::cout << "(" << name(it->first) << "): ";
-			const Action& action = it->second;
-			if (action.first == ACCEPT) {
-				std::cout << "accept";
-			} else if (action.first == SHIFT) {
-				std::cout << "shift -> " << action.second;
-			} else {
-				std::cout << "reduce -> (" << name(action.first) << ", " << action.second << ")";
-			}
-
 			std::cout << std::endl;
 		}
 	}
@@ -156,46 +135,6 @@ bool LALRGrammar::generate_partial_rule_first() {
 	}
 
 	return true;
-}
-
-void LALRGrammar::set_tran(int token, int first, int second, Tran* tran) {
-	if (first == SHIFT && (TokenType)token == TokenType::EOS) {
-		(*tran)[token] = { ACCEPT, second };
-		return;
-	}
-
-	Tran::iterator it = tran->find(token);
-	if (it == tran->end()) {
-		(*tran)[token] = { first, second };
-		return;
-	}
-
-	if (first == it->second.first && second == it->second.second) {
-		return;
-	}
-
-	// ±ØÐëÊÇshift/reduce³åÍ»
-	assert(first * it->second.first < 0);
-
-	Attribute token_attr = _attrs[token];
-	Attribute current_attr = _attrs[it->first];
-
-	Action real_action = { first, second };
-	if (token_attr.first <= current_attr.first) {
-		if (token_attr.first < current_attr.first) {
-			real_action = it->second;
-		} else if (token_attr.second == Associativity::LEFT) {
-			if (first == SHIFT) {
-				real_action = it->second;
-			}
-		} else if (token_attr.second == Associativity::RIGHT) {
-			if (first < 0) {
-				real_action = it->second;
-			}
-		}
-	}
-
-	(*tran)[token] = real_action;
 }
 
 bool LALRGrammar::generate_trans() {
@@ -395,12 +334,6 @@ void LALRGrammar::merge(const State& from, size_t to, std::queue<size_t>* q) {
 	if (is_updated) {
 		q->push(to);
 	}
-}
-
-const LALRGrammar::Tran& LALRGrammar::operator[](size_t state) const {
-	assert(state < _trans.size());
-
-	return _trans[state];
 }
 
 } // namespace detail

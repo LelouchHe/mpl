@@ -16,7 +16,7 @@ SLRGrammar::~SLRGrammar() {
 }
 
 void SLRGrammar::debug() const {
-	Grammar::debug();
+	LRGrammar::debug();
 
 	std::cout << " -- state --" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
@@ -46,27 +46,6 @@ void SLRGrammar::debug() const {
 				std::cout << name(*tit) << ", ";
 			}
 			std::cout << ")";
-			std::cout << std::endl;
-		}
-	}
-
-	std::cout << " -- tran --" << std::endl;
-	for (size_t i = 0; i < _trans.size(); i++) {
-		std::cout << "state[" << i << "]:" << std::endl;
-
-		const Tran& tran = _trans[i];
-		for (Tran::const_iterator it = tran.begin();
-			it != tran.end(); ++it) {
-			std::cout << "(" << name(it->first) << "): ";
-			const Action& action = it->second;
-			if (action.first == ACCEPT) {
-				std::cout << "accept";
-			} else if (action.first == SHIFT) {
-				std::cout << "shift -> " << action.second;
-			} else {
-				std::cout << "reduce -> (" << name(action.first) << ", " << action.second << ")";
-			}
-
 			std::cout << std::endl;
 		}
 	}
@@ -115,7 +94,8 @@ bool SLRGrammar::generate_trans() {
 				const Tokens& suffix = _follow[token2index(left)];
 				for (Tokens::const_iterator tit = suffix.begin();
 						tit != suffix.end(); ++tit) {
-					_trans[cur][*tit] = { left, rule_no };
+					//_trans[cur][*tit] = { left, rule_no };
+					set_tran(*tit, left, rule_no, &_trans[cur]);
 				}
 				continue;
 			}
@@ -126,17 +106,21 @@ bool SLRGrammar::generate_trans() {
 		for (std::set<int>::const_iterator it = tokens.begin();
 				it != tokens.end(); ++it) {
 			size_t end = _states.size();
-			size_t to = expand(_states[cur], *it);
+			size_t next = expand(_states[cur], *it);
 
+			set_tran(*it, SHIFT, next, &_trans[cur]);
+
+			/*
 			if ((TokenType)*it == TokenType::EOS) {
-				_trans[cur][*it] = { ACCEPT, to };
+				_trans[cur][*it] = { ACCEPT, next };
 			} else {
-				_trans[cur][*it] = { SHIFT, to };
+				_trans[cur][*it] = { SHIFT, next };
 			}
+			*/
 
 			// ¸Ð¾õÓÐÐ©trick
-			if (to == end) {
-				q.push(to);
+			if (next >= end) {
+				q.push(next);
 			}
 		}
 	}
@@ -214,12 +198,6 @@ size_t SLRGrammar::expand(const State& from, int token) {
 		_states[new_s] = st;
 		return new_s;
 	}
-}
-
-const SLRGrammar::Tran& SLRGrammar::operator[](size_t state) const {
-	assert(state < _trans.size());
-
-	return _trans[state];
 }
 
 } // namespace detail

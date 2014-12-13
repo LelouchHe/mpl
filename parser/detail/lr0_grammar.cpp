@@ -25,7 +25,7 @@ bool LR0Grammar::build(LR0GrammarOption option) {
 }
 
 void LR0Grammar::debug() const {
-	Grammar::debug();
+	LRGrammar::debug();
 
 	std::cout << " -- state --" << std::endl;
 	for (size_t i = 0; i < _states.size(); i++) {
@@ -48,27 +48,6 @@ void LR0Grammar::debug() const {
 			if (pos == rule.size()) {
 				std::cout << "@";
 			}
-			std::cout << std::endl;
-		}
-	}
-
-	std::cout << " -- tran --" << std::endl;
-	for (size_t i = 0; i < _trans.size(); i++) {
-		std::cout << "state[" << i << "]:" << std::endl;
-
-		const Tran& tran = _trans[i];
-		for (Tran::const_iterator it = tran.begin();
-			it != tran.end(); ++it) {
-			std::cout << "(" << name(it->first) << "): ";
-			const Action& action = it->second;
-			if (action.first == ACCEPT) {
-				std::cout << "accept";
-			} else if (action.first == SHIFT) {
-				std::cout << "shift -> " << action.second;
-			} else {
-				std::cout << "reduce -> (" << name(action.first) << ", " << action.second << ")";
-			}
-
 			std::cout << std::endl;
 		}
 	}
@@ -206,12 +185,6 @@ size_t LR0Grammar::expand(const State& from, int token) {
 		_states[new_s] = st;
 		return new_s;
 	}
-}
-
-const LR0Grammar::Tran& LR0Grammar::operator[](size_t state) const {
-	assert(state < _trans.size());
-
-	return _trans[state];
 }
 
 } // namespace detail

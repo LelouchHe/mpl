@@ -1,7 +1,7 @@
 #ifndef MPL_PARSER_DETAIL_LR0_GRAMMAR_H
 #define MPL_PARSER_DETAIL_LR0_GRAMMAR_H
 
-#include "grammar.h"
+#include "lr_grammar.h"
 
 #include <utility>
 #include <vector>
@@ -23,7 +23,7 @@ public:
 	bool add_fake;
 };
 
-class LR0Grammar : public Grammar {
+class LR0Grammar : public LRGrammar {
 public:
 	LR0Grammar();
 	~LR0Grammar();
@@ -35,23 +35,9 @@ public:
 	typedef std::pair<Rule, int> Handle;
 	typedef std::set<Handle> State;
 
-	// first >  0: shift, goto second
-	// first == 0: accept
-	// first <  0: reduce, first as token, second as rule
-	typedef std::pair<int, int> Action;
-	// token, action
-	// reduce when token = EPSILON
-	// 因为lr0没有lookahead,所以只能拿EPSILON作为占位字符了
-	typedef std::map<int, Action> Tran;
-
 	bool build(LR0GrammarOption option = LR0GrammarOption());
 
-	const Tran& operator[](size_t state) const;
-
 	void debug() const;
-
-	static const int ACCEPT = 0;
-	static const int SHIFT = 1;
 
 private:
 	size_t new_state();
@@ -63,7 +49,6 @@ private:
 
 private:
 	std::vector<State> _states;
-	std::vector<Tran> _trans;
 };
 
 } // namespace detail

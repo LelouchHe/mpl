@@ -1,7 +1,7 @@
 #ifndef MPL_PARSER_DETAIL_SLR_GRAMMAR_H
 #define MPL_PARSER_DETAIL_SLR_GRAMMAR_H
 
-#include "grammar.h"
+#include "lr_grammar.h"
 
 #include <utility>
 #include <vector>
@@ -23,7 +23,7 @@ public:
 	bool add_fake;
 };
 
-class SLRGrammar : public Grammar {
+class SLRGrammar : public LRGrammar {
 public:
 	SLRGrammar();
 	~SLRGrammar();
@@ -35,24 +35,9 @@ public:
 	typedef std::pair<Rule, int> Handle;
 	typedef std::set<Handle> State;
 
-	// first >  0: shift, goto second
-	// first == 0: accept
-	// first <  0: reduce, first as token, second as rule
-	typedef std::pair<int, int> Action;
-	// token, action
-	// reduce时是lookahead
-	// shift时是next
-	// 注意区分
-	typedef std::map<int, Action> Tran;
-
 	bool build(SLRGrammarOption options = SLRGrammarOption());
 
-	const Tran& operator[](size_t state) const;
-
 	void debug() const;
-
-	static const int ACCEPT = 0;
-	static const int SHIFT = 1;
 
 private:
 	size_t new_state();
@@ -64,7 +49,6 @@ private:
 
 private:
 	std::vector<State> _states;
-	std::vector<Tran> _trans;
 };
 
 } // namespace detail

@@ -1,7 +1,7 @@
 #ifndef MPL_PARSER_DETAIL_LR1_GRAMMAR_H
 #define MPL_PARSER_DETAIL_LR1_GRAMMAR_H
 
-#include "grammar.h"
+#include "lr_grammar.h"
 
 #include <utility>
 #include <vector>
@@ -23,7 +23,7 @@ public:
 	bool add_fake;
 };
 
-class LR1Grammar : public Grammar {
+class LR1Grammar : public LRGrammar {
 public:
 	LR1Grammar();
 	~LR1Grammar();
@@ -34,27 +34,13 @@ public:
 	// <Rule, pos>
 	typedef std::pair<Rule, int> Item;
 	// <Item, suffix>
+	// lr1的suffix应该是单token,此处简化一下
 	typedef std::pair<Item, Tokens> Handle;
 	typedef std::set<Handle> State;
 
-	// first >  0: shift, goto second
-	// first == 0: accept
-	// first <  0: reduce, first as token, second as rule
-	typedef std::pair<int, int> Action;
-	// token, action
-	// reduce时是lookahead
-	// shift时是next
-	// 注意区分
-	typedef std::map<int, Action> Tran;
-
 	bool build(LR1GrammarOption options = LR1GrammarOption());
 
-	const Tran& operator[](size_t state) const;
-
 	void debug() const;
-
-	static const int ACCEPT = 0;
-	static const int SHIFT = 1;
 
 private:
 	size_t new_state();
@@ -68,7 +54,6 @@ private:
 
 private:
 	std::vector<State> _states;
-	std::vector<Tran> _trans;
 
 	// [token][ith rule][pos]
 	std::vector<std::vector<std::vector<bool> > > _partial_rule_nullable;
