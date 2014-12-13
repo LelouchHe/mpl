@@ -109,7 +109,7 @@ void Grammar::add(const std::string& token, const std::string& rule) {
 	_rules[left].push_back(inner_rule);
 }
 
-void Grammar::add(const std::string& token, int priority, int associativity) {
+void Grammar::add(const std::string& token, int priority, Associativity associativity) {
 	Token left = parse_token(token);
 	assert(left.type != TokenType::NONTERMINAL);
 

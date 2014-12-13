@@ -66,6 +66,8 @@ private:
 	size_t expand(const State& from, int token, std::queue<size_t>* q);
 	void merge(const State& from, size_t to, std::queue<size_t>* q);
 
+	void set_tran(int token, int first, int second, Tran* tran);
+
 private:
 	std::vector<State> _states;
 	std::vector<Tran> _trans;

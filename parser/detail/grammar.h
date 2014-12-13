@@ -32,8 +32,14 @@ public:
 	typedef std::vector<int> InnerRule;
 	typedef std::vector<InnerRule> InnerRules;
 
+	enum Associativity {
+		NONE = 0,
+		LEFT,
+		RIGHT,
+	};
+
 	void add(const std::string& token, const std::string& rule);
-	void add(const std::string& token, int priority, int associativity);
+	void add(const std::string& token, int priority, Associativity associativity);
 
 	size_t size() const;
 	const std::string& name(int token) const;
@@ -72,7 +78,7 @@ protected:
 	Token parse_token(const std::string& str);
 
 protected:
-	typedef std::pair<int, int> Attribute;
+	typedef std::pair<int, Associativity> Attribute;
 
 	std::vector<std::string> _nonterminals;
 	std::vector<InnerRules> _rules;

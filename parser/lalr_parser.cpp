@@ -13,17 +13,27 @@ static ::mpl::parser::detail::LALRGrammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
+	/*
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
+	*/
+
+	{ "s", "e" },
+	{ "e", "e '+' e" },
+	{ "e", "e '*' e" },
+	{ "e", "NUMBER" },
 };
 
 static void init() {
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		s_grammar.add(s_rules[i].first, s_rules[i].second);
 	}
+
+	s_grammar.add("'+'", 1, ::mpl::parser::detail::LALRGrammar::Associativity::LEFT);
+	s_grammar.add("'*'", 2, ::mpl::parser::detail::LALRGrammar::Associativity::LEFT);
 
 	s_grammar.build();
 	s_grammar.debug();
@@ -104,7 +114,7 @@ void LALRParser::parse() {
 using namespace std;
 
 int main() {
-	::mpl::StringReader sr("2 + (2 + 2 + 2)");
+	::mpl::StringReader sr("1 * 2 + 3");
 
 	//::mpl::parser::GeneratedLR0Parser parser(sr);
 	::mpl::parser::LALRParser parser(sr);

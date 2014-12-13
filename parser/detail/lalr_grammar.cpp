@@ -158,6 +158,46 @@ bool LALRGrammar::generate_partial_rule_first() {
 	return true;
 }
 
+void LALRGrammar::set_tran(int token, int first, int second, Tran* tran) {
+	if (first == SHIFT && (TokenType)token == TokenType::EOS) {
+		(*tran)[token] = { ACCEPT, second };
+		return;
+	}
+
+	Tran::iterator it = tran->find(token);
+	if (it == tran->end()) {
+		(*tran)[token] = { first, second };
+		return;
+	}
+
+	if (first == it->second.first && second == it->second.second) {
+		return;
+	}
+
+	// 必须是shift/reduce冲突
+	assert(first * it->second.first < 0);
+
+	Attribute token_attr = _attrs[token];
+	Attribute current_attr = _attrs[it->first];
+
+	Action real_action = { first, second };
+	if (token_attr.first <= current_attr.first) {
+		if (token_attr.first < current_attr.first) {
+			real_action = it->second;
+		} else if (token_attr.second == Associativity::LEFT) {
+			if (first == SHIFT) {
+				real_action = it->second;
+			}
+		} else if (token_attr.second == Associativity::RIGHT) {
+			if (first < 0) {
+				real_action = it->second;
+			}
+		}
+	}
+
+	(*tran)[token] = real_action;
+}
+
 bool LALRGrammar::generate_trans() {
 	Handle start_handle = { { _start, 0 }, 0 };
 	Tokens start_suffix = { TokenType::EOS };
@@ -183,7 +223,8 @@ bool LALRGrammar::generate_trans() {
 			if (pos == rule.size()) {
 				for (Tokens::const_iterator tit = suffix.begin();
 						tit != suffix.end(); ++tit) {
-					_trans[cur][*tit] = { left, rule_no };
+					//_trans[cur][*tit] = { left, rule_no };
+					set_tran(*tit, left, rule_no, &_trans[cur]);
 				}
 				continue;
 			}
@@ -194,12 +235,16 @@ bool LALRGrammar::generate_trans() {
 		for (std::set<int>::const_iterator it = tokens.begin();
 				it != tokens.end(); ++it) {
 			size_t next = expand(_states[cur], *it, &q);
+
+			set_tran(*it, SHIFT, next, &_trans[cur]);
 			
+			/*
 			if ((TokenType)*it == TokenType::EOS) {
 				_trans[cur][*it] = { ACCEPT, next };
 			} else {
 				_trans[cur][*it] = { SHIFT, next };
 			}
+			*/
 		}
 	}
 
@@ -335,7 +380,8 @@ void LALRGrammar::merge(const State& from, size_t to, std::queue<size_t>* q) {
 		for (Tokens::const_iterator tit = suffix.begin();
 				tit != suffix.end(); ++tit) {
 			if (pos == rule.size()) {
-				_trans[to][*tit] = { left, rule_no };
+				//_trans[to][*tit] = { left, rule_no };
+				set_tran(*tit, left, rule_no, &_trans[to]);
 			}
 
 			// 需要监控state有无更新
@@ -383,11 +429,13 @@ static const vector<pair<string, string> > s_rules = {
 	{ "factor", "ID" },
 	*/
 
+	/*
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
+	*/
 
 	/*
 	{ "s", "e" },
@@ -408,6 +456,11 @@ static const vector<pair<string, string> > s_rules = {
 	{ "E", "ID" },
 	{ "F", "ID" },
 	*/
+
+	{ "s", "e" },
+	{ "e", "e '+' e" },
+	{ "e", "e '*' e" },
+	{ "e", "NUMBER" },
 };
 
 int main() {
@@ -416,6 +469,9 @@ int main() {
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);
 	}
+
+	grammar.add("'+'", 1, ::mpl::parser::detail::LALRGrammar::Associativity::LEFT);
+	grammar.add("'*'", 2, ::mpl::parser::detail::LALRGrammar::Associativity::LEFT);
 
 	::mpl::parser::detail::LALRGrammarOption option;
 	option.add_fake = false;
