@@ -11,6 +11,7 @@ namespace ast {
 
 class ParserNode;
 typedef std::shared_ptr<ParserNode> ParserNodePtr;
+
 class ParserNode {
 public:
 	/*
@@ -21,15 +22,18 @@ public:
 public:
 	typedef ::mpl::Lexer::Token Token;
 
-	void add(ParserNodePtr node);
+	void add(const ParserNodePtr& node);
 
-	static ParserNodePtr create(Token token);
+	size_t size() const;
+	const ParserNodePtr& operator[](size_t s) const;
+
+	static ParserNodePtr create(const Token& token);
 
 private:
 	Token _token;
 	std::vector<ParserNodePtr> _children;
 
-	ParserNode();
+	ParserNode(const Token& token);
 	~ParserNode();
 	ParserNode(const ParserNode&);
 	ParserNode& operator=(const ParserNode&);
