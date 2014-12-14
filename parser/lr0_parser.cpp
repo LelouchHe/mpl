@@ -3,13 +3,13 @@
 #include <iostream>
 #include <stack>
 
-#include "detail/lr0_grammar.h"
+#include "grammar/lr0_grammar.h"
 
 namespace mpl {
 namespace parser {
 
 	
-static ::mpl::parser::detail::LR0Grammar s_grammar;
+static ::mpl::parser::grammar::LR0Grammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
@@ -50,7 +50,7 @@ LR0Parser::~LR0Parser() {
 }
 
 void LR0Parser::parse() {
-	typedef ::mpl::parser::detail::LR0Grammar LR0Grammar;
+	typedef ::mpl::parser::grammar::LR0Grammar LR0Grammar;
 
 	std::stack<size_t> st;
 	st.push(0);

@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_DETAIL_LR0_GRAMMAR_H
-#define MPL_PARSER_DETAIL_LR0_GRAMMAR_H
+#ifndef MPL_PARSER_GRAMMAR_LR0_GRAMMAR_H
+#define MPL_PARSER_GRAMMAR_LR0_GRAMMAR_H
 
 #include "lr_grammar.h"
 
@@ -10,7 +10,7 @@
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
 class LR0GrammarOption {
 public:
@@ -51,8 +51,8 @@ private:
 	std::vector<State> _states;
 };
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_DETAIL_LR0_GRAMMAR_H
+#endif // MPL_PARSER_GRAMMAR_LR0_GRAMMAR_H

@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_DETAIL_LL_GRAMMAR_H
-#define MPL_PARSER_DETAIL_LL_GRAMMAR_H
+#ifndef MPL_PARSER_GRAMMAR_LL_GRAMMAR_H
+#define MPL_PARSER_GRAMMAR_LL_GRAMMAR_H
 
 #include <vector>
 #include <map>
@@ -9,7 +9,7 @@
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
 class LLGrammarOption {
 public:
@@ -56,8 +56,8 @@ private:
 	std::vector<std::vector<Tokens> > _rule_first;
 };
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_DETAIL_LL_GRAMMAR_H
+#endif // MPL_PARSER_GRAMMAR_LL_GRAMMAR_H

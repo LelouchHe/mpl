@@ -3,13 +3,13 @@
 #include <iostream>
 #include <stack>
 
-#include "detail/lalr_grammar.h"
+#include "grammar/lalr_grammar.h"
 
 namespace mpl {
 namespace parser {
 
 	
-static ::mpl::parser::detail::LALRGrammar s_grammar;
+static ::mpl::parser::grammar::LALRGrammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
@@ -32,8 +32,8 @@ static void init() {
 		s_grammar.add(s_rules[i].first, s_rules[i].second);
 	}
 
-	s_grammar.add("'+'", 1, ::mpl::parser::detail::LALRGrammar::Associativity::LEFT);
-	s_grammar.add("'*'", 2, ::mpl::parser::detail::LALRGrammar::Associativity::LEFT);
+	s_grammar.add("'+'", 1, ::mpl::parser::grammar::LALRGrammar::Associativity::LEFT);
+	s_grammar.add("'*'", 2, ::mpl::parser::grammar::LALRGrammar::Associativity::LEFT);
 
 	s_grammar.build();
 	s_grammar.debug();
@@ -52,7 +52,7 @@ LALRParser::~LALRParser() {
 }
 
 void LALRParser::parse() {
-	typedef ::mpl::parser::detail::LALRGrammar LALRGrammar;
+	typedef ::mpl::parser::grammar::LALRGrammar LALRGrammar;
 
 	std::stack<size_t> st;
 	st.push(0);
@@ -105,7 +105,7 @@ void LALRParser::parse() {
 } // namespace parser
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include "../file_reader.h"
 #include "../string_reader.h"

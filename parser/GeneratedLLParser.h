@@ -1,6 +1,6 @@
 #ifndef MPL_PARSER_GeneratedLLParser_H
 #define MPL_PARSER_GeneratedLLParser_H
-#include "../config.h"
+#include "../lexer.h"
 namespace mpl {
 class Reader;
 namespace parser {

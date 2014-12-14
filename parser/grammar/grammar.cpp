@@ -5,7 +5,7 @@
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
 Grammar::Grammar() : _start(0) {
 	// 0в╗це©уЁЖ
@@ -412,7 +412,7 @@ bool Grammar::generate_follow() {
 
 
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
@@ -446,7 +446,7 @@ static const vector<pair<string, string> > s_rules = {
 
 int main() {
 
-	::mpl::parser::detail::Grammar grammar;
+	::mpl::parser::grammar::Grammar grammar;
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);
 	}

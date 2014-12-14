@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-#include "../config.h"
+#include "../lexer.h"
 
 namespace mpl {
 

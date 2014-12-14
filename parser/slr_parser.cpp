@@ -3,13 +3,13 @@
 #include <iostream>
 #include <stack>
 
-#include "detail/slr_grammar.h"
+#include "grammar/slr_grammar.h"
 
 namespace mpl {
 namespace parser {
 
 	
-static ::mpl::parser::detail::SLRGrammar s_grammar;
+static ::mpl::parser::grammar::SLRGrammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
@@ -54,7 +54,7 @@ SLRParser::~SLRParser() {
 }
 
 void SLRParser::parse() {
-	typedef ::mpl::parser::detail::SLRGrammar SLRGrammar;
+	typedef ::mpl::parser::grammar::SLRGrammar SLRGrammar;
 
 	std::stack<size_t> st;
 	st.push(0);

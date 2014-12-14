@@ -1,21 +1,21 @@
-#include "slr_grammar.h"
+#include "lr1_grammar.h"
 
 #include <iostream>
 #include <queue>
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
-SLRGrammar::SLRGrammar() {
-
-}
-
-SLRGrammar::~SLRGrammar() {
+LR1Grammar::LR1Grammar() {
 
 }
 
-void SLRGrammar::debug() const {
+LR1Grammar::~LR1Grammar() {
+
+}
+
+void LR1Grammar::debug() const {
 	LRGrammar::debug();
 
 	std::cout << " -- state --" << std::endl;
@@ -25,10 +25,10 @@ void SLRGrammar::debug() const {
 		const State& state = _states[i];
 		for (State::const_iterator it = state.begin();
 				it != state.end(); ++it) {
-			int left = it->first.first;
-			const InnerRule& rule = _rules[token2index(left)][it->first.second];
-			int pos = it->second;
-			const Tokens& tokens = _follow[token2index(left)];
+			int left = it->first.first.first;
+			const InnerRule& rule = _rules[token2index(left)][it->first.first.second];
+			int pos = it->first.second;
+			const Tokens& tokens = it->second;
 
 			std::cout << name(left) << " : ";
 			for (size_t j = 0; j < rule.size(); j++) {
@@ -50,7 +50,7 @@ void SLRGrammar::debug() const {
 		}
 	}
 }
-size_t SLRGrammar::new_state() {
+size_t LR1Grammar::new_state() {
 	size_t size = _states.size();
 	_states.resize(size + 1);
 	_trans.resize(size + 1);
@@ -58,20 +58,87 @@ size_t SLRGrammar::new_state() {
 	return size;
 }
 
-bool SLRGrammar::build(SLRGrammarOption options) {
-	add_fake_start(!options.add_fake);
+bool LR1Grammar::build(LR1GrammarOption option) {
+	add_fake_start(!option.add_fake);
 
 	generate_nullable();
+	generate_partial_rule_nullable();
 	generate_first();
-	generate_follow();
+	generate_partial_rule_first();
 
 	generate_trans();
 
 	return true;
 }
 
-bool SLRGrammar::generate_trans() {
-	Handle handle = { { _start, 0 }, 0 };
+// 0 - size; 最后一位扩充
+bool LR1Grammar::generate_partial_rule_nullable() {
+	size_t size = _nonterminals.size();
+
+	_partial_rule_nullable.resize(size);
+	for (size_t left = NONTERMINAL_START; left < size; left++) {
+		const InnerRules& rules = _rules[left];
+		_partial_rule_nullable[left].resize(rules.size());
+
+		for (size_t i = 0; i < rules.size(); i++) {
+			const InnerRule& rule = rules[i];
+			_partial_rule_nullable[left][i].resize(rule.size() + 1);
+
+			bool is_nullable = true;
+			for (int pos = rule.size() - 1; pos >= 0; pos--) {
+				if (rule[pos] >= 0) {
+					_partial_rule_nullable[left][i][pos] = false;
+					is_nullable = false;
+				} else if (is_nullable && _nullable[token2index(rule[pos])]) {
+					_partial_rule_nullable[left][i][pos] = true;
+				} else {
+					_partial_rule_nullable[left][i][pos] = false;
+					is_nullable = false;
+				}
+			}
+			_partial_rule_nullable[left][i][rule.size()] = true;
+		}
+
+	}
+
+	return true;
+}
+
+// 0 - size; 最后一位扩充
+bool LR1Grammar::generate_partial_rule_first() {
+	size_t size = _nonterminals.size();
+
+	_partial_rule_first.resize(size);
+	for (size_t left = NONTERMINAL_START; left < size; left++) {
+		const InnerRules& rules = _rules[left];
+		_partial_rule_first[left].resize(rules.size());
+
+		for (size_t i = 0; i < rules.size(); i++) {
+			const InnerRule& rule = rules[i];
+			_partial_rule_first[left][i].resize(rule.size() + 1);
+
+			std::vector<Tokens>& first_tokens = _partial_rule_first[left][i];
+
+			for (int pos = rule.size() - 1; pos >= 0; pos--) {
+				if (rule[pos] >= 0) {
+					first_tokens[pos].insert((TokenType)rule[pos]);
+				} else {
+					first_tokens[pos].insert(_first[token2index(rule[pos])].begin(),
+								_first[token2index(rule[pos])].end());
+					if ((size_t)pos < rule.size() - 1) {
+						first_tokens[pos].insert(first_tokens[pos + 1].begin(),
+								first_tokens[pos + 1].end());
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool LR1Grammar::generate_trans() {
+	Handle handle = { { { _start, 0 }, 0 }, { TokenType::EOS } };
 
 	size_t cur = new_state();
 	fill(handle, &_states[cur]);
@@ -85,13 +152,13 @@ bool SLRGrammar::generate_trans() {
 		std::set<int> tokens;
 		for (State::const_iterator it = _states[cur].begin();
 				it != _states[cur].end(); ++it) {
-			int left = it->first.first;
-			size_t rule_no = it->first.second;
+			int left = it->first.first.first;
+			size_t rule_no = it->first.first.second;
 			const InnerRule& rule = _rules[token2index(left)][rule_no];
-			int pos = it->second;
+			int pos = it->first.second;
+			const Tokens& suffix = it->second;
 
 			if (pos == rule.size()) {
-				const Tokens& suffix = _follow[token2index(left)];
 				for (Tokens::const_iterator tit = suffix.begin();
 						tit != suffix.end(); ++tit) {
 					//_trans[cur][*tit] = { left, rule_no };
@@ -109,7 +176,7 @@ bool SLRGrammar::generate_trans() {
 			size_t next = expand(_states[cur], *it);
 
 			set_tran(*it, SHIFT, next, &_trans[cur]);
-
+			
 			/*
 			if ((TokenType)*it == TokenType::EOS) {
 				_trans[cur][*it] = { ACCEPT, next };
@@ -128,7 +195,7 @@ bool SLRGrammar::generate_trans() {
 	return true;
 }
 
-void SLRGrammar::fill(const Handle& handle, State* s) {
+void LR1Grammar::fill(const Handle& handle, State* s) {
 	s->insert(handle);
 
 	std::queue<Handle> q;
@@ -138,10 +205,11 @@ void SLRGrammar::fill(const Handle& handle, State* s) {
 		Handle h = q.front();
 		q.pop();
 
-		int left = h.first.first;
-		size_t rule_no = h.first.second;
+		int left = h.first.first.first;
+		size_t rule_no = h.first.first.second;
 		const InnerRule& rule = _rules[token2index(left)][rule_no];
-		size_t pos = h.second;
+		size_t pos = h.first.second;
+		const Tokens& suffix = h.second;
 
 		// 已经终结
 		if (pos == rule.size()) {
@@ -154,10 +222,18 @@ void SLRGrammar::fill(const Handle& handle, State* s) {
 			continue;
 		}
 
+		const Tokens& next_first = _partial_rule_first[token2index(left)][rule_no][pos + 1];
+
 		const InnerRules& right_rules = _rules[token2index(right)];
 		for (size_t i = 0; i < right_rules.size(); i++) {
 			const InnerRule& right_rule = right_rules[i];
-			Handle right_handle = { { right, i }, 0 };
+			Handle right_handle = { { { right, i }, 0 }, {} };
+
+			right_handle.second.insert(next_first.begin(), next_first.end());
+
+			if (_partial_rule_nullable[token2index(left)][rule_no][pos + 1]) {
+				right_handle.second.insert(suffix.begin(), suffix.end());
+			}
 
 			std::pair<State::iterator, bool> ret = s->insert(right_handle);
 			if (ret.second) {
@@ -167,15 +243,16 @@ void SLRGrammar::fill(const Handle& handle, State* s) {
 	}
 }
 
-size_t SLRGrammar::expand(const State& from, int token) {
+size_t LR1Grammar::expand(const State& from, int token) {
 	State st;
 
 	for (State::const_iterator it = from.begin();
 			it != from.end(); ++it) {
-		int left = it->first.first;
-		size_t rule_no = it->first.second;
+		int left = it->first.first.first;
+		size_t rule_no = it->first.first.second;
 		const InnerRule& rule = _rules[token2index(left)][rule_no];
-		int pos = it->second;
+		int pos = it->first.second;
+		const Tokens& suffix = it->second;
 
 		if (pos == rule.size()) {
 			continue;
@@ -186,7 +263,7 @@ size_t SLRGrammar::expand(const State& from, int token) {
 			continue;
 		}
 
-		Handle h = { { left, rule_no }, pos + 1 };
+		Handle h = { { { left, rule_no }, pos + 1 }, suffix };
 		fill(h, &st);
 	}
 
@@ -200,7 +277,7 @@ size_t SLRGrammar::expand(const State& from, int token) {
 	}
 }
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
@@ -226,31 +303,40 @@ static const vector<pair<string, string> > s_rules = {
 	{ "factor", "ID" },
 	*/
 
-	// SLR
+	/*
 	{ "s", "e" },
 	{ "e", "t" },
 	{ "e", "e '+' t" },
 	{ "t", "NUMBER" },
 	{ "t", "'(' e ')'" },
+	*/
 
-	// LR1
 	/*
 	{ "s", "e" },
 	{ "e", "l '=' r" },
 	{ "e", "r" },
 	{ "l", "ID" },
-	{ "l", "'*' ID" },
+	{ "l", "'*' r" },
 	{ "r", "l" },
 	*/
+
+	{ "S", "NUMBER E NUMBER" },
+	{ "S", "STRING E STRING" },
+	{ "S", "NUMBER F STRING" },
+	{ "S", "STRING F NUMBER" },
+	{ "E", "ID" },
+	{ "F", "ID" }
 };
 
 int main() {
-	::mpl::parser::detail::SLRGrammar grammar;
+	::mpl::parser::grammar::LR1Grammar grammar;
 
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);
 	}
-	grammar.build();
+	::mpl::parser::grammar::LR1GrammarOption option;
+	option.add_fake = true;
+	grammar.build(option);
 
 	grammar.debug();
 

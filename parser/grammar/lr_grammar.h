@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_DETAIL_LR_GRAMMAR_H
-#define MPL_PARSER_DETAIL_LR_GRAMMAR_H
+#ifndef MPL_PARSER_GRAMMAR_LR_GRAMMAR_H
+#define MPL_PARSER_GRAMMAR_LR_GRAMMAR_H
 
 #include "grammar.h"
 
@@ -8,7 +8,7 @@
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
 class LRGrammar : public Grammar {
 public:
@@ -46,8 +46,8 @@ protected:
 	std::vector<Tran> _trans;
 };
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_DETAIL_LR_GRAMMAR_H
+#endif // MPL_PARSER_GRAMMAR_LR_GRAMMAR_H

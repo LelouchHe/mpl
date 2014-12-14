@@ -7,12 +7,12 @@
 
 #include "../reader.h"
 #include "../string_reader.h"
-#include "detail/ll_grammar.h"
+#include "grammar/ll_grammar.h"
 
 namespace mpl {
 namespace parser {
 
-static ::mpl::parser::detail::LLGrammar s_grammar;
+static ::mpl::parser::grammar::LLGrammar s_grammar;
 static bool s_init = false;
 
 static const std::vector<std::pair<std::string, std::string> > s_rules = {
@@ -56,7 +56,7 @@ LLParser::~LLParser() {
 }
 
 void LLParser::parse() {
-	typedef ::mpl::parser::detail::LLGrammar LLGrammar;
+	typedef ::mpl::parser::grammar::LLGrammar LLGrammar;
 
 	std::stack<int> st;
 	st.push(s_grammar.start());

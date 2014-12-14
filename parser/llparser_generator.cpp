@@ -193,7 +193,7 @@ bool LLParserGenerator::generate_header(const char* parser_name) {
 	fprintf(out, "#ifndef MPL_PARSER_%s_H\n", parser_name);
 	fprintf(out, "#define MPL_PARSER_%s_H\n", parser_name);
 
-	fprintf(out, "#include \"../config.h\"\n");
+	fprintf(out, "#include \"../lexer.h\"\n");
 
 	fprintf(out, "namespace mpl {\n");
 	fprintf(out, "class Reader;\n");
@@ -281,17 +281,17 @@ bool LLParserGenerator::generate_gramma(std::FILE* out) {
 	}
 	fprintf(out, "\n};\n");
 
-	const std::vector<::mpl::parser::detail::LLGrammar::InnerRules>& all_rules = _grammar.rules();
+	const std::vector<::mpl::parser::grammar::LLGrammar::InnerRules>& all_rules = _grammar.rules();
 
 	fprintf(out, "static const std::vector<std::vector<std::vector<int> > > s_rules = {\n");
 	for (size_t left = 0; left < size; left++) {
 		fprintf(out, "{\n");
 
-		const ::mpl::parser::detail::LLGrammar::InnerRules& rules = all_rules[left];
+		const ::mpl::parser::grammar::LLGrammar::InnerRules& rules = all_rules[left];
 		for (size_t i = 0; i < rules.size(); i++) {
 			fprintf(out, "\t{");
 
-			const ::mpl::parser::detail::LLGrammar::InnerRule& rule = rules[i];
+			const ::mpl::parser::grammar::LLGrammar::InnerRule& rule = rules[i];
 			for (size_t j = 0; j < rule.size(); j++) {
 				fprintf(out, "%d, ", rule[j]);
 			}
@@ -305,15 +305,15 @@ bool LLParserGenerator::generate_gramma(std::FILE* out) {
 
 	fprintf(out, "static const int s_start = %d;\n", _grammar.start());
 
-	const std::vector<::mpl::parser::detail::LLGrammar::Tran>& trans = _grammar.trans();
+	const std::vector<::mpl::parser::grammar::LLGrammar::Tran>& trans = _grammar.trans();
 	fprintf(out, "static const std::vector<std::map<int, int> > s_trans = {\n");
 	for (size_t left = 0; left < size; left++) {
 		fprintf(out, "{\n");
 
 		int num = 0;
-		const ::mpl::parser::detail::LLGrammar::Tran& tran = trans[left];
+		const ::mpl::parser::grammar::LLGrammar::Tran& tran = trans[left];
 		fprintf(out, "\t");
-		for (::mpl::parser::detail::LLGrammar::Tran::const_iterator it = tran.begin();
+		for (::mpl::parser::grammar::LLGrammar::Tran::const_iterator it = tran.begin();
 				it != tran.end(); ++it) {
 			if (num >= 5) {
 				fprintf(out, "\n\t");

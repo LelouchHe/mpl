@@ -4,7 +4,7 @@
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
 LRGrammar::LRGrammar() {
 
@@ -112,7 +112,6 @@ void LRGrammar::set_tran(int token, int first, int second, Tran* tran) {
 	(*tran)[token] = real_action;
 }
 
-
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl

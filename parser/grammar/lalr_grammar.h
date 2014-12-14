@@ -1,5 +1,5 @@
-#ifndef MPL_PARSER_DETAIL_LALR_GRAMMAR_H
-#define MPL_PARSER_DETAIL_LALR_GRAMMAR_H
+#ifndef MPL_PARSER_GRAMMAR_LALR_GRAMMAR_H
+#define MPL_PARSER_GRAMMAR_LALR_GRAMMAR_H
 
 #include "lr_grammar.h"
 
@@ -11,7 +11,7 @@
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
 class LALRGrammarOption {
 public:
@@ -59,8 +59,8 @@ private:
 	std::vector<std::vector<std::vector<Tokens> > > _partial_rule_first;
 };
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_DETAIL_LALR_GRAMMAR_H
+#endif // MPL_PARSER_GRAMMAR_LALR_GRAMMAR_H

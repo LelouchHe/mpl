@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <cstdio>
-#include "detail/ll_grammar.h"
+#include "grammar/ll_grammar.h"
 
 namespace mpl {
 namespace parser {
@@ -41,7 +41,7 @@ private:
 	std::map<std::string, Definition> _definitions;
 	std::vector<std::string> _priorities;
 
-	::mpl::parser::detail::LLGrammar _grammar;
+	::mpl::parser::grammar::LLGrammar _grammar;
 };
 
 } // namespace parser

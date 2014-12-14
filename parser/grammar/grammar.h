@@ -1,16 +1,16 @@
-#ifndef MPL_PARSER_DETAIL_GRAMMAR_H
-#define MPL_PARSER_DETAIL_GRAMMAR_H
+#ifndef MPL_PARSER_GRAMMAR_GRAMMAR_H
+#define MPL_PARSER_GRAMMAR_GRAMMAR_H
 
 #include <vector>
 #include <map>
 #include <string>
 #include <cassert>
 
-#include "../../config.h"
+#include "../../lexer.h"
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 
 class Grammar {
 public:
@@ -97,8 +97,8 @@ protected:
 	static const size_t NONTERMINAL_START = 1;
 };
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
-#endif // MPL_PARSER_DETAIL_GRAMMAR_H
+#endif // MPL_PARSER_GRAMMAR_GRAMMAR_H

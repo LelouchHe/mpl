@@ -1,7 +1,7 @@
 #ifndef MPL_PARSER_LL_PARSER_H
 #define MPL_PARSER_LL_PARSER_H
 
-#include "../config.h"
+#include "../lexer.h"
 
 namespace mpl {
 

@@ -6,7 +6,7 @@
 
 namespace mpl {
 namespace parser {
-namespace detail {
+namespace grammar {
 	
 LR0Grammar::LR0Grammar() {
 
@@ -187,7 +187,7 @@ size_t LR0Grammar::expand(const State& from, int token) {
 	}
 }
 
-} // namespace detail
+} // namespace grammar
 } // namespace parser
 } // namespace mpl
 
@@ -230,7 +230,7 @@ static const vector<pair<string, string> > s_rules = {
 };
 
 int main() {
-	::mpl::parser::detail::LR0Grammar grammar;
+	::mpl::parser::grammar::LR0Grammar grammar;
 
 	for (size_t i = 0; i < s_rules.size(); i++) {
 		grammar.add(s_rules[i].first, s_rules[i].second);
