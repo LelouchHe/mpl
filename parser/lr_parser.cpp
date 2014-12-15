@@ -30,14 +30,14 @@ const std::vector<std::pair<std::string, std::string> > GRAMMAR_RULES = {
 using namespace std;
 
 int main() {
-	::mpl::StringReader sr("1 * 2 + 3");
+	::mpl::StringReader sr("1 + 2 * 3");
 
 	// ::mpl::parser::LRParser<::mpl::parser::grammar::LR1Grammar> parser(sr);
-	// ::mpl::parser::LRParser<::mpl::parser::grammar::LALRGrammar> parser(sr);
-	::mpl::parser::LRParser<::mpl::parser::grammar::SLRGrammar> parser(sr);
+	::mpl::parser::LRParser<::mpl::parser::grammar::LALRGrammar> parser(sr);
+	// ::mpl::parser::LRParser<::mpl::parser::grammar::SLRGrammar> parser(sr);
 
-
-	parser.parse();
+	::mpl::ast::ParserNodePtr root = parser.build_parser_tree();
+	root->debug();
 
 	return 0;
 }

@@ -3,8 +3,7 @@
 
 #include <memory>
 #include <vector>
-#include "../parser.h"
-
+#include "../lexer.h"
 
 namespace mpl {
 namespace ast {
@@ -14,27 +13,30 @@ typedef std::shared_ptr<ParserNode> ParserNodePtr;
 
 class ParserNode {
 public:
-	/*
-	ParserNode();
 	~ParserNode();
-	*/
 
 public:
 	typedef ::mpl::Lexer::Token Token;
+
+	static ParserNodePtr create(const Token& token);
+
 
 	void add(const ParserNodePtr& node);
 
 	size_t size() const;
 	const ParserNodePtr& operator[](size_t s) const;
+	const Token& token() const;
 
-	static ParserNodePtr create(const Token& token);
+	void debug() const;
+
+private:
+	void debug(std::vector<bool>* pis_last) const;
 
 private:
 	Token _token;
 	std::vector<ParserNodePtr> _children;
 
 	ParserNode(const Token& token);
-	~ParserNode();
 	ParserNode(const ParserNode&);
 	ParserNode& operator=(const ParserNode&);
 };
