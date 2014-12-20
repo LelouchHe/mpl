@@ -15,7 +15,13 @@
 namespace mpl {
 namespace parser {
 
-extern const std::vector<std::pair<std::string, std::string> > GRAMMAR_RULES;
+struct GrammarRule {
+	const char* token;
+	const char* rule;
+	::mpl::ast::ReduceAction action;
+};
+
+extern const std::vector<GrammarRule> GRAMMAR_RULES;
 
 template <typename Grammar>
 class LRParser {
@@ -27,11 +33,13 @@ public:
 		}
 
 		for (size_t i = 0; i < GRAMMAR_RULES.size(); i++) {
-			s_grammar.add(GRAMMAR_RULES[i].first, GRAMMAR_RULES[i].second);
+			s_grammar.add(GRAMMAR_RULES[i].token, GRAMMAR_RULES[i].rule, GRAMMAR_RULES[i].action);
 		}
 
 		s_grammar.add("'+'", 1, Grammar::LEFT);
+		s_grammar.add("'-'", 1, Grammar::LEFT);
 		s_grammar.add("'*'", 2, Grammar::LEFT);
+		s_grammar.add("'/'", 2, Grammar::LEFT);
 
 		s_grammar.build();
 		s_grammar.debug();
@@ -99,7 +107,7 @@ public:
 		}
 	}
 
-	::mpl::ast::ParserNodePtr build_parser_tree() {
+	::mpl::ast::ParserNodePtr build() {
 		std::stack<size_t> st;
 		std::vector< ::mpl::ast::ParserNodePtr> nodes;
 		st.push(0);
@@ -132,6 +140,8 @@ public:
 
 				::mpl::ast::ParserNodePtr parent = ::mpl::ast::ParserNode::create(token);
 
+				::mpl::ast::ReduceAction action = s_grammar.action(left, rule_no);
+
 				const typename Grammar::InnerRule& rule = s_grammar.rule(left, rule_no);
 				size_t children_start = nodes.size() - rule.size();
 				for (size_t i = 0; i < rule.size(); i++) {
@@ -139,6 +149,8 @@ public:
 					parent->add(nodes[children_start + i]);
 				}
 				nodes.resize(children_start);
+
+				parent->reduce(action);
 				nodes.push_back(parent);
 			} else if (it->second.first == s_grammar.ACCEPT) {
 				std::cout << "accept" << std::endl;

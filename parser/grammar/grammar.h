@@ -5,19 +5,25 @@
 #include <map>
 #include <string>
 #include <cassert>
+#include <memory>
 
 #include "../../lexer.h"
 
 namespace mpl {
+namespace ast {
+
+class ParserNode;
+typedef std::shared_ptr<ParserNode> ParserNodePtr;
+typedef void(*ReduceAction)(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
+
+} // namespace ast
+
 namespace parser {
 namespace grammar {
 
 class Grammar {
 public:
-	/*
-	Grammar();
 	~Grammar();
-	*/
 
 public:
 	typedef ::mpl::Lexer Lexer;
@@ -38,12 +44,14 @@ public:
 		RIGHT,
 	};
 
-	void add(const std::string& token, const std::string& rule);
+	void add(const std::string& token, const std::string& rule, ::mpl::ast::ReduceAction action = NULL);
 	void add(const std::string& token, int priority, Associativity associativity);
 
 	size_t size() const;
 	const std::string& name(int token) const;
 	const InnerRule& rule(int token, size_t index) const;
+	// 有可能返回NULL
+	::mpl::ast::ReduceAction action(int token, size_t index) const;
 	int start() const;
 
 	const std::vector<std::string>& nonterminals() const;
@@ -53,7 +61,6 @@ public:
 
 protected:
 	Grammar();
-	virtual ~Grammar();
 
 	// 一些公共操作
 	// only_eos表示只增加$,而不增加新的符号
@@ -79,9 +86,11 @@ protected:
 
 protected:
 	typedef std::pair<int, Associativity> Attribute;
+	typedef std::map<size_t, ::mpl::ast::ReduceAction> Actions;
 
 	std::vector<std::string> _nonterminals;
 	std::vector<InnerRules> _rules;
+	std::map<size_t, Actions> _actions;
 
 	std::map<int, Attribute> _attrs;
 
