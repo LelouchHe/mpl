@@ -22,33 +22,30 @@ public:
 	typedef ::mpl::Lexer::Token Token;
 
 	static ParserNodePtr create(const Token& token);
-	static void binary_op_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
-	static void number_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
-	static void parenthesis_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
-	static void simple_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 
 	void add(const ParserNodePtr& node);
 
 	size_t size() const;
 	const ParserNodePtr& operator[](size_t s) const;
-	const Token& token() const;
 
 	// 执行相关的action,将ParserNode划归为ASTNode
 	void reduce(ReduceAction action);
-	const ASTNodePtr& ast() const;
 
 	void debug() const;
+
+public:
+	// 暴露出来,不可修改
+	const Token token;
+
+	ASTNodePtr ast;
 
 private:
 	void debug(std::vector<bool>* pis_last) const;
 
 private:
-	Token _token;
 	std::vector<ParserNodePtr> _children;
 
-	ASTNodePtr _ast;
-
-	ParserNode(const Token& token);
+	ParserNode(const Token& atoken);
 	ParserNode(const ParserNode&);
 	ParserNode& operator=(const ParserNode&);
 };
