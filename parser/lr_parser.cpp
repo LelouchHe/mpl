@@ -12,13 +12,20 @@ template <typename Grammar>
 bool LRParser<Grammar>::s_init = false;
 
 extern const std::vector<GrammarRule> GRAMMAR_RULES = {
-	{ "s", "e", ::mpl::ast::simple_action },
-	{ "e", "e '+' e", ::mpl::ast::binary_op_action },
-	{ "e", "e '-' e", ::mpl::ast::binary_op_action },
-	{ "e", "e '*' e", ::mpl::ast::binary_op_action },
-	{ "e", "e '/' e", ::mpl::ast::binary_op_action },
-	{ "e", "'(' e ')'", ::mpl::ast::parenthesis_action },
-	{ "e", "NUMBER", ::mpl::ast::number_action },
+	{ "s", "e", 0 },
+	{ "e", "e '+' e", 1 },
+	{ "e", "e '-' e", 1 },
+	{ "e", "e '*' e", 1 },
+	{ "e", "e '/' e", 1 },
+	{ "e", "'(' e ')'", 2 },
+	{ "e", "NUMBER", 3 },
+};
+
+extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS = {
+	::mpl::ast::simple_action,
+	::mpl::ast::binary_op_action,
+	::mpl::ast::parenthesis_action,
+	::mpl::ast::number_action,
 };
 
 } // namespace parser
@@ -31,16 +38,20 @@ extern const std::vector<GrammarRule> GRAMMAR_RULES = {
 #include "grammar/lr1_grammar.h"
 #include "grammar/slr_grammar.h"
 #include "grammar/lalr_grammar.h"
+#include "GeneratedLALRParser.h"
+#include "../parser.h"
 
 using namespace std;
 
 int main() {
-	::mpl::StringReader sr("(1 + 2) * 3");
+	::mpl::StringReader sr("1 + 2 * 3");
 
 	// ::mpl::parser::LRParser<::mpl::parser::grammar::LR1Grammar> parser(sr);
-	::mpl::parser::LRParser<::mpl::parser::grammar::LALRGrammar> parser(sr);
+	// ::mpl::parser::LRParser<::mpl::parser::grammar::LALRGrammar> parser(sr);
 	// ::mpl::parser::LRParser<::mpl::parser::grammar::SLRGrammar> parser(sr);
+	// ::mpl::parser::GeneratedLALRParser parser(sr);
 
+	::mpl::Parser parser(sr);
 	::mpl::ast::ParserNodePtr root = parser.build();
 	root->debug();
 

@@ -83,7 +83,7 @@ static std::vector<std::string> split(const std::string& str, char delim) {
 	return strs;
 }
 
-void Grammar::add(const std::string& token, const std::string& rule, ::mpl::ast::ReduceAction action) {
+void Grammar::add(const std::string& token, const std::string& rule, int action) {
 	int left = new_nonternimal(token);
 	if (_start == 0) {
 		_start = index2token(left);
@@ -108,7 +108,7 @@ void Grammar::add(const std::string& token, const std::string& rule, ::mpl::ast:
 	}
 	_rules[left].push_back(inner_rule);
 
-	if (action != NULL) {
+	if (action != -1) {
 		_actions[left][_rules[left].size() - 1] = action;
 	}
 }
@@ -144,7 +144,7 @@ const Grammar::InnerRule& Grammar::rule(int token, size_t index) const {
 	return rules[index];
 }
 
-::mpl::ast::ReduceAction Grammar::action(int token, size_t index) const {
+int Grammar::action(int token, size_t index) const {
 	token = token2index(token);
 	assert(token > 0 && (size_t)token < _nonterminals.size());
 
@@ -156,7 +156,7 @@ const Grammar::InnerRule& Grammar::rule(int token, size_t index) const {
 		return NULL;
 	}
 
-	std::map<size_t, ::mpl::ast::ReduceAction>::const_iterator ait =
+	std::map<size_t, int>::const_iterator ait =
 			it->second.find(index);
 	if (ait == it->second.end()) {
 		return NULL;

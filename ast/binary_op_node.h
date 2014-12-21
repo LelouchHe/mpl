@@ -1,7 +1,7 @@
 #ifndef MPL_AST_BINARY_OP_NODE_H
 #define MPL_AST_BINARY_OP_NODE_H
 
-#include "ast_node.h"
+#include "../ast.h"
 
 namespace mpl {
 namespace ast {
@@ -9,7 +9,7 @@ namespace ast {
 class BinaryOpNode;
 typedef std::shared_ptr<BinaryOpNode> BinaryOpNodePtr;
 
-class BinaryOpNode : public ASTNode {
+class BinaryOpNode : public ::mpl::ASTNode {
 public:
 	virtual ~BinaryOpNode();
 
@@ -25,16 +25,18 @@ public:
 
 	static BinaryOpNodePtr create(
 			BinaryOpType type,
-			const ASTNodePtr& left, const ASTNodePtr& right);
+			const ::mpl::ASTNodePtr& left,
+			const ::mpl::ASTNodePtr& right);
 
 private:
 	BinaryOpType _type;
-	ASTNodePtr _left;
-	ASTNodePtr _right;
+	::mpl::ASTNodePtr _left;
+	::mpl::ASTNodePtr _right;
 
 private:
 	BinaryOpNode(BinaryOpType type,
-			const ASTNodePtr& left, const ASTNodePtr& right);
+			const ::mpl::ASTNodePtr& left,
+			const ::mpl::ASTNodePtr& right);
 };
 
 } // namespace ast

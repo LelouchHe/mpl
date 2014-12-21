@@ -10,14 +10,6 @@
 #include "../../lexer.h"
 
 namespace mpl {
-namespace ast {
-
-class ParserNode;
-typedef std::shared_ptr<ParserNode> ParserNodePtr;
-typedef void(*ReduceAction)(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
-
-} // namespace ast
-
 namespace parser {
 namespace grammar {
 
@@ -44,14 +36,14 @@ public:
 		RIGHT,
 	};
 
-	void add(const std::string& token, const std::string& rule, ::mpl::ast::ReduceAction action = NULL);
+	void add(const std::string& token, const std::string& rule, int action = -1);
 	void add(const std::string& token, int priority, Associativity associativity);
 
 	size_t size() const;
 	const std::string& name(int token) const;
 	const InnerRule& rule(int token, size_t index) const;
-	// 有可能返回NULL
-	::mpl::ast::ReduceAction action(int token, size_t index) const;
+	// -1: 没有动作
+	int action(int token, size_t index) const;
 	int start() const;
 
 	const std::vector<std::string>& nonterminals() const;
@@ -86,7 +78,7 @@ protected:
 
 protected:
 	typedef std::pair<int, Associativity> Attribute;
-	typedef std::map<size_t, ::mpl::ast::ReduceAction> Actions;
+	typedef std::map<size_t, int> Actions;
 
 	std::vector<std::string> _nonterminals;
 	std::vector<InnerRules> _rules;

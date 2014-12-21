@@ -1,21 +1,61 @@
-%%
+- include
+#include <memory>
+#include <string>
+#include <iostream>
 
+#include "../ast/ast_node.h"
+#include "../ast/binary_op_node.h"
+#include "../ast/number_node.h"
+#include "../ast/ast_action.h"
+
+%%
 - parser语法,可以直接写lexer中的名字(ID),也可以写纯字符串('define', '(')
 - 也可以是re
-- 所以lexer需要提供parse(const char* begin, char** end)来辅助解析
+- 后接具体的ast动作
+- action原型
+- void ReduceAction(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
+- ParserNode中包含token和ast的public结构
+- 目前禁止单行action,第一行最后一个字符只能是'{'
 
-goal: expr
+goal: expr {
+    assert(right.size() == 1);
+    left->ast = right[0]->ast;
+}
 
-expr: expr '+' term
-expr: expr '-' term
-expr: term
+expr: expr '+' expr {
+    binary_op_action(left, right);
+}
 
-term: term '*' factor
-term: term '/' factor
-term: factor
+expr: expr '-' expr {
+    binary_op_action(left, right);
+}
 
-factor: '(' expr ')'
-factor: NUMBER
-factor: ID
+expr: expr '*' expr {
+    binary_op_action(left, right);
+}
+
+expr: expr '/' expr {
+    binary_op_action(left, right);
+}
+
+expr: '(' expr ')' {
+    assert(right.size() == 3);
+    left->ast = right[1]->ast;
+}
+
+expr: NUMBER {
+    number_action(left, right);
+}
+
+%%
+- 优先级+结合性
+- 只能针对token
+- 优先级从低到高
+- 结合性: LEFT/RIGHT/NONE
+
+'+': 1 LEFT
+'-': 1 LEFT
+'*': 2 LEFT
+'/': 2 LEFT
 
 %%

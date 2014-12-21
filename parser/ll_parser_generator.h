@@ -3,7 +3,6 @@
 
 #include <string>
 #include <map>
-#include <cstdio>
 #include "grammar/ll_grammar.h"
 
 namespace mpl {
@@ -19,8 +18,9 @@ public:
 
 private:
 	enum ParserState {
-		START,
+		INCLUDE = 0,
 		DEFINITION,
+		OPERATOR,
 		LAST
 	};
 
@@ -36,8 +36,8 @@ private:
 	bool generate_parse(std::FILE* out, const char* parser_name);
 
 private:
-	typedef ::mpl::Lexer Lexer;
 	typedef std::vector<std::string> Definition;
+
 	std::map<std::string, Definition> _definitions;
 	std::vector<std::string> _priorities;
 

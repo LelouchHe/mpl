@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 #include "../lexer.h"
-#include "ast_node.h"
+#include "../ast.h"
 
 namespace mpl {
 namespace ast {
@@ -21,6 +21,12 @@ public:
 public:
 	typedef ::mpl::Lexer::Token Token;
 
+	// 暴露出来,不可修改
+	const Token token;
+
+	::mpl::ASTNodePtr ast;
+
+public:
 	static ParserNodePtr create(const Token& token);
 
 	void add(const ParserNodePtr& node);
@@ -32,12 +38,6 @@ public:
 	void reduce(ReduceAction action);
 
 	void debug() const;
-
-public:
-	// 暴露出来,不可修改
-	const Token token;
-
-	ASTNodePtr ast;
 
 private:
 	void debug(std::vector<bool>* pis_last) const;

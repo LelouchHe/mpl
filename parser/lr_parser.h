@@ -18,10 +18,11 @@ namespace parser {
 struct GrammarRule {
 	const char* token;
 	const char* rule;
-	::mpl::ast::ReduceAction action;
+	int action;
 };
 
 extern const std::vector<GrammarRule> GRAMMAR_RULES;
+extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS;
 
 template <typename Grammar>
 class LRParser {
@@ -140,8 +141,6 @@ public:
 
 				::mpl::ast::ParserNodePtr parent = ::mpl::ast::ParserNode::create(token);
 
-				::mpl::ast::ReduceAction action = s_grammar.action(left, rule_no);
-
 				const typename Grammar::InnerRule& rule = s_grammar.rule(left, rule_no);
 				size_t children_start = nodes.size() - rule.size();
 				for (size_t i = 0; i < rule.size(); i++) {
@@ -150,7 +149,11 @@ public:
 				}
 				nodes.resize(children_start);
 
-				parent->reduce(action);
+				int action = s_grammar.action(left, rule_no);
+				if (action != -1) {
+					parent->reduce(ACTIONS[action]);
+				}
+
 				nodes.push_back(parent);
 			} else if (it->second.first == s_grammar.ACCEPT) {
 				std::cout << "accept" << std::endl;

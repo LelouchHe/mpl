@@ -23,7 +23,7 @@ public:
 
 private:
 	enum LexerState {
-		START = 0,
+		INLCUDE = 0,
 		GLOBAL,
 		INIT,
 		DEFINITION,

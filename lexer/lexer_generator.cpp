@@ -104,7 +104,7 @@ bool LexerGenerator::parse(const char* lexer_file) {
 	// in = std::fopen(lexer_file, "r");
 	fopen_s(&in, lexer_file, "r");
 
-	LexerState state = START;
+	LexerState state = INLCUDE;
 	std::string name;
 	std::string value;
 	Statment stat;
@@ -124,7 +124,7 @@ bool LexerGenerator::parse(const char* lexer_file) {
 		len--;
 
 		switch (state) {
-		case START:
+		case INLCUDE:
 			if (is_next_state(buf, len)) {
 				state = GLOBAL;
 			} else {
@@ -552,11 +552,9 @@ bool LexerGenerator::generate_token_names(std::FILE* out, const char* lexer_name
 	size_t size = _priorities.size();
 	assert(size == _definitions.size());
 
-	fprintf(out, "static const std::vector<std::string> s_token_names = {\n", lexer_name);
-
-	fprintf(out, "\t");
+	fprintf(out, "static const std::vector<std::string> s_token_names = {", lexer_name);
 	for (size_t i = 0; i < size; i++) {
-		if (i % 6 == 5) {
+		if (i % 5 == 0) {
 			fprintf(out, "\n\t");
 		}
 		fprintf(out, "\"%s\", ", _priorities[i].c_str());

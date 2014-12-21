@@ -2,7 +2,7 @@
 #define MPL_AST_NUMBER_NODE_H
 
 #include <string>
-#include "ast_node.h"
+#include "../ast.h"
 
 namespace mpl {
 namespace ast {
@@ -10,7 +10,7 @@ namespace ast {
 class NumberNode;
 typedef std::shared_ptr<NumberNode> NumberNodePtr;
 
-class NumberNode : public ASTNode {
+class NumberNode : public ::mpl::ASTNode {
 public:
 	virtual ~NumberNode();
 

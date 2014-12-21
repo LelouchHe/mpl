@@ -1,4 +1,4 @@
-#include "llparser_generator.h"
+#include "ll_parser_generator.h"
 
 #include <cstring>
 #include <cassert>
@@ -34,7 +34,7 @@ bool LLParserGenerator::build(const char* parser_file, const char* parser_name) 
 }
 
 static bool is_next_state(const char* buf, size_t len) {
-	if (len == 2 && strncmp(buf, "%%", len) == 0) {
+	if (len == 2 && std::strncmp(buf, "%%", len) == 0) {
 		return true;
 	}
 
@@ -64,9 +64,11 @@ bool LLParserGenerator::parse(const char* parser_file) {
 	// in = std::fopen(lexer_file, "r");
 	fopen_s(&in, parser_file, "r");
 
-	ParserState state = START;
+	ParserState state = INCLUDE;
 	std::string name;
 	std::string value;
+
+	bool is_in_action = false;
 
 	bool is_over = false;
 	char buf[1024];
@@ -82,7 +84,7 @@ bool LLParserGenerator::parse(const char* parser_file) {
 		len--;
 
 		switch (state) {
-		case START:
+		case INCLUDE:
 			if (is_next_state(buf, len)) {
 				state = DEFINITION;
 			}
@@ -92,23 +94,35 @@ bool LLParserGenerator::parse(const char* parser_file) {
 			if (is_next_state(buf, len)) {
 				state = LAST;
 			} else {
-				const char* begin = skip_delim(buf, " \t");
-				const char* end = find_delim(begin, " \t:");
+				if (buf[0] == '}') {
+					assert(len == 1);
+					assert(is_in_action);
+					is_in_action = false;
+				} else if (!is_in_action) {
+					const char* begin = skip_delim(buf, " \t");
+					const char* end = find_delim(begin, " \t:");
 
-				name.assign(begin, end - begin);
-				if (*end != ':') {
-					end = skip_delim(end, " \t");
+					name.assign(begin, end - begin);
+					if (*end != ':') {
+						end = skip_delim(end, " \t");
+					}
+					assert(*end == ':');
+					end++;
+
+					begin = skip_delim(end, " \t");
+					assert(begin != NULL);
+					if (buf[len - 1] == '{') {
+						len--;
+						is_in_action = true;
+					}
+					value.assign(begin, len - (begin - buf));
 				}
-				assert(*end == ':');
-				end++;
 
-				begin = skip_delim(end, " \t");
-				assert(begin != NULL);
-				value.assign(begin, len - (begin - buf));
-
-				_definitions[name].push_back(value);
-				if (std::find(_priorities.begin(), _priorities.end(), name) == _priorities.end()) {
-					_priorities.push_back(name);
+				if (!is_in_action) {
+					_definitions[name].push_back(value);
+					if (std::find(_priorities.begin(), _priorities.end(), name) == _priorities.end()) {
+						_priorities.push_back(name);
+					}
 				}
 			}
 			break;
@@ -124,33 +138,6 @@ bool LLParserGenerator::parse(const char* parser_file) {
 	std::fclose(in);
 
 	return true;
-}
-
-static std::vector<std::string> split(const std::string& str, char delim) {
-	std::vector<std::string> strs;
-
-	size_t begin = 0;
-	size_t end = begin;
-	while (end < str.size()) {
-		if (str[end] == delim) {
-			while (begin < end && str[begin] == delim) {
-				begin++;
-			}
-			if (begin != end) {
-				strs.push_back(str.substr(begin, end - begin));
-				begin = end;
-			}
-		}
-		end++;
-	}
-	while (begin < end && str[begin] == delim) {
-		begin++;
-	}
-	if (begin != end) {
-		strs.push_back(str.substr(begin, end - begin));
-	}
-
-	return strs;
 }
 
 bool LLParserGenerator::build() {
@@ -219,7 +206,7 @@ bool LLParserGenerator::generate_header(const char* parser_name) {
 	fprintf(out, "} // namespace parser\n");
 	fprintf(out, "} // namespace mpl\n");
 
-	fprintf(out, "#endif // MPL_LEXER_%s_H\n", parser_name);
+	fprintf(out, "#endif // MPL_PARSER_%s_H\n", parser_name);
 
 	std::fclose(out);
 	return true;
@@ -271,10 +258,9 @@ bool LLParserGenerator::generate_gramma(std::FILE* out) {
 
 	const std::vector<std::string>& nonterminals = _grammar.nonterminals();
 	
-	fprintf(out, "static const std::vector<std::string> s_nonterminals = {\n");
-	fprintf(out, "\t");
+	fprintf(out, "static const std::vector<std::string> s_nonterminals = {");
 	for (size_t i = 0; i < size; i++) {
-		if (i % 6 == 5) {
+		if (i % 5 == 0) {
 			fprintf(out, "\n\t");
 		}
 		fprintf(out, "\"%s\", ", nonterminals[i].c_str());

@@ -7,12 +7,12 @@ namespace ast {
 
 BinaryOpNodePtr BinaryOpNode::create(
 		BinaryOpType type,
-		const ASTNodePtr& left, const ASTNodePtr& right) {
+		const ::mpl::ASTNodePtr& left, const ::mpl::ASTNodePtr& right) {
 	return BinaryOpNodePtr(new BinaryOpNode(type, left, right));
 }
 
 BinaryOpNode::BinaryOpNode(BinaryOpType type,
-		const ASTNodePtr& left, const ASTNodePtr& right) :
+		const ::mpl::ASTNodePtr& left, const ::mpl::ASTNodePtr& right) :
 		_type(type), _left(left), _right(right) {
 
 }
