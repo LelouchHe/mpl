@@ -45,6 +45,10 @@ const LRGrammar::Tran& LRGrammar::operator[](size_t state) const {
 	return _trans[state];
 }
 
+const std::vector<LRGrammar::Tran> LRGrammar::trans() const {
+	return _trans;
+}
+
 bool LRGrammar::has_attr(int token, int first, int second, Attribute* attr) {
 	if (first == SHIFT) {
 		if (_attrs.find(token) == _attrs.end()) {

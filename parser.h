@@ -5,7 +5,8 @@
 #define PARSER_LR0 0
 #define PARSER_LR1 0
 #define PARSER_SLR 0
-#define PARSER_LALR 1
+#define PARSER_LALR 0
+#define PARSER_GENERATED 1
 
 #if PARSER_LL
 #include "parser/ll_parser.h"
@@ -23,6 +24,8 @@
 #include "parser/lr_parser.h"
 #include "parser/grammar/lalr_grammar.h"
 #include "parser/lalr_parser.h"
+#elif PARSER_GENERATED
+#include "parser/GeneratedLALRParser.h"
 #endif
 
 namespace mpl {
@@ -40,6 +43,8 @@ typedef ::mpl::parser::SLRParser Parser;
 #elif PARSER_LALR
 //typedef ::mpl::parser::LRParser< ::mpl::parser::grammar::LALRGrammar> Parser;
 typedef ::mpl::parser::LALRParser Parser;
+#elif PARSER_GENERATED
+typedef ::mpl::parser::GeneratedLALRParser Parser;
 #endif
 
 } // namespace mpl

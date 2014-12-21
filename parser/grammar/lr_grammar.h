@@ -32,6 +32,8 @@ public:
 
 	void debug() const;
 
+	const std::vector<Tran> trans() const;
+
 	static const int ACCEPT = 0;
 	static const int SHIFT = 1;
 
