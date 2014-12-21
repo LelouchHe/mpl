@@ -19,6 +19,7 @@ extern const std::vector<GrammarRule> GRAMMAR_RULES = {
 	{ "e", "e '/' e", 1 },
 	{ "e", "'(' e ')'", 2 },
 	{ "e", "NUMBER", 3 },
+	{ "e", "ID", 4 },
 };
 
 extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS = {
@@ -26,6 +27,7 @@ extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS = {
 	::mpl::ast::binary_op_action,
 	::mpl::ast::parenthesis_action,
 	::mpl::ast::number_action,
+	::mpl::ast::id_action,
 };
 
 } // namespace parser
@@ -44,7 +46,7 @@ extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS = {
 using namespace std;
 
 int main() {
-	::mpl::StringReader sr("1 + 2 * 3");
+	::mpl::StringReader sr("a + b * 3");
 
 	// ::mpl::parser::LRParser<::mpl::parser::grammar::LR1Grammar> parser(sr);
 	// ::mpl::parser::LRParser<::mpl::parser::grammar::LALRGrammar> parser(sr);

@@ -6,6 +6,7 @@
 #include "../ast/ast_node.h"
 #include "../ast/binary_op_node.h"
 #include "../ast/number_node.h"
+#include "../ast/id_node.h"
 #include "../ast/ast_action.h"
 
 %%
@@ -43,8 +44,13 @@ expr: '(' expr ')' {
     left->ast = right[1]->ast;
 }
 
+- 对于这种terminal的grammar,需要生成ast节点(好吧,这是常识)
 expr: NUMBER {
     number_action(left, right);
+}
+
+expr: ID {
+    id_action(left, right);
 }
 
 %%

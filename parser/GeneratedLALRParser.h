@@ -8,6 +8,7 @@
 #include "../ast/ast_node.h"
 #include "../ast/binary_op_node.h"
 #include "../ast/number_node.h"
+#include "../ast/id_node.h"
 #include "../ast/ast_action.h"
 namespace mpl {
 class Reader;

@@ -4,6 +4,7 @@
 
 #include "binary_op_node.h"
 #include "number_node.h"
+#include "id_node.h"
 
 namespace mpl {
 namespace ast {
@@ -39,6 +40,12 @@ void number_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& 
 	assert(right.size() == 1);
 
 	left->ast = NumberNode::create(right[0]->token.text);
+}
+
+void id_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
+	assert(right.size() == 1);
+
+	left->ast = IDNode::create(right[0]->token.text);
 }
 
 void parenthesis_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
