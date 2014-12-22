@@ -19,6 +19,10 @@
 - 转化后的语法不是LR语法,需要再次转换
 - 主要是stat:functioncall和prefixexp:functioncall前缀相同了
 - 参考 http://code.google.com/p/lua-checker/source/browse/trunk/lua.y
+- 不过这个语法不是lalr语法,存在shift/reduce冲突
+- 参考yacc的规则
+- shift/reduce -> shift
+- reduce/reduce -> 前一个reduce
 
 - 目前是必须有一个global的单项存在
 chunk: opt_block

@@ -27,6 +27,7 @@ AND: and
 BREAK: break
 DO: do
 ELSE: else
+ELSEIF: elseif
 END: end
 FALSE: false
 FOR: for

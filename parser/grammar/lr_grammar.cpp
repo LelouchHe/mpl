@@ -83,20 +83,37 @@ void LRGrammar::set_tran(int token, int first, int second, Tran* tran) {
 		return;
 	}
 
-	// 必须是shift/reduce冲突
-	assert(first * it->second.first < 0);
+	// 参照yacc的规则,当没有优先级时,
+	// shift/reduce    -> shift
+	// reduce1/reduce2 -> reduce1
 
-	Attribute token_attr;
-	if (!has_attr(token, first, second, &token_attr)) {
+	std::cerr << "conflict between ";
+
+	// reduce/reduce
+	if (first * it->second.first > 0) {
+		std::cerr << "reduce/reduce" << std::endl;
 		return;
 	}
+
+	Attribute token_attr;
+	bool first_has_attr = has_attr(token, first, second, &token_attr);
 
 	Action current_action = it->second;
 	Attribute current_attr;
-	if (!has_attr(token, current_action.first, current_action.second, &current_attr)) {
-		(*tran)[token] = { first, second };
+	bool second_has_attr = has_attr(token, current_action.first, current_action.second, &current_attr);
+
+	// 只要有一个没有attr,就不进行比较
+	if (!first_has_attr || !second_has_attr) {
+		// shift/reduce
+		std::cerr << "shift/reduce" << std::endl;
+
+		if (first == SHIFT) {
+			it->second = { first, second };
+		}
 		return;
 	}
+
+	std::cerr << " operators" << std::endl;
 
 	Action real_action = { first, second };
 	if (token_attr.first <= current_attr.first) {
@@ -113,7 +130,11 @@ void LRGrammar::set_tran(int token, int first, int second, Tran* tran) {
 		}
 	}
 
-	(*tran)[token] = real_action;
+	it->second = real_action;
+}
+
+void LRGrammar::resolve_ambiguous(int token, int first, int second, Tran* tran) {
+
 }
 
 } // namespace grammar

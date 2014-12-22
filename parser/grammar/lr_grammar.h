@@ -44,6 +44,9 @@ protected:
 	void set_tran(int token, int first, int second, Tran* tran);
 	bool has_attr(int token, int first, int second, Attribute* attr);
 
+private:
+	void resolve_ambiguous(int token, int first, int second, Tran* tran);
+
 protected:
 	std::vector<Tran> _trans;
 };

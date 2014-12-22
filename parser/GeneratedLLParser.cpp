@@ -8,8 +8,7 @@
 namespace mpl {
 namespace parser {
 static const std::vector<std::string> s_nonterminals = {
-	"", "goal", "expr", "term", "factor", 
-	"expr*", "term*", "*goal", 
+	"", "goal", "expr", "expr*", "*goal", 
 };
 static const std::vector<std::vector<std::vector<int> > > s_rules = {
 {
@@ -18,56 +17,38 @@ static const std::vector<std::vector<std::vector<int> > > s_rules = {
 	{-2, },
 },
 {
-	{-3, -5, },
+	{22, -2, 23, -3, },
+	{51, -3, },
+	{52, -3, },
 },
 {
-	{-4, -6, },
-},
-{
-	{21, -2, 22, },
-	{50, },
-	{51, },
-},
-{
-	{31, -3, -5, },
-	{32, -3, -5, },
+	{29, -2, -3, },
+	{30, -2, -3, },
+	{32, -2, -3, },
+	{33, -2, -3, },
 	{},
 },
 {
-	{28, -4, -6, },
-	{29, -4, -6, },
-	{},
-},
-{
-	{-1, 54, },
+	{-1, 55, },
 },
 };
-static const int s_start = -7;
+static const int s_start = -4;
 static const std::vector<std::map<int, int> > s_trans = {
 {
 	
 },
 {
-	{21, 0}, {50, 0}, {51, 0}, 
+	{22, 0}, {51, 0}, {52, 0}, 
 },
 {
-	{21, 0}, {50, 0}, {51, 0}, 
+	{22, 0}, {51, 1}, {52, 2}, 
 },
 {
-	{21, 0}, {50, 0}, {51, 0}, 
+	{23, 4}, {29, 4}, {30, 4}, {32, 4}, {33, 4}, 
+	{55, 4}, 
 },
 {
-	{21, 0}, {50, 1}, {51, 2}, 
-},
-{
-	{22, 2}, {31, 0}, {32, 1}, {54, 2}, 
-},
-{
-	{22, 2}, {28, 0}, {29, 1}, {31, 2}, {32, 2}, 
-	{54, 2}, 
-},
-{
-	{21, 0}, {50, 0}, {51, 0}, 
+	{22, 0}, {51, 0}, {52, 0}, 
 },
 };
 GeneratedLLParser::GeneratedLLParser(::mpl::Reader& reader) :
