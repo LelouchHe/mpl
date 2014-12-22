@@ -1,13 +1,7 @@
 - include
-#include <memory>
-#include <string>
-#include <iostream>
 
-#include "../ast/ast_node.h"
-#include "../ast/binary_op_node.h"
-#include "../ast/number_node.h"
-#include "../ast/id_node.h"
-#include "../ast/ast_action.h"
+#include "../ast/all_nodes.h"
+#include "../ast/all_actions.h"
 
 %%
 - parser语法,可以直接写lexer中的名字(ID),也可以写纯字符串('define', '(')

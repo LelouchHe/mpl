@@ -2,14 +2,8 @@
 #define MPL_PARSER_GeneratedLALRParser_H
 #include "../lexer.h"
 #include "../ast/parser_node.h"
-#include <memory>
-#include <string>
-#include <iostream>
-#include "../ast/ast_node.h"
-#include "../ast/binary_op_node.h"
-#include "../ast/number_node.h"
-#include "../ast/id_node.h"
-#include "../ast/ast_action.h"
+#include "../ast/all_nodes.h"
+#include "../ast/all_actions.h"
 namespace mpl {
 class Reader;
 namespace parser {

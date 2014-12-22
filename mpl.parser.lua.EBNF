@@ -1,0 +1,211 @@
+- include
+
+#include "../ast/all_nodes.h"
+#include "../ast/all_actions.h"
+
+%%
+- parser语法,可以直接写lexer中的名字(ID),也可以写纯字符串('define', '(')
+- 也可以是re
+- 后接具体的ast动作
+- action原型
+- void ReduceAction(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
+- ParserNode中包含token和ast的public结构
+- 目前禁止单行action,第一行最后一个字符只能是'{'
+- 考虑一些重复/可选怎么更人性化的表达
+
+- 此处是有官网的ebnf转bnf的语法
+- 非lalr,不能直接使用
+
+- 目前是必须有一个global的单项存在
+chunk: block
+
+block: block_0
+block: block_0 retstat
+block_0: 
+block_0: block_0 stat
+
+stat: ';'
+
+stat: varlist '=' explist
+
+stat: functioncall
+
+stat: label
+
+stat: 'break'
+
+stat: 'goto' ID
+
+stat: 'do' block 'end'
+
+stat: 'while' exp 'do' block 'end'
+
+stat: 'repeat' block 'until' exp
+
+- elseif在中间的情况怎么处理?
+stat: 'if' exp 'then' block 'end'
+stat: 'if' exp 'then' block 'else' block 'end'
+
+stat: 'for' ID '=' exp ',' exp 'do' block 'end'
+
+stat: 'for' ID '=' exp ',' exp ',' exp 'do' block 'end'
+
+stat: 'for' namelist 'in' explist 'do' block 'end'
+
+stat: 'function' funcname funcbody
+
+stat: 'local' 'function' ID funcbody
+
+stat: 'local' namelist
+
+stat: 'local' namelist '=' explist
+
+retstat: 'return'
+retstat: 'return' explist
+retstat: 'return' ';'
+retstat: 'return' explist ';'
+
+label: '::' ID '::'
+
+funcname: ID funcname_0
+funcname: ID funcname_0 ':' ID
+funcname_0: 
+funcname_0: funcname_0 '.' ID
+
+varlist: var varlist_0
+varlist_0: 
+varlist_0: varlist_0 ',' var
+
+var: ID
+
+var: prefixexp '[' exp ']'
+
+var: prefixexp '.' ID
+
+namelist: ID namelist_0
+namelist_0: 
+namelist_0: namelist ',' ID
+
+explist: exp explist_0
+explist_0:
+explist_0: explist_0 ',' exp
+
+exp: 'nil'
+
+exp: 'false'
+
+exp: 'true'
+
+exp: NUMBER
+
+exp: STRING
+
+exp: '...'
+
+exp: functiondef
+
+exp: prefixexp
+
+exp: tableconstructor
+
+exp: exp binop exp
+
+exp: unop exp
+
+prefixexp: var
+
+prefixexp: functioncall
+
+prefixexp: '(' exp ')'
+
+functioncall: prefixexp args
+
+functioncall: prefixexp ':' ID args
+
+args: '(' ')'
+
+args: '(' explist ')'
+
+args: tableconstructor
+
+args: STRING
+
+functiondef: 'function' funcbody
+
+funcbody: '(' ')' block 'end'
+
+funcbody: '(' parlist ')' block 'end'
+
+parlist: namelist
+
+parlist: namelist ',' '...'
+
+parlist: '...'
+
+tableconstructor: '{' '}'
+tableconstructor: '{' fieldlist '}'
+
+fieldlist: field fieldlist_0
+fieldlist: field fieldlist_0 fieldsep
+fieldlist_0: 
+fieldlist_0: fieldlist_0 fieldsep field
+
+field: '[' exp ']' '=' exp
+
+field: ID '=' exp
+
+field: exp
+
+fieldsep: ','
+
+fieldsep: ';'
+
+binop: '+'
+binop: '-'
+binop: '*'
+binop: '/'
+binop: '^'
+binop: '%'
+binop: '..'
+binop: '<'
+binop: '<='
+binop: '>'
+binop: '>='
+binop: '=='
+binop: '~='
+binop: 'and'
+binop: 'or'
+
+unop: '-'
+unop: 'not'
+unop: '#'
+
+%%
+- 优先级+结合性
+- 只能针对token
+- 优先级从低到高
+- 结合性: LEFT/RIGHT/NONE
+
+'or': 1 LEFT
+'and': 2 LEFT
+'<': 3 LEFT
+'<=': 3 LEFT
+'>': 3 LEFT
+'>=': 3 LEFT
+'==': 3 LEFT
+'~=': 3 LEFT
+'..': 4 LEFT
+'+': 5 LEFT
+'-': 5 LEFT
+'*': 6 LEFT
+'/': 6 LEFT
+'%': 6 LEFT
+'not': 7 NONE
+'#': 7 NONE
+
+- 如何区分运算符类型
+- '-': 7 NONE
+
+'^': 8 RIGHT
+
+%%

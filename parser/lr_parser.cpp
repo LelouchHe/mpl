@@ -1,6 +1,6 @@
 #include "lr_parser.h"
 
-#include "../ast/ast_action.h"
+#include "../ast/all_actions.h"
 
 namespace mpl {
 namespace parser {
@@ -12,6 +12,14 @@ template <typename Grammar>
 bool LRParser<Grammar>::s_init = false;
 
 extern const std::vector<GrammarRule> GRAMMAR_RULES = {
+	{ "chunk", "block", -1 },
+	{ "block", "block_0 retstat", -1 },
+	{ "block_0", "stat", -1 },
+	{ "block_0", "stat block_0", -1 },
+	{ "stat", "';'", -1 },
+	{ "retstat", "'return' ';'", -1 },
+	
+	/*
 	{ "s", "e", 0 },
 	{ "e", "e '+' e", 1 },
 	{ "e", "e '-' e", 1 },
@@ -20,6 +28,7 @@ extern const std::vector<GrammarRule> GRAMMAR_RULES = {
 	{ "e", "'(' e ')'", 2 },
 	{ "e", "NUMBER", 3 },
 	{ "e", "ID", 4 },
+	*/
 };
 
 extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS = {
@@ -46,18 +55,19 @@ extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS = {
 using namespace std;
 
 int main() {
-	::mpl::StringReader sr("a + b * 3");
+	//::mpl::StringReader reader("a = 1 + 2 * b");
+	::mpl::FileReader reader("parser.lua");
 
-	// ::mpl::parser::LRParser<::mpl::parser::grammar::LR1Grammar> parser(sr);
-	// ::mpl::parser::LRParser<::mpl::parser::grammar::LALRGrammar> parser(sr);
-	// ::mpl::parser::LRParser<::mpl::parser::grammar::SLRGrammar> parser(sr);
-	// ::mpl::parser::GeneratedLALRParser parser(sr);
+	// ::mpl::parser::LRParser<::mpl::parser::grammar::LR1Grammar> parser(reader);
+	//::mpl::parser::LRParser<::mpl::parser::grammar::LALRGrammar> parser(reader);
+	// ::mpl::parser::LRParser<::mpl::parser::grammar::SLRGrammar> parser(reader);
+	// ::mpl::parser::GeneratedLALRParser parser(reader);
 
-	::mpl::Parser parser(sr);
+	::mpl::Parser parser(reader);
 	::mpl::ast::ParserNodePtr root = parser.build();
 	root->debug();
 
-	root->ast->debug();
+	//root->ast->debug();
 
 	return 0;
 }

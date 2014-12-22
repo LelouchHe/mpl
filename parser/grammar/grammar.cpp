@@ -153,13 +153,13 @@ int Grammar::action(int token, size_t index) const {
 
 	std::map<size_t, Actions>::const_iterator it = _actions.find(token);
 	if (it == _actions.end()) {
-		return NULL;
+		return -1;
 	}
 
 	std::map<size_t, int>::const_iterator ait =
 			it->second.find(index);
 	if (ait == it->second.end()) {
-		return NULL;
+		return -1;
 	}
 
 	return ait->second;

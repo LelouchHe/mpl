@@ -1,10 +1,8 @@
-#include "ast_action.h"
+#include "all_actions.h"
 
 #include <cassert>
 
-#include "binary_op_node.h"
-#include "number_node.h"
-#include "id_node.h"
+#include "all_nodes.h"
 
 namespace mpl {
 namespace ast {

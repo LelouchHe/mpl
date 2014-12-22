@@ -226,7 +226,7 @@ bool LALRParserGenerator::build() {
 	}
 	_grammar.build();
 
-	_grammar.debug();
+	// _grammar.debug();
 
 	return true;
 }
@@ -493,7 +493,9 @@ bool LALRParserGenerator::generate_build(std::FILE* out, const char* parser_name
 #if 0
 
 int main() {
-	const char* parser_file = "mpl.parser";
+	// const char* parser_file = "mpl.parser";
+	const char* parser_file = "mpl.parser.lua";
+
 	const char* parser_name = "GeneratedLALRParser";
 
 	::mpl::parser::LALRParserGenerator gen;

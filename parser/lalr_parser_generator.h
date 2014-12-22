@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "grammar/lalr_grammar.h"
+// #include "grammar/lr1_grammar.h"
 
 namespace mpl {
 namespace parser {
@@ -50,7 +51,10 @@ private:
 	std::vector<std::string> _priorities;
 	std::map<std::string, Attribute> _attrs;
 
+	// 只需要更改_grammar的类型即可生成其他类型的parser
 	::mpl::parser::grammar::LALRGrammar _grammar;
+	// ::mpl::parser::grammar::LR1Grammar _grammar;
+
 };
 
 } // namespace parser

@@ -8,3 +8,4 @@
 *.user
 parser/lemon.cpp
 parser/lempar.c
+*.swp
