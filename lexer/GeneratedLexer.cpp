@@ -1485,9 +1485,14 @@ static const std::vector<std::string> s_token_names = {
 };
 typedef void (GeneratedLexer::*ActionType)(GeneratedLexer::Token&);
 static const std::map<GeneratedLexer::TokenType, ActionType> s_actions = {
+	{ GeneratedLexer::TT_COMMENT, &GeneratedLexer::COMMENT_action },
 	{ GeneratedLexer::TT_NEWLINE, &GeneratedLexer::NEWLINE_action },
 	{ GeneratedLexer::TT_SPACE, &GeneratedLexer::SPACE_action },
 };
+void GeneratedLexer::COMMENT_action(GeneratedLexer::Token& token) {
+    line_num++;
+    token.type = SKIP;
+}
 void GeneratedLexer::NEWLINE_action(GeneratedLexer::Token& token) {
 	line_num++;
 	token.type = SKIP;

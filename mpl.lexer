@@ -100,4 +100,8 @@ NEWLINE : {
 	line_num++;
 	token.type = SKIP;
 }
+COMMENT: {
+    line_num++;
+    token.type = SKIP;
+}
 %%

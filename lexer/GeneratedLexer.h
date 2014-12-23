@@ -41,6 +41,7 @@ public:
 public:
     int line_num;
 public:
+    void COMMENT_action(Token& token);
     void NEWLINE_action(Token& token);
     void SPACE_action(Token& token);
 private:
