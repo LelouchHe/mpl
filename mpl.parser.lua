@@ -25,59 +25,146 @@
 - reduce/reduce -> 前一个reduce
 
 - 目前是必须有一个global的单项存在
-chunk: opt_block
+chunk: opt_block {
+    left->ast = right[0]->ast;
+}
 
 opt_block:
-opt_block: last_statement
-opt_block: stats
-opt_block: stats last_statement
+opt_block: last_statement {
+    left->ast = right[0]->ast;
+}
+opt_block: stats {
+    left->ast = right[0]->ast;
+}
+opt_block: stats last_statement {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
 
 - function-call()
-stat_class_1: nobr_function_call
+stat_class_1: nobr_function_call {
+    left->ast = right[0]->ast;
+}
 
 - (function-call)()
-stat_class_2: br_function_call
+stat_class_2: br_function_call {
+    left->ast = right[0]->ast;
+}
 
 - non-function-call
-stat_class_3: nobr_statement
+stat_class_3: nobr_statement {
+    left->ast = right[0]->ast;
+}
 - function-call();
-stat_class_3: nobr_statement ';'
+stat_class_3: nobr_statement ';' {
+    left->ast = right[0]->ast;
+}
 - non-function-call;
-stat_class_3: nobr_function_call ';'
+stat_class_3: nobr_function_call ';' {
+    left->ast = right[0]->ast;
+}
 
 - (non-function-call)
-stat_class_4: br_statement
+stat_class_4: br_statement {
+    left->ast = right[0]->ast;
+}
 - (non-function-call);
-stat_class_4: br_statement ';'
+stat_class_4: br_statement ';' {
+    left->ast = right[0]->ast;
+}
 - (function-call)()
-stat_class_4: br_function_call ';'
+stat_class_4: br_function_call ';' {
+    left->ast = right[0]->ast;
+}
 
-stats: stats_1
-stats: stats_2
-stats: stats_3
-stats: stats_4
+stats: stats_1 {
+    left->ast = right[0]->ast;
+}
+stats: stats_2 {
+    left->ast = right[0]->ast;
+}
+stats: stats_3 {
+    left->ast = right[0]->ast;
+}
+stats: stats_4 {
+    left->ast = right[0]->ast;
+}
 
-stats_1: stat_class_1
-stats_1: stats_1 stat_class_1
-stats_1: stats_2 stat_class_1
-stats_1: stats_3 stat_class_1
-stats_1: stats_4 stat_class_1
+stats_1: stat_class_1 {
+    auto ast = ::mpl::ast::MultiNode::create();
+    ast->add(right[0]);
+    left->ast = ast;
+}
+stats_1: stats_1 stat_class_1 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_1: stats_2 stat_class_1 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_1: stats_3 stat_class_1 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_1: stats_4 stat_class_1 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
 
-stats_2: stat_class_2
-stats_2: stats_3 stat_class_2
-stats_2: stats_4 stat_class_2
+stats_2: stat_class_2 {
+    auto ast = ::mpl::ast::MultiNode::create();
+    ast->add(right[0]);
+    left->ast = ast;
+}
+stats_2: stats_3 stat_class_2 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_2: stats_4 stat_class_2 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
 
-stats_3: stat_class_3
-stats_3: stats_1 stat_class_3
-stats_3: stats_2 stat_class_3
-stats_3: stats_3 stat_class_3
-stats_3: stats_4 stat_class_3
+stats_3: stat_class_3 {
+    auto ast = ::mpl::ast::MultiNode::create();
+    ast->add(right[0]);
+    left->ast = ast;
+}
+stats_3: stats_1 stat_class_3 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_3: stats_2 stat_class_3 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_3: stats_3 stat_class_3 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_3: stats_4 stat_class_3 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
 
-stats_4: stat_class_4
-stats_4: stats_3 stat_class_4
-stats_4: stats_4 stat_class_4
+stats_4: stat_class_4 {
+    auto ast = ::mpl::ast::MultiNode::create();
+    ast->add(right[0]);
+    left->ast = ast;
+}
+stats_4: stats_3 stat_class_4 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
+stats_4: stats_4 stat_class_4 {
+    right[0]->ast->add(right[1]->ast);
+    left->ast = right[0]->ast;
+}
 
 - 不是'('开头的普通语句
+- 究竟用普适的ASTNode,还是每次区分类型呢?感觉二者各有优劣
+- ASTNode更普通,区分类型可以做的更细
 nobr_statement: nobr_variable_list '=' expression_list
 nobr_statement: 'do' opt_block 'end'
 nobr_statement: 'while' expression 'do' opt_block 'end'
