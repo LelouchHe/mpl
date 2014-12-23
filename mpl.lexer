@@ -69,7 +69,7 @@ LEN: #
 COMMA: ,
 SEMICOLON: ;
 COLON: :
-LABEL: ::[_\a]\w*::
+DBCOLON: ::
 DOT: \.
 CONCAT: \.\.
 VARARG: \.\.\.
