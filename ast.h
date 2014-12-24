@@ -16,8 +16,10 @@ namespace mpl {
 
 #if AST_MANUAL
 typedef ::mpl::ast::ASTNode ASTNode;
+typedef ::mpl::ast::ASTType ASTType;
 #elif AST_GENERATED
 typedef ::mpl::ast::ASTNode ASTNode;
+typedef ::mpl::ast::ASTType ASTType;
 #endif
 
 typedef std::shared_ptr<ASTNode> ASTNodePtr;

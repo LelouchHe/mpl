@@ -5,12 +5,38 @@
 namespace mpl {
 namespace ast {
 
-ASTNode::ASTNode() {
+const ASTNodePtr ASTNode::s_null_ast;
+
+ASTNodePtr ASTNode::create(ASTType type) {
+	return ASTNodePtr(new ASTNode(type));
+}
+
+ASTNode::ASTNode(ASTType type): _type(type) {
 
 }
 
 ASTNode::~ASTNode() {
 
+}
+
+void ASTNode::add(const ASTNodePtr& node) {
+	_nodes.push_back(node);
+}
+
+size_t ASTNode::size() const {
+	return _nodes.size();
+}
+
+const ASTNodePtr& ASTNode::operator[](size_t s) const {
+	if (s < _nodes.size()) {
+		return _nodes[s];
+	} else {
+		return s_null_ast;
+	}
+}
+
+ASTType ASTNode::type() const {
+	return _type;
 }
 
 void ASTNode::debug() const {

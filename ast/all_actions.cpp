@@ -2,8 +2,6 @@
 
 #include <cassert>
 
-#include "all_nodes.h"
-
 namespace mpl {
 namespace ast {
 
@@ -14,19 +12,27 @@ void binary_op_action(const ParserNodePtr& left, const std::vector<ParserNodePtr
 
 	switch (right[1]->token.type) {
 	case Token::TokenType::TT_PLUS:
-		left->ast = BinaryOpNode::create(BinaryOpNode::PLUS, right[0]->ast, right[2]->ast);
+		left->ast = ::mpl::ASTNode::create(::mpl::ASTType::AT_PLUS);
+		left->ast->add(right[0]->ast);
+		left->ast->add(right[1]->ast);
 		break;
 
 	case Token::TokenType::TT_MINUS:
-		left->ast = BinaryOpNode::create(BinaryOpNode::MINUS, right[0]->ast, right[2]->ast);
+		left->ast = ::mpl::ASTNode::create(::mpl::ASTType::AT_MINUS);
+		left->ast->add(right[0]->ast);
+		left->ast->add(right[1]->ast);
 		break;
 
 	case Token::TokenType::TT_MUL:
-		left->ast = BinaryOpNode::create(BinaryOpNode::MUL, right[0]->ast, right[2]->ast);
+		left->ast = ::mpl::ASTNode::create(::mpl::ASTType::AT_MUL);
+		left->ast->add(right[0]->ast);
+		left->ast->add(right[1]->ast);
 		break;
 
 	case Token::TokenType::TT_DIV:
-		left->ast = BinaryOpNode::create(BinaryOpNode::DIV, right[0]->ast, right[2]->ast);
+		left->ast = ::mpl::ASTNode::create(::mpl::ASTType::AT_DIV);
+		left->ast->add(right[0]->ast);
+		left->ast->add(right[1]->ast);
 		break;
 
 	default:
