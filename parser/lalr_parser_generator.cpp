@@ -493,7 +493,7 @@ bool LALRParserGenerator::generate_build(std::FILE* out, const char* parser_name
 #if 0
 
 int main() {
-	// const char* parser_file = "mpl.parser";
+	// const char* parser_file = "mpl.parser.always_list.lua";
 	const char* parser_file = "mpl.parser.lua";
 
 	const char* parser_name = "GeneratedLALRParser";

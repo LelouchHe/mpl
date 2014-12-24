@@ -3,47 +3,49 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace mpl {
 namespace ast {
 
 enum ASTType {
-	AT_BLOCK = 0, AT_ASSIGN, AT_FUNC_DEF, AT_FUNC_CALL,
+	// 多平级项
+	AT_LIST = 0,
 
+	// 语法成分
+	AT_ASSIGN, AT_FUNC_DEF, AT_FUNC_CALL, AT_RETURN,
+
+	// 操作
 	AT_MUL, AT_DIV, AT_PLUS, AT_MINUS,
 
+	// terminal
 	AT_NUMBER, AT_ID, AT_STRING,
 };
+
+extern const std::vector<std::string> AST_NAMES;
 
 class ASTNode;
 typedef std::shared_ptr<ASTNode> ASTNodePtr;
 
+// 基本类型如何表达?
+// number/id/string?
 class ASTNode {
 public:
-	~ASTNode();
+	virtual ~ASTNode();
 
 public:
-	static ASTNodePtr create(ASTType type);
-
-	void add(const ASTNodePtr& node);
-
-	size_t size() const;
-	const ASTNodePtr& operator[](size_t s) const;
 	ASTType type() const;
 
 	void debug() const;
 	virtual void debug(std::vector<bool>* pis_last) const = 0;
 	
-private:
+protected:
 	void debug_prefix(std::vector<bool>* pis_last) const;
 
 	ASTNode(ASTType type);
 
-private:
+protected:
 	ASTType _type;
-	std::vector<ASTNodePtr> _nodes;
-
-	static const ASTNodePtr s_null_ast;
 };
 
 } // namespace ast

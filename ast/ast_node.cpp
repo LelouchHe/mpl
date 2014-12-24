@@ -5,11 +5,12 @@
 namespace mpl {
 namespace ast {
 
-const ASTNodePtr ASTNode::s_null_ast;
-
-ASTNodePtr ASTNode::create(ASTType type) {
-	return ASTNodePtr(new ASTNode(type));
-}
+const std::vector<std::string> AST_NAMES = {
+	"LIST", 
+	"ASSIGN", "FUNC_DEF", "FUNC_CALL", "RETURN",
+	"MUL", "DIV", "PLUS", "MINUS",
+	"NUMBER", "ID", "STRING",
+};
 
 ASTNode::ASTNode(ASTType type): _type(type) {
 
@@ -17,22 +18,6 @@ ASTNode::ASTNode(ASTType type): _type(type) {
 
 ASTNode::~ASTNode() {
 
-}
-
-void ASTNode::add(const ASTNodePtr& node) {
-	_nodes.push_back(node);
-}
-
-size_t ASTNode::size() const {
-	return _nodes.size();
-}
-
-const ASTNodePtr& ASTNode::operator[](size_t s) const {
-	if (s < _nodes.size()) {
-		return _nodes[s];
-	} else {
-		return s_null_ast;
-	}
 }
 
 ASTType ASTNode::type() const {

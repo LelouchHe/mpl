@@ -7,7 +7,10 @@ a = 1.1
 b = 2.2
 c = a + b
 
+a, b = 2, 3;
+
 function f(a)
+    a = 1;
     return a + 2
 end
 

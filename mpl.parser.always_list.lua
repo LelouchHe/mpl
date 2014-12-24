@@ -57,11 +57,11 @@ stat_class_3: nobr_statement {
 }
 - function-call();
 stat_class_3: nobr_statement ';' {
-    assign(left, right[0]);
+    simple_action(left, right);
 }
 - non-function-call;
 stat_class_3: nobr_function_call ';' {
-    assign(left, right[0]);
+    simple_action(left, right);
 }
 
 - (non-function-call)
@@ -70,11 +70,11 @@ stat_class_4: br_statement {
 }
 - (non-function-call);
 stat_class_4: br_statement ';' {
-    assign(left, right[0]);
+    simple_action(left, right);
 }
 - (function-call)()
 stat_class_4: br_function_call ';' {
-    assign(left, right[0]);
+    simple_action(left, right);
 }
 
 stats: stats_1 {
@@ -91,55 +91,71 @@ stats: stats_4 {
 }
 
 stats_1: stat_class_1 {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    append(left, right[0]);
 }
 stats_1: stats_1 stat_class_1 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_1: stats_2 stat_class_1 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_1: stats_3 stat_class_1 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_1: stats_4 stat_class_1 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 
 stats_2: stat_class_2 {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    append(left, right[0]);
 }
 stats_2: stats_3 stat_class_2 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_2: stats_4 stat_class_2 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 
 stats_3: stat_class_3 {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    append(left, right[0]);
 }
 stats_3: stats_1 stat_class_3 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_3: stats_2 stat_class_3 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_3: stats_3 stat_class_3 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_3: stats_4 stat_class_3 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 
 stats_4: stat_class_4 {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    append(left, right[0]);
 }
 stats_4: stats_3 stat_class_4 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 stats_4: stats_4 stat_class_4 {
-    loop(left, right[0], right[1]);
+    append(right[0], right[1]);
+    assign(left, right[0]);
 }
 
 - 不是'('开头的普通语句
@@ -193,13 +209,16 @@ opt_semicolon: ';'
 
 - var列表
 nobr_variable_list: nobr_variable {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    append(left, right[0]);
 }
 nobr_variable_list: nobr_variable_list ',' nobr_variable {
-    loop(left, right[0], right[2]);
+    append(right[0], right[2]);
+    assign(left, right[0]);
 }
 nobr_variable_list: nobr_variable_list ',' br_variable {
-    loop(left, right[0], right[2]);
+    append(right[0], right[2]);
+    assign(left, right[0]);
 }
 
 br_variable_list: br_variable
@@ -208,10 +227,13 @@ br_variable_list: br_variable_list ',' br_variable
 
 - 函数名
 func_name_list: ID {
-    left->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    right[0]->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
+    append(left, right[0]);
 }
 func_name_list: func_name_list '.' ID {
-    loop(left, right[0], right[2]);
+    append(right[0], right[2]);
+    assign(left, right[0]);
 }
 
 - 表达式
@@ -262,10 +284,12 @@ expression: '-' expression
 expression: '#' expression
 
 expression_list: expression {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    append(left, right[0]);
 }
 expression_list: expression_list ',' expression {
-    loop(left, right[0], right[2]);
+    append(right[0], right[2]);
+    assign(left, right[0]);
 }
 
 - 看,这个prefix就没有以前的隐患
@@ -333,11 +357,15 @@ field_separator: ';'
 opt_field_separator:
 opt_field_separator: field_separator
 
+- 这里可以考虑,先假设只有一个,等再次出现时,再变list
+- 这样结构更扁平
 id_list: ID {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::ListNode::create(::mpl::ASTType::AT_LIST);
+    append(left, right[0]);
 }
 id_list: id_list ',' ID {
-    loop(left, right[0], right[2]);
+    append(right[0], right[2]);
+    assign(left, right[0]);
 }
 
 %%
