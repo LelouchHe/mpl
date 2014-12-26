@@ -42,7 +42,7 @@ extern const std::vector< ::mpl::ast::ReduceAction> ACTIONS = {
 } // namespace parser
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include "../file_reader.h"
 #include "../string_reader.h"
