@@ -18,10 +18,7 @@ public:
 public:
 	static IDNodePtr create(const std::string& text);
 
-	const std::string& text() const;
-
-protected:
-	virtual void debug(std::vector<bool>* pis_last) const;
+	virtual const std::string& text() const;
 
 private:
 	IDNode(const std::string& text);

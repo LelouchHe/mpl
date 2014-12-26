@@ -18,13 +18,10 @@ public:
 public:
 	static ListNodePtr create(::mpl::ASTType type);
 
-	void add(const ::mpl::ASTNodePtr& node);
+	virtual void add(const ::mpl::ASTNodePtr& node);
 
-	size_t size() const;
-	const ::mpl::ASTNodePtr& operator[](size_t s) const;
-
-protected:
-	virtual void debug(std::vector<bool>* pis_last) const;
+	virtual size_t size() const;
+	virtual const ::mpl::ASTNodePtr& operator[](size_t s) const;
 
 private:
 	ListNode(::mpl::ASTType type);

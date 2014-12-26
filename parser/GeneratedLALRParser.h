@@ -15,7 +15,7 @@ public:
     typedef ::mpl::Lexer Lexer;
     typedef Lexer::Token Token;
     typedef Token::TokenType TokenType;
-    ::mpl::ast::ParserNodePtr build();
+    ::mpl::ast::ParserNodePtr build(bool is_debug = false);
 private:
     Lexer _lexer;
 };

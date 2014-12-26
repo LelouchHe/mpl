@@ -72,41 +72,42 @@ void simple_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& 
 void assign_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
 	assert(right.size() == 3);
 
-	ListNodePtr multi = ListNode::create(::mpl::ASTType::AT_ASSIGN);
-	multi->add(right[0]->ast);
-	multi->add(right[2]->ast);
+	ListNodePtr list = ListNode::create(::mpl::ASTType::AT_ASSIGN);
+	list->add(right[0]->ast);
+	list->add(right[2]->ast);
 
-	left->ast = multi;
+	left->ast = list;
 }
 
 void func_def_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
 	assert(right.size() == 3);
 
-	ListNodePtr multi = ListNode::create(::mpl::ASTType::AT_FUNC_DEF);
-	multi->add(right[1]->ast);
-	multi->add(right[2]->ast);
+	ListNodePtr list = ListNode::create(::mpl::ASTType::AT_FUNC_DEF);
+	list->add(right[1]->ast);
+	list->add((*right[2]->ast)[0]);
+	list->add((*right[2]->ast)[1]);
 
-	left->ast = multi;
+	left->ast = list;
 }
 
 void func_body_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
 	assert(right.size() == 5);
 
-	ListNodePtr multi = ListNode::create(::mpl::ASTType::AT_LIST);
-	multi->add(right[1]->ast);
-	multi->add(right[3]->ast);
+	ListNodePtr list = ListNode::create(::mpl::ASTType::AT_LIST);
+	list->add(right[1]->ast);
+	list->add(right[3]->ast);
 
-	left->ast = multi;
+	left->ast = list;
 }
 
 void func_call_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
 	assert(right.size() == 2);
 
-	ListNodePtr multi = ListNode::create(::mpl::ASTType::AT_FUNC_CALL);
-	multi->add(right[0]->ast);
-	multi->add(right[1]->ast);
+	ListNodePtr list = ListNode::create(::mpl::ASTType::AT_FUNC_CALL);
+	list->add(right[0]->ast);
+	list->add(right[1]->ast);
 
-	left->ast = multi;
+	left->ast = list;
 }
 
 void return_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
@@ -118,10 +119,10 @@ void return_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& 
 void return_exp_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
 	assert(right.size() == 3);
 
-	ListNodePtr multi = ListNode::create(::mpl::ASTType::AT_RETURN);
-	multi->add(right[1]->ast);
+	ListNodePtr list = ListNode::create(::mpl::ASTType::AT_RETURN);
+	list->add(right[1]->ast);
 
-	left->ast = multi;
+	left->ast = list;
 }
 
 void assign(const ParserNodePtr& left, const ParserNodePtr& right) {
@@ -129,21 +130,19 @@ void assign(const ParserNodePtr& left, const ParserNodePtr& right) {
 }
 
 void append(const ParserNodePtr& left, const ParserNodePtr& right) {
-	ListNodePtr multi = std::dynamic_pointer_cast<ListNode>(left->ast);
-	assert(multi);
-	multi->add(right->ast);
+	left->ast->add(right->ast);
 }
 
 void loop(const ParserNodePtr& left, const ParserNodePtr& head, const ParserNodePtr& item) {
-	if (head->ast->type() == ::mpl::ASTType::AT_LIST) {
+	if (!head->ast || head->ast->type() != ::mpl::ASTType::AT_LIST) {
+		ListNodePtr list = ListNode::create(::mpl::ASTType::AT_LIST);
+		list->add(head->ast);
+		list->add(item->ast);
+
+		left->ast = list;
+	} else {
 		append(head, item);
 		left->ast = head->ast;
-	} else {
-		ListNodePtr multi = ListNode::create(::mpl::ASTType::AT_LIST);
-		multi->add(head->ast);
-		multi->add(item->ast);
-
-		left->ast = multi;
 	}
 }
 

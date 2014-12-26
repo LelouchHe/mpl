@@ -18,11 +18,8 @@ public:
 public:
 	static NumberNodePtr create(const std::string& text);
 
-	double number() const;
-	const std::string& text() const;
-
-protected:
-	virtual void debug(std::vector<bool>* pis_last) const;
+	virtual double number() const;
+	virtual const std::string& text() const;
 
 private:
 	NumberNode(const std::string& text);

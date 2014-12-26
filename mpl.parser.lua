@@ -24,6 +24,8 @@
 - shift/reduce -> shift
 - reduce/reduce -> 前一个reduce
 
+- action尽量都写函数,这样就不用每次重新生成parser了
+
 - 目前是必须有一个global的单项存在
 chunk: opt_block {
     left->ast = right[0]->ast;
@@ -37,8 +39,7 @@ opt_block: stats {
     simple_action(left, right);
 }
 opt_block: stats last_statement {
-    append(right[0], right[1]);
-    assign(left, right[0]);
+    loop(left, right[0], right[1]);
 }
 
 - function-call()
@@ -211,6 +212,7 @@ func_name_list: ID {
     left->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
 }
 func_name_list: func_name_list '.' ID {
+    right[2]->ast = ::mpl::ast::IDNode::create(right[2]->token.text);
     loop(left, right[0], right[2]);
 }
 
@@ -334,9 +336,10 @@ opt_field_separator:
 opt_field_separator: field_separator
 
 id_list: ID {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
 }
 id_list: id_list ',' ID {
+    right[2]->ast = ::mpl::ast::IDNode::create(right[2]->token.text);
     loop(left, right[0], right[2]);
 }
 

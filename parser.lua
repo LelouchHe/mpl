@@ -9,9 +9,9 @@ c = a + b
 
 a, b = 2, 3;
 
-function f(a)
+function f(a, b)
     a = 1;
-    return a + 2
+    return a + b
 end
 
 e = f(1)

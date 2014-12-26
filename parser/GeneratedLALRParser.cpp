@@ -1763,8 +1763,7 @@ static void action_2(
 static void action_3(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    append(right[0], right[1]);
-    assign(left, right[0]);
+    loop(left, right[0], right[1]);
 }
 static void action_4(
         const ::mpl::ast::ParserNodePtr& left,
@@ -1949,6 +1948,7 @@ static void action_39(
 static void action_40(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    right[2]->ast = ::mpl::ast::IDNode::create(right[2]->token.text);
     loop(left, right[0], right[2]);
 }
 static void action_41(
@@ -2045,11 +2045,12 @@ static void action_58(
 static void action_59(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
 }
 static void action_60(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    right[2]->ast = ::mpl::ast::IDNode::create(right[2]->token.text);
     loop(left, right[0], right[2]);
 }
 static const std::vector< ::mpl::ast::ReduceAction> s_actions = {
@@ -2072,21 +2073,25 @@ GeneratedLALRParser::GeneratedLALRParser(::mpl::Reader& reader) :
 }
 GeneratedLALRParser::~GeneratedLALRParser() {
 }
-::mpl::ast::ParserNodePtr GeneratedLALRParser::build() {
+::mpl::ast::ParserNodePtr GeneratedLALRParser::build(bool is_debug) {
     std::stack<size_t> st;
     std::vector< ::mpl::ast::ParserNodePtr> nodes;
     st.push(0);
     Token token(TokenType::EPSILON, "");
     while (!st.empty()) {
         size_t state = st.top();
-        std::cout << "state: " << state << "\t";
+        if (is_debug) {
+            std::cout << "state: " << state << "\t";
+        }
         const std::map<int, std::pair<int, int> >& tran = s_trans[state];
         bool should_next = false;
         if (token.type == TokenType::EPSILON) {
             token = _lexer.lookahead();
             should_next = true;
         }
-        std::cout << "token: " << token.text << "\t";
+        if (is_debug) {
+            std::cout << "token: " << token.text << "\t";
+        }
         std::map<int, std::pair<int, int> >::const_iterator it = tran.find(token.type);
         assert(it != tran.end());
         if (it->second.first < 0) {
@@ -2094,7 +2099,9 @@ GeneratedLALRParser::~GeneratedLALRParser() {
             int rule_no = it->second.second;
             token.type = (TokenType)left;
             token.text = s_nonterminals[-left];
-            std::cout << "reduce: " << token.text << std::endl;
+            if (is_debug) {
+                std::cout << "reduce: " << token.text << std::endl;
+            }
             ::mpl::ast::ParserNodePtr parent = ::mpl::ast::ParserNode::create(token);
             const std::vector<int>& rule = s_rules[-left][rule_no].first;
             size_t children_start = nodes.size() - rule.size();
@@ -2109,11 +2116,15 @@ GeneratedLALRParser::~GeneratedLALRParser() {
             }
             nodes.push_back(parent);
         } else if (it->second.first == ACCEPT) {
-            std::cout << "accept" << std::endl;
+            if (is_debug) {
+                std::cout << "accept" << std::endl;
+            }
             break;
         } else {
             st.push(it->second.second);
-            std::cout << "shift: " << it->second.second << std::endl;
+            if (is_debug) {
+                std::cout << "shift: " << it->second.second << std::endl;
+            }
             if (token.type > 0) {
                 nodes.push_back(::mpl::ast::ParserNode::create(token));
             }

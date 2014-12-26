@@ -277,7 +277,7 @@ bool LALRParserGenerator::generate_header(const char* parser_name) {
 	fprintf(out, "    typedef ::mpl::Lexer Lexer;\n");
 	fprintf(out, "    typedef Lexer::Token Token;\n");
 	fprintf(out, "    typedef Token::TokenType TokenType;\n");
-	fprintf(out, "    ::mpl::ast::ParserNodePtr build();\n");
+	fprintf(out, "    ::mpl::ast::ParserNodePtr build(bool is_debug = false);\n");
 
 	fprintf(out, "private:\n");
 	fprintf(out, "    Lexer _lexer;\n");
@@ -421,7 +421,7 @@ bool LALRParserGenerator::generate_action(std::FILE* out) {
 }
 
 bool LALRParserGenerator::generate_build(std::FILE* out, const char* parser_name) {
-	fprintf(out, "::mpl::ast::ParserNodePtr %s::build() {\n", parser_name);
+	fprintf(out, "::mpl::ast::ParserNodePtr %s::build(bool is_debug) {\n", parser_name);
 
 	fprintf(out, "    std::stack<size_t> st;\n");
 	fprintf(out, "    std::vector< ::mpl::ast::ParserNodePtr> nodes;\n");
@@ -430,14 +430,18 @@ bool LALRParserGenerator::generate_build(std::FILE* out, const char* parser_name
 	fprintf(out, "    Token token(TokenType::EPSILON, \"\");\n");
 	fprintf(out, "    while (!st.empty()) {\n");
 	fprintf(out, "        size_t state = st.top();\n");
-	fprintf(out, "        std::cout << \"state: \" << state << \"\\t\";\n");
+	fprintf(out, "        if (is_debug) {\n");
+	fprintf(out, "            std::cout << \"state: \" << state << \"\\t\";\n");
+	fprintf(out, "        }\n");
 	fprintf(out, "        const std::map<int, std::pair<int, int> >& tran = s_trans[state];\n");
 	fprintf(out, "        bool should_next = false;\n");
 	fprintf(out, "        if (token.type == TokenType::EPSILON) {\n");
 	fprintf(out, "            token = _lexer.lookahead();\n");
 	fprintf(out, "            should_next = true;\n");
 	fprintf(out, "        }\n");
-	fprintf(out, "        std::cout << \"token: \" << token.text << \"\\t\";\n");
+	fprintf(out, "        if (is_debug) {\n");
+	fprintf(out, "            std::cout << \"token: \" << token.text << \"\\t\";\n");
+	fprintf(out, "        }\n");
 	fprintf(out, "        std::map<int, std::pair<int, int> >::const_iterator it = tran.find(token.type);\n");
 	fprintf(out, "        assert(it != tran.end());\n");
 	fprintf(out, "        if (it->second.first < 0) {\n");
@@ -445,7 +449,9 @@ bool LALRParserGenerator::generate_build(std::FILE* out, const char* parser_name
 	fprintf(out, "            int rule_no = it->second.second;\n");
 	fprintf(out, "            token.type = (TokenType)left;\n");
 	fprintf(out, "            token.text = s_nonterminals[-left];\n");
-	fprintf(out, "            std::cout << \"reduce: \" << token.text << std::endl;\n");
+	fprintf(out, "            if (is_debug) {\n");
+	fprintf(out, "                std::cout << \"reduce: \" << token.text << std::endl;\n");
+	fprintf(out, "            }\n");
 	fprintf(out, "            ::mpl::ast::ParserNodePtr parent = ::mpl::ast::ParserNode::create(token);\n");
 	fprintf(out, "            const std::vector<int>& rule = s_rules[-left][rule_no].first;\n");
 	fprintf(out, "            size_t children_start = nodes.size() - rule.size();\n");
@@ -460,11 +466,15 @@ bool LALRParserGenerator::generate_build(std::FILE* out, const char* parser_name
 	fprintf(out, "            }\n");
 	fprintf(out, "            nodes.push_back(parent);\n");
 	fprintf(out, "        } else if (it->second.first == ACCEPT) {\n");
-	fprintf(out, "            std::cout << \"accept\" << std::endl;\n");
+	fprintf(out, "            if (is_debug) {\n");
+	fprintf(out, "                std::cout << \"accept\" << std::endl;\n");
+	fprintf(out, "            }\n");
 	fprintf(out, "            break;\n");
 	fprintf(out, "        } else {\n");
 	fprintf(out, "            st.push(it->second.second);\n");
-	fprintf(out, "            std::cout << \"shift: \" << it->second.second << std::endl;\n");
+	fprintf(out, "            if (is_debug) {\n");
+	fprintf(out, "                std::cout << \"shift: \" << it->second.second << std::endl;\n");
+	fprintf(out, "            }\n");
 	fprintf(out, "            if (token.type > 0) {\n");
 	fprintf(out, "                nodes.push_back(::mpl::ast::ParserNode::create(token));\n");
 	fprintf(out, "            }\n");

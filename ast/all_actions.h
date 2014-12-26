@@ -21,7 +21,6 @@ void func_call_action(const ParserNodePtr& left, const std::vector<ParserNodePtr
 void return_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 void return_exp_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 
-
 // Ò»Ð©±ã½Ý²Ù×÷
 void assign(const ParserNodePtr& left, const ParserNodePtr& right);
 void append(const ParserNodePtr& left, const ParserNodePtr& right);

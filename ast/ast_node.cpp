@@ -1,6 +1,7 @@
 #include "ast_node.h"
 
 #include <iostream>
+#include <cassert>
 
 namespace mpl {
 namespace ast {
@@ -24,26 +25,31 @@ ASTType ASTNode::type() const {
 	return _type;
 }
 
-void ASTNode::debug() const {
-	std::vector<bool> is_last;
-	debug(&is_last);
+double ASTNode::number() const {
+	assert(false);
+	return 0.0;
 }
 
-void ASTNode::debug_prefix(std::vector<bool>* pis_last) const {
-	if (pis_last == NULL || pis_last->empty()) {
-		return;
-	}
+static const std::string s_null_str;
 
-	std::vector<bool>& is_last = *pis_last;
+const std::string& ASTNode::text() const {
+	assert(false);
+	return s_null_str;
+}
 
-	for (size_t i = 0; i < is_last.size() - 1; i++) {
-		if (is_last[i]) {
-			std::cout << "   ";
-		} else {
-			std::cout << " | ";
-		}
-	}
-	std::cout << " |-";
+void ASTNode::add(const ASTNodePtr& node) {
+	assert(false);
+}
+
+size_t ASTNode::size() const {
+	assert(false);
+	return 0;
+}
+
+static const ASTNodePtr s_null_node;
+const ASTNodePtr& ASTNode::operator[](size_t s) const {
+	assert(false);
+	return s_null_node;
 }
 
 } // namespace ast

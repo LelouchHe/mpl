@@ -36,19 +36,5 @@ const ::mpl::ASTNodePtr& ListNode::operator[](size_t s) const {
 	}
 }
 
-void ListNode::debug(std::vector<bool>* pis_last) const {
-	debug_prefix(pis_last);
-
-	std::cout << AST_NAMES[_type] << std::endl;
-
-	for (size_t i = 0; i < _nodes.size(); i++) {
-		pis_last->push_back(i == _nodes.size() - 1);
-		if (_nodes[i]) {
-			_nodes[i]->debug(pis_last);
-		}
-		pis_last->pop_back();
-	}
-}
-
 } // namespace ast
 } // namespace mpl

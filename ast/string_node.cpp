@@ -23,11 +23,5 @@ const std::string& StringNode::text() const {
 	return _text;
 }
 
-void StringNode::debug(std::vector<bool>* pis_last) const {
-	debug_prefix(pis_last);
-
-	std::cout << _text << std::endl;
-}
-
 } // namespace ast
 } // namespace mpl

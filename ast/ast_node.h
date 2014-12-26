@@ -36,12 +36,18 @@ public:
 public:
 	ASTType type() const;
 
-	void debug() const;
-	virtual void debug(std::vector<bool>* pis_last) const = 0;
+	// AT_NUMBER
+	virtual double number() const;
+
+	// AT_ID, AT_STRING
+	virtual const std::string& text() const;
+
+	// AT_LIST
+	virtual void add(const ASTNodePtr& node);
+	virtual size_t size() const;
+	virtual const ASTNodePtr& operator[](size_t s) const;
 	
 protected:
-	void debug_prefix(std::vector<bool>* pis_last) const;
-
 	ASTNode(ASTType type);
 
 protected:

@@ -28,11 +28,5 @@ const std::string& NumberNode::text() const {
 	return _text;
 }
 
-void NumberNode::debug(std::vector<bool>* pis_last) const {
-	debug_prefix(pis_last);
-
-	std::cout << _number << std::endl;
-}
-
 } // namespace ast
 } // namespace mpl
