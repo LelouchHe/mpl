@@ -20,8 +20,6 @@ public:
 	static DebugWalkerPtr create(const ::mpl::ASTNodePtr& root);
 
 private:
-
-
 	DebugWalker(const ::mpl::ASTNodePtr& root);
 };
 

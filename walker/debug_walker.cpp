@@ -73,7 +73,7 @@ void DebugWalker::walk() {
 } // namespace walker
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include "../file_reader.h"
 #include "../string_reader.h"
