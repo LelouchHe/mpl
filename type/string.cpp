@@ -35,15 +35,5 @@ void String::set(const std::string& str) {
 	_str = str;
 }
 
-String& String::operator=(const char* str) {
-	set(str);
-	return *this;
-}
-
-String& String::operator=(const std::string& str) {
-	set(str);
-	return *this;
-}
-
 } // namespace type
 } // namespace mpl

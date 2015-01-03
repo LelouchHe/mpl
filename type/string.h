@@ -15,11 +15,9 @@ public:
 
 public:
 	const std::string& str() const;
+
 	void set(const char* str);
 	void set(const std::string& str);
-
-	String& operator=(const char* str);
-	String& operator=(const std::string& str);
 
 private:
 	std::string _str;

@@ -2,11 +2,50 @@
 
 #include <cassert>
 
+#include "string.h"
+#include "function.h"
+
 namespace mpl {
 namespace type {
 
+TValuePtr TValue::create() {
+	return TValuePtr(new TValue());
+}
+
+TValuePtr TValue::create(bool b) {
+	return TValuePtr(new TValue(b));
+}
+
+TValuePtr TValue::create(int n) {
+	return TValuePtr(new TValue(n));
+}
+
+TValuePtr TValue::create(double n) {
+	return TValuePtr(new TValue(n));
+}
+
+TValuePtr TValue::create(String* s) {
+	return TValuePtr(new TValue(s));
+}
+
+TValuePtr TValue::create(const char* s) {
+	return TValuePtr(new TValue(new String(s)));
+}
+
+TValuePtr TValue::create(const std::string& s) {
+	return TValuePtr(new TValue(new String(s)));
+}
+
+TValuePtr TValue::create(Function* f) {
+	return TValuePtr(new TValue(f));
+}
+
+TValuePtr TValue::create(Type type, Value value) {
+	return TValuePtr(new TValue(type, value));
+}
+
 TValue::TValue() : _type(VT_NIL) {
-	_value.p = NULL;
+	_value.v = NULL;
 }
 
 TValue::TValue(bool b) : _type(VT_BOOL) {
@@ -35,7 +74,7 @@ TValue::TValue(Type type, Value value) :
 }
 
 TValue::~TValue() {
-
+	clear();
 }
 
 Type TValue::type() const {
@@ -75,31 +114,54 @@ Function* TValue::function() const {
 }
 
 void TValue::set() {
-	_type = VT_NIL;
-	_value.p = 0;
+	clear();
 }
 
 void TValue::set(bool b) {
+	clear();
+
 	_type = VT_BOOL;
 	_value.b = b;
 }
 
 void TValue::set(int n) {
+	clear();
+
 	_type = VT_NUMBER;
 	_value.n = n;
 }
 
 void TValue::set(double n) {
+	clear();
+
 	_type = VT_NUMBER;
 	_value.n = n;
 }
 
 void TValue::set(String* s) {
+	clear();
+
 	_type = VT_STRING;
 	_value.s = s;
 }
 
+void TValue::set(const char* s) {
+	clear();
+
+	_type = VT_STRING;
+	_value.s = new String(s);
+}
+
+void TValue::set(const std::string& s) {
+	clear();
+
+	_type = VT_STRING;
+	_value.s = new String(s);
+}
+
 void TValue::set(Function* f) {
+	clear();
+
 	_type = VT_FUNCTION;
 	_value.f = f;
 }
@@ -109,59 +171,41 @@ void TValue::set(Type type, Value value) {
 	_value = value;
 }
 
-TValue& TValue::operator=(bool b) {
-	set(b);
-	return *this;
-}
+void TValue::clear() {
+	if (_type == VT_STRING) {
+		delete _value.s;
+	} else if (_type == VT_FUNCTION) {
+		delete _value.f;
+	}
 
-TValue& TValue::operator=(int n) {
-	set(n);
-	return *this;
-}
-
-TValue& TValue::operator=(double n) {
-	set(n);
-	return *this;
-}
-
-TValue& TValue::operator=(String* s) {
-	set(s);
-	return *this;
-}
-
-TValue& TValue::operator=(Function* f) {
-	set(f);
-	return *this;
+	_type = VT_NIL;
+	_value.v = NULL;
 }
 
 } // namespace type
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
-
-#include "string.h"
-#include "string_table.h"
 
 using namespace std;
 
 int main() {
-	::mpl::type::StringTable strs;
-	::mpl::type::TValue a = strs.add("hello world");
-	::mpl::type::TValue b = a;
+	::mpl::type::TValuePtr a = ::mpl::type::TValue::create("hello world");
+	::mpl::type::TValuePtr b = a;
 
-	cout << a.string()->str() << endl;
-	cout << b.string()->str() << endl;
+	cout << a->string()->str() << endl;
+	cout << b->string()->str() << endl;
 
-	a = 2;
-	cout << a.number() << endl;
-	cout << b.string()->str() << endl;
+	a = ::mpl::type::TValue::create(2);
+	cout << a->number() << endl;
+	cout << b->string()->str() << endl;
 
-	a = strs.add("fuck");
-	b = strs.add("fuck");
-	cout << a.string()->str() << endl;
-	cout << b.string()->str() << endl;
+	a = b;
+	a->set("fuck");
+	cout << a->string()->str() << endl;
+	cout << b->string()->str() << endl;
 
 	return 0;
 }
