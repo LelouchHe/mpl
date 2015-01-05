@@ -19,6 +19,7 @@ public:
 
 private:
 	std::vector<std::string> _args;
+	std::vector<std::string> _locals;
 	std::vector<std::string> _upvalues;
 	std::vector<uint32_t> _opcodes;
 };
@@ -34,6 +35,7 @@ private:
 	Function* _function;
 	int _pc;
 	std::vector<TValuePtr> _args;
+	std::vector<TValuePtr> _locals;
 	std::vector<TValuePtr> _upvalues;
 };
 

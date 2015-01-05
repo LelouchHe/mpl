@@ -1,7 +1,6 @@
 #include "debug_walker.h"
 
 #include <iostream>
-#include "../ast/all_nodes.h"
 
 namespace mpl {
 namespace walker {
@@ -73,7 +72,7 @@ void DebugWalker::walk() {
 } // namespace walker
 } // namespace mpl
 
-#if 0
+#if 1
 
 #include "../file_reader.h"
 #include "../string_reader.h"
@@ -87,7 +86,7 @@ int main() {
 
 	::mpl::Parser parser(reader);
 	::mpl::ast::ParserNodePtr root = parser.build();
-	root->debug();
+	// root->debug();
 
 	::mpl::walker::DebugWalkerPtr debug_walker = ::mpl::walker::DebugWalker::create(root->ast);
 	debug_walker->walk();

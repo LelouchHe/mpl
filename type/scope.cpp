@@ -19,9 +19,9 @@ void Scope::define(const std::string& name, const TValuePtr& value) {
 	_vars[name] = value;
 }
 
-static TValuePtr s_tvalue_nil = TValue::create();
+static const TValuePtr s_tvalue_nil = TValue::create();
 
-TValuePtr Scope::find(const std::string& name) {
+const TValuePtr& Scope::find(const std::string& name) {
 	ScopePtr& cur = shared_from_this();
 	while (cur) {
 		std::map<std::string, TValueWeakPtr>::iterator it =
@@ -54,7 +54,7 @@ ScopePtr Scope::leave() {
 } // namespace type
 } // namespace mpl
 
-#if 1
+#if 0
 
 #include <iostream>
 

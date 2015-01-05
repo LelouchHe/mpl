@@ -46,10 +46,9 @@ size_t ASTNode::size() const {
 	return 0;
 }
 
-static const ASTNodePtr s_null_node;
-const ASTNodePtr& ASTNode::operator[](size_t s) const {
+ASTNodePtr ASTNode::operator[](size_t s) const {
 	assert(false);
-	return s_null_node;
+	return ASTNodePtr();
 }
 
 } // namespace ast

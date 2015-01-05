@@ -1,11 +1,9 @@
 #include "list_node.h"
 
-#include <iostream>
+#include <cassert>
 
 namespace mpl {
 namespace ast {
-
-const ::mpl::ASTNodePtr ListNode::s_null_node;
 
 ListNodePtr ListNode::create(::mpl::ASTType type) {
 	return ListNodePtr(new ListNode(type));
@@ -28,12 +26,10 @@ size_t ListNode::size() const {
 	return _nodes.size();
 }
 
-const ::mpl::ASTNodePtr& ListNode::operator[](size_t s) const {
-	if (s < _nodes.size()) {
-		return _nodes[s];
-	} else {
-		return s_null_node;
-	}
+::mpl::ASTNodePtr ListNode::operator[](size_t s) const {
+	assert(s < _nodes.size());
+
+	return _nodes[s];
 }
 
 } // namespace ast

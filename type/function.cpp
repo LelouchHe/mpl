@@ -3,19 +3,19 @@
 namespace mpl {
 namespace type {
 
-Proto::Proto() {
-
-}
-
-Proto::~Proto() {
-
-}
-
 Function::Function() {
 
 }
 
 Function::~Function() {
+
+}
+
+Activation::Activation() {
+
+}
+
+Activation::~Activation() {
 
 }
 

@@ -29,11 +29,11 @@ TValuePtr TValue::create(String* s) {
 }
 
 TValuePtr TValue::create(const char* s) {
-	return TValuePtr(new TValue(new String(s)));
+	return TValuePtr(new TValue(s));
 }
 
 TValuePtr TValue::create(const std::string& s) {
-	return TValuePtr(new TValue(new String(s)));
+	return TValuePtr(new TValue(s));
 }
 
 TValuePtr TValue::create(Function* f) {
@@ -44,32 +44,40 @@ TValuePtr TValue::create(Type type, Value value) {
 	return TValuePtr(new TValue(type, value));
 }
 
-TValue::TValue() : _type(VT_NIL) {
+TValue::TValue() : _type(VT_NIL), _is_ref(false) {
 	_value.v = NULL;
 }
 
-TValue::TValue(bool b) : _type(VT_BOOL) {
+TValue::TValue(bool b) : _type(VT_BOOL), _is_ref(false) {
 	_value.b = b;
 }
 
-TValue::TValue(int n) : _type(VT_NUMBER) {
+TValue::TValue(int n) : _type(VT_NUMBER), _is_ref(false) {
 	_value.n = n;
 }
 
-TValue::TValue(double n) : _type(VT_NUMBER) {
+TValue::TValue(double n) : _type(VT_NUMBER), _is_ref(false) {
 	_value.n = n;
 }
 
-TValue::TValue(String* s) : _type(VT_STRING) {
+TValue::TValue(String* s) : _type(VT_STRING), _is_ref(false) {
 	_value.s = s;
 }
 
-TValue::TValue(Function* f) : _type(VT_FUNCTION) {
+TValue::TValue(const char* s) : _type(VT_STRING), _is_ref(false) {
+	_value.s = new String(s);
+}
+
+TValue::TValue(const std::string& s) : _type(VT_STRING), _is_ref(false) {
+	_value.s = new String(s);
+}
+
+TValue::TValue(Function* f) : _type(VT_FUNCTION), _is_ref(false) {
 	_value.f = f;
 }
 
 TValue::TValue(Type type, Value value) :
-		_type(type), _value(value) {
+		_type(type), _value(value), _is_ref(false) {
 
 }
 
@@ -111,6 +119,50 @@ Function* TValue::function() const {
 	assert(_type == VT_FUNCTION);
 
 	return _value.f;
+}
+
+bool TValue::is_ref() const {
+	return _is_ref;
+}
+
+void TValue::set_ref(bool is_ref) {
+	_is_ref = is_ref;
+}
+
+TValue* TValue::clone() const {
+	return new TValue(_type, clone_value());
+}
+
+Value TValue::clone_value() const {
+	Value v;
+	v.v = NULL;
+
+	switch (_type) {
+	case VT_NIL:
+		break;
+
+	case VT_BOOL:
+		v.b = _value.b;
+		break;
+
+	case VT_NUMBER:
+		v.n = _value.n;
+		break;
+
+	case VT_STRING:
+		v.s = new String(_value.s->str());
+		break;
+
+	case VT_FUNCTION:
+		v.f = new Function();
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	return v;
 }
 
 void TValue::set() {
@@ -180,6 +232,7 @@ void TValue::clear() {
 
 	_type = VT_NIL;
 	_value.v = NULL;
+	_is_ref = false;
 }
 
 } // namespace type
@@ -190,6 +243,31 @@ void TValue::clear() {
 #include <iostream>
 
 using namespace std;
+
+// 带有引用含义的assign伪代码
+static void assign(::mpl::type::TValuePtr& a, ::mpl::type::TValuePtr& b, bool is_ref) {
+	if (!is_ref) {
+		if (!a->is_ref() && !b->is_ref()) {
+			a = b;
+		} else if (!a->is_ref()) {
+			a.reset(b->clone());
+		} else {
+			a->set(b->type(), b->clone_value());
+		}
+	} else {
+		assert(!a->is_ref());
+
+		if (b->is_ref() || b.unique()) {
+			a = b;
+			a->set_ref(true);
+		} else {
+			a.reset(b->clone());
+			a->set_ref(true);
+
+			b = a;
+		}
+	}
+}
 
 int main() {
 	::mpl::type::TValuePtr a = ::mpl::type::TValue::create("hello world");
@@ -203,9 +281,17 @@ int main() {
 	cout << b->string()->str() << endl;
 
 	a = b;
-	a->set("fuck");
+	a->set("hello");
 	cout << a->string()->str() << endl;
 	cout << b->string()->str() << endl;
+
+	a->set_ref(true);
+	assign(a, ::mpl::type::TValue::create(2), false);
+	cout << a->type() << "\t" << b->type() << endl;
+
+	a->set_ref(false);
+	assign(a, ::mpl::type::TValue::create("hello"), false);
+	cout << a->type() << "\t" << b->type() << endl;
 
 	return 0;
 }

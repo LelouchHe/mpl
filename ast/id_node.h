@@ -20,6 +20,9 @@ public:
 
 	virtual const std::string& text() const;
 
+	virtual size_t size() const;
+	virtual ::mpl::ASTNodePtr operator[](size_t s) const;
+
 private:
 	IDNode(const std::string& text);
 

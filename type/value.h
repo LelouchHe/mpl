@@ -63,6 +63,25 @@ public:
 	String* string() const;
 	Function* function() const;
 
+private:
+	Type _type;
+	Value _value;
+
+	// _is_ref/set/clone主要用于引用语义(但mpl不支持)
+	// 具体来说:
+	// 被引用的赋值使用set
+	// 其他一律直接create即可
+	// 赋值操作时,注意判断_is_ref和Ptr的unique
+	bool _is_ref;
+
+public:
+	bool is_ref() const;
+	void set_ref(bool is_ref);
+
+	// 返回完全相同的独立的TValue,需要自己控制生命期
+	TValue* clone() const;
+	Value clone_value() const;
+
 	void set();
 	void set(bool b);
 	void set(int n);
@@ -76,17 +95,17 @@ public:
 	void set(Type type, Value value);
 
 private:
-	Type _type;
-	Value _value;
-
-private:
 	void clear();
 
 	TValue();
 	TValue(bool b);
 	TValue(int n);
 	TValue(double n);
+
 	TValue(String* s);
+	TValue(const char* s);
+	TValue(const std::string& s);
+	
 	TValue(Function* f);
 	TValue(Type type, Value value);
 };

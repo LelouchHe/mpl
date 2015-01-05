@@ -21,15 +21,13 @@ public:
 	virtual void add(const ::mpl::ASTNodePtr& node);
 
 	virtual size_t size() const;
-	virtual const ::mpl::ASTNodePtr& operator[](size_t s) const;
+	virtual ::mpl::ASTNodePtr operator[](size_t s) const;
 
 private:
 	ListNode(::mpl::ASTType type);
 
 private:
 	std::vector< ::mpl::ASTNodePtr> _nodes;
-
-	static const ::mpl::ASTNodePtr s_null_node;
 };
 
 } // namespace ast

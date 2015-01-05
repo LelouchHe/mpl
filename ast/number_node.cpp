@@ -1,7 +1,7 @@
 #include "number_node.h"
 
 #include <cstdlib>
-#include <iostream>
+#include <cassert>
 
 namespace mpl {
 namespace ast {
@@ -26,6 +26,16 @@ double NumberNode::number() const {
 
 const std::string& NumberNode::text() const {
 	return _text;
+}
+
+size_t NumberNode::size() const {
+	return 1;
+}
+
+::mpl::ASTNodePtr NumberNode::operator[](size_t s) const {
+	assert(s < 1);
+
+	return const_cast<NumberNode *>(this)->shared_from_this();
 }
 
 } // namespace ast

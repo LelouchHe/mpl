@@ -1,8 +1,8 @@
 #ifndef MPL_WALKER_DEBUG_WALKER_H
 #define MPL_WALKER_DEBUG_WALKER_H
 
-#include "walker.h"
 #include <vector>
+#include "walker.h"
 
 namespace mpl {
 namespace walker {

@@ -20,7 +20,7 @@ public:
 	static ScopePtr create();
 
 	void define(const std::string& name, const TValuePtr& value);
-	TValuePtr find(const std::string& name);
+	const TValuePtr& find(const std::string& name);
 
 	ScopePtr enter();
 	ScopePtr leave();

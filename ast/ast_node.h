@@ -29,7 +29,7 @@ typedef std::shared_ptr<ASTNode> ASTNodePtr;
 
 // 基本类型如何表达?
 // number/id/string?
-class ASTNode {
+class ASTNode : public std::enable_shared_from_this<ASTNode> {
 public:
 	virtual ~ASTNode();
 
@@ -45,7 +45,9 @@ public:
 	// AT_LIST
 	virtual void add(const ASTNodePtr& node);
 	virtual size_t size() const;
-	virtual const ASTNodePtr& operator[](size_t s) const;
+	// 这里传值回来
+	// 主要是为了让单节点仍能返回shared_from_this来统一处理
+	virtual ASTNodePtr operator[](size_t s) const;
 	
 protected:
 	ASTNode(ASTType type);
