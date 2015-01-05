@@ -3,6 +3,19 @@
 namespace mpl {
 namespace walker {
 
+class SymbolTable {
+public:
+	SymbolTable() {
+
+	}
+	~SymbolTable() {
+
+	}
+
+public:
+	void define();
+};
+
 TypeCheckerPtr TypeChecker::create(const ::mpl::ASTNodePtr& root) {
 	return TypeCheckerPtr(new TypeChecker(root));
 }

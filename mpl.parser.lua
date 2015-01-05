@@ -152,7 +152,9 @@ nobr_statement: nobr_variable_list '=' expression_list {
 nobr_statement: 'do' opt_block 'end'
 nobr_statement: 'while' expression 'do' opt_block 'end'
 nobr_statement: 'repeat' opt_block 'until' expression
-nobr_statement: 'if' expression 'then' opt_block opt_elseif_block_list opt_else_block 'end'
+nobr_statement: 'if' expression 'then' opt_block opt_elseif_block_list opt_else_block 'end' {
+    if_action(left, right);
+}
 nobr_statement: 'for' ID '=' expression ',' expression 'do' opt_block 'end'
 nobr_statement: 'for' ID '=' expression ',' expression ',' expression 'do' opt_block 'end'
 nobr_statement: 'for' id_list 'in' expression_list 'do' opt_block 'end'
@@ -170,15 +172,25 @@ br_statement: br_variable_list '=' expression_list
 
 - if语句
 opt_elseif_block_list:
-opt_elseif_block_list: elseif_block_list
+opt_elseif_block_list: elseif_block_list {
+    simple_action(left, right);
+}
 
-elseif_block_list: elseif_block
-elseif_block_list: elseif_block_list elseif_block
+elseif_block_list: elseif_block {
+    simple_action(left, right);
+}
+elseif_block_list: elseif_block_list elseif_block {
+    loop(left, right[0], right[1]);
+}
 
-elseif_block: 'elseif' expression 'then' opt_block
+elseif_block: 'elseif' expression 'then' opt_block {
+    elseif_action(left, right);
+}
 
 opt_else_block:
-opt_else_block: 'else' opt_block
+opt_else_block: 'else' opt_block {
+    else_action(left, right);
+}
 
 - 结束符
 last_statement: 'return' opt_semicolon {
@@ -235,7 +247,9 @@ expression: '(' expression ')' {
     parenthesis_action(left, right);
 }
 expression: table_constructor
-expression: expression '..' expression
+expression: expression '..' expression {
+    binary_op_action(left, right);
+}
 expression: expression '+' expression {
     binary_op_action(left, right);
 }
@@ -248,16 +262,36 @@ expression: expression '*' expression {
 expression: expression '/' expression {
     binary_op_action(left, right);
 }
-expression: expression '^' expression
-expression: expression '%' expression
-expression: expression '<' expression
-expression: expression '<=' expression
-expression: expression '>' expression
-expression: expression '==' expression
-expression: expression '~=' expression
-expression: expression '>=' expression
-expression: expression 'and' expression
-expression: expression 'or' expression
+expression: expression '^' expression {
+    binary_op_action(left, right);
+}
+expression: expression '%' expression {
+    binary_op_action(left, right);
+}
+expression: expression '<' expression {
+    binary_op_action(left, right);
+}
+expression: expression '<=' expression {
+    binary_op_action(left, right);
+}
+expression: expression '>' expression {
+    binary_op_action(left, right);
+}
+expression: expression '>=' expression {
+    binary_op_action(left, right);
+}
+expression: expression '==' expression {
+    binary_op_action(left, right);
+}
+expression: expression '~=' expression {
+    binary_op_action(left, right);
+}
+expression: expression 'and' expression {
+    binary_op_action(left, right);
+}
+expression: expression 'or' expression {
+    binary_op_action(left, right);
+}
 - 一元操作符,可能需要增加
 expression: 'not' expression
 expression: '-' expression

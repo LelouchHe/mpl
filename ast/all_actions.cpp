@@ -30,6 +30,50 @@ void binary_op_action(const ParserNodePtr& left, const std::vector<ParserNodePtr
 		ast = ListNode::create(::mpl::ASTType::AT_DIV);
 		break;
 
+	case Token::TokenType::TT_CONCAT:
+		ast = ListNode::create(::mpl::ASTType::AT_CONCAT);
+		break;
+
+	case Token::TokenType::TT_EXP:
+		ast = ListNode::create(::mpl::ASTType::AT_EXP);
+		break;
+
+	case Token::TokenType::TT_MOD:
+		ast = ListNode::create(::mpl::ASTType::AT_MOD);
+		break;
+
+	case Token::TokenType::TT_LESS:
+		ast = ListNode::create(::mpl::ASTType::AT_LESS);
+		break;
+
+	case Token::TokenType::TT_LESS_EQUAL:
+		ast = ListNode::create(::mpl::ASTType::AT_LESS_EQUAL);
+		break;
+
+	case Token::TokenType::TT_GREATER:
+		ast = ListNode::create(::mpl::ASTType::AT_GREATER);
+		break;
+
+	case Token::TokenType::TT_GREATER_EQUAL:
+		ast = ListNode::create(::mpl::ASTType::AT_GREATER_EQUAL);
+		break;
+
+	case Token::TokenType::TT_EQUAL:
+		ast = ListNode::create(::mpl::ASTType::AT_EQUAL);
+		break;
+
+	case Token::TokenType::TT_NOT_EQUAL:
+		ast = ListNode::create(::mpl::ASTType::AT_NOT_EQUAL);
+		break;
+
+	case Token::TokenType::TT_AND:
+		ast = ListNode::create(::mpl::ASTType::AT_AND);
+		break;
+
+	case Token::TokenType::TT_OR:
+		ast = ListNode::create(::mpl::ASTType::AT_OR);
+		break;
+
 	default:
 		assert(false);
 		break;
@@ -123,6 +167,47 @@ void return_exp_action(const ParserNodePtr& left, const std::vector<ParserNodePt
 	list->add(right[1]->ast);
 
 	left->ast = list;
+}
+
+void if_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
+	assert(right.size() == 7);
+
+	ListNodePtr list = ListNode::create(::mpl::ASTType::AT_IF);
+	list->add(right[1]->ast);
+	list->add(right[3]->ast);
+
+	if (right[4]->ast) {
+		ASTNodePtr cur = list;
+		for (size_t i = 0; i < right[4]->ast->size(); i++) {
+			::mpl::ASTNodePtr ast = (*right[4]->ast)[i];
+			assert(ast->type() == ::mpl::ASTType::AT_IF);
+
+			cur->add(ast);
+			cur = ast;
+		}
+
+		cur->add(right[5]->ast);
+	} else {
+		list->add(right[5]->ast);
+	}
+
+	left->ast = list;
+}
+
+void elseif_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
+	assert(right.size() == 4);
+
+	ListNodePtr list = ListNode::create(::mpl::ASTType::AT_IF);
+	list->add(right[1]->ast);
+	list->add(right[3]->ast);
+
+	left->ast = list;
+}
+
+void else_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
+	assert(right.size() == 2);
+
+	left->ast = right[1]->ast;
 }
 
 void assign(const ParserNodePtr& left, const ParserNodePtr& right) {

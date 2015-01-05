@@ -8,8 +8,16 @@ namespace ast {
 
 const std::vector<std::string> AST_NAMES = {
 	"LIST", 
+	
 	"ASSIGN", "FUNC_DEF", "FUNC_CALL", "RETURN",
-	"MUL", "DIV", "PLUS", "MINUS",
+	"IF",
+
+	"EXP", "MUL", "DIV", "MOD", "PLUS", "MINUS",
+	"LESS", "LESS_EQUAL", "GREATER", "GREATER_EQUAL",
+	"EQUAL", "NOT_EQUAL",
+	"AND", "OR",
+	"CONCAT",
+	
 	"NUMBER", "ID", "STRING",
 };
 

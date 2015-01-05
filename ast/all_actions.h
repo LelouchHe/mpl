@@ -20,6 +20,9 @@ void func_body_action(const ParserNodePtr& left, const std::vector<ParserNodePtr
 void func_call_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 void return_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 void return_exp_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
+void if_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
+void elseif_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
+void else_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 
 // Ò»Ð©±ã½Ý²Ù×÷
 void assign(const ParserNodePtr& left, const ParserNodePtr& right);
