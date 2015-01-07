@@ -229,9 +229,15 @@ func_name_list: func_name_list '.' ID {
 }
 
 - 表达式
-expression: 'nil'
-expression: 'false'
-expression: 'true'
+expression: 'nil' {
+    left->ast = ::mpl::ast::NilNode::create();
+}
+expression: 'false' {
+    left->ast = ::mpl::ast::BoolNode::create(false);
+}
+expression: 'true' {
+    left->ast = ::mpl::ast::BoolNode::create(true);
+}
 expression: NUMBER {
     left->ast = ::mpl::ast::NumberNode::create(right[0]->token.text);
 }
@@ -293,9 +299,15 @@ expression: expression 'or' expression {
     binary_op_action(left, right);
 }
 - 一元操作符,可能需要增加
-expression: 'not' expression
-expression: '-' expression
-expression: '#' expression
+expression: 'not' expression {
+    unary_op_action(left, right);
+}
+expression: '-' expression {
+    unary_op_action(left, right);
+}
+expression: '#' expression {
+    unary_op_action(left, right);
+}
 
 expression_list: expression {
     simple_action(left, right);

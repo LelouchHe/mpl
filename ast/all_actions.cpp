@@ -84,6 +84,36 @@ void binary_op_action(const ParserNodePtr& left, const std::vector<ParserNodePtr
 	left->ast = ast;
 }
 
+void unary_op_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
+	assert(right.size() == 2);
+
+	ListNodePtr ast;
+
+	switch (right[0]->token.type) {
+	case Token::TokenType::TT_NOT:
+		ast = ListNode::create(::mpl::ASTType::AT_NOT);
+		ast->add(right[1]->ast);
+		break;
+
+	case Token::TokenType::TT_MINUS:
+		ast = ListNode::create(::mpl::ASTType::AT_MINUS);
+		ast->add(NumberNode::create("0"));
+		ast->add(right[1]->ast);
+		break;
+	
+	case Token::TokenType::TT_LEN:
+		ast = ListNode::create(::mpl::ASTType::AT_LEN);
+		ast->add(right[1]->ast);
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	left->ast = ast;
+}
+
 void number_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right) {
 	assert(right.size() == 1);
 

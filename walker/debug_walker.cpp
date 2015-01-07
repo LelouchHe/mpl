@@ -46,10 +46,10 @@ static void debug(const ::mpl::ASTNodePtr& node, std::vector<bool>* pis_last) {
 		break;
 
 	case ::mpl::ASTType::AT_ID:
-		std::cout << node->text() << std::endl;
-		break;
-
 	case ::mpl::ASTType::AT_STRING:
+	case ::mpl::ASTType::AT_TRUE:
+	case ::mpl::ASTType::AT_FALSE:
+	case ::mpl::ASTType::AT_NIL:
 		std::cout << node->text() << std::endl;
 		break;
 
@@ -86,7 +86,7 @@ int main() {
 
 	::mpl::Parser parser(reader);
 	::mpl::ast::ParserNodePtr root = parser.build();
-	// root->debug();
+	root->debug();
 
 	::mpl::walker::DebugWalkerPtr debug_walker = ::mpl::walker::DebugWalker::create(root->ast);
 	debug_walker->walk();

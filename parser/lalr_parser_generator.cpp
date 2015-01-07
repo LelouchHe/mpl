@@ -475,7 +475,7 @@ bool LALRParserGenerator::generate_build(std::FILE* out, const char* parser_name
 	fprintf(out, "            if (is_debug) {\n");
 	fprintf(out, "                std::cout << \"shift: \" << it->second.second << std::endl;\n");
 	fprintf(out, "            }\n");
-	fprintf(out, "            if (token.type > 0) {\n");
+	fprintf(out, "            if (token.type >= 0) {\n");
 	fprintf(out, "                nodes.push_back(::mpl::ast::ParserNode::create(token));\n");
 	fprintf(out, "            }\n");
 	fprintf(out, "            token.type = TokenType::EPSILON;\n");

@@ -15,10 +15,10 @@ const std::vector<std::string> AST_NAMES = {
 	"EXP", "MUL", "DIV", "MOD", "PLUS", "MINUS",
 	"LESS", "LESS_EQUAL", "GREATER", "GREATER_EQUAL",
 	"EQUAL", "NOT_EQUAL",
-	"AND", "OR",
-	"CONCAT",
+	"AND", "OR", "NOT",
+	"CONCAT", "LEN", 
 	
-	"NUMBER", "ID", "STRING",
+	"NUMBER", "ID", "STRING", "TRUE", "FALSE", "NIL",
 };
 
 ASTNode::ASTNode(ASTType type): _type(type) {
@@ -50,13 +50,13 @@ void ASTNode::add(const ASTNodePtr& node) {
 }
 
 size_t ASTNode::size() const {
-	assert(false);
-	return 0;
+	return 1;
 }
 
 ASTNodePtr ASTNode::operator[](size_t s) const {
-	assert(false);
-	return ASTNodePtr();
+	assert(s < 1);
+
+	return const_cast<ASTNode *>(this)->shared_from_this();
 }
 
 } // namespace ast

@@ -20,11 +20,11 @@ enum ASTType {
 	AT_EXP, AT_MUL, AT_DIV, AT_MOD, AT_PLUS, AT_MINUS, 
 	AT_LESS, AT_LESS_EQUAL, AT_GREATER, AT_GREATER_EQUAL,
 	AT_EQUAL, AT_NOT_EQUAL, 
-	AT_AND, AT_OR,
-	AT_CONCAT,
+	AT_AND, AT_OR, AT_NOT,
+	AT_CONCAT, AT_LEN,
 
 	// terminal
-	AT_NUMBER, AT_ID, AT_STRING,
+	AT_NUMBER, AT_ID, AT_STRING, AT_TRUE, AT_FALSE, AT_NIL,
 };
 
 extern const std::vector<std::string> AST_NAMES;
@@ -44,7 +44,7 @@ public:
 	// AT_NUMBER
 	virtual double number() const;
 
-	// AT_ID, AT_STRING
+	// terminal
 	virtual const std::string& text() const;
 
 	// AT_LIST

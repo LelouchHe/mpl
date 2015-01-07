@@ -44,7 +44,7 @@ static const std::vector<std::vector<std::pair<std::vector<int>, int> > > s_rule
 	{ {-6, }, 4 },
 },
 {
-	{ {-31, -33, }, 71 },
+	{ {-31, -33, }, 77 },
 	{ {-31, 44, 52, -33, }, -1 },
 },
 {
@@ -112,38 +112,38 @@ static const std::vector<std::vector<std::pair<std::vector<int>, int> > > s_rule
 	{ {-17, 42, -30, }, 44 },
 },
 {
-	{ {-19, }, 66 },
-	{ {-18, 42, -19, }, 67 },
+	{ {-19, }, 72 },
+	{ {-18, 42, -19, }, 73 },
 },
 {
-	{ {13, }, -1 },
-	{ {6, }, -1 },
-	{ {19, }, -1 },
-	{ {51, }, 47 },
-	{ {53, }, 48 },
+	{ {13, }, 47 },
+	{ {6, }, 48 },
+	{ {19, }, 49 },
+	{ {51, }, 50 },
+	{ {53, }, 51 },
 	{ {48, }, -1 },
 	{ {8, -24, }, -1 },
-	{ {-31, }, 49 },
-	{ {22, -19, 23, }, 50 },
+	{ {-31, }, 52 },
+	{ {22, -19, 23, }, 53 },
 	{ {-32, }, -1 },
-	{ {-19, 47, -19, }, 51 },
-	{ {-19, 32, -19, }, 52 },
-	{ {-19, 33, -19, }, 53 },
-	{ {-19, 29, -19, }, 54 },
-	{ {-19, 30, -19, }, 55 },
-	{ {-19, 28, -19, }, 56 },
-	{ {-19, 31, -19, }, 57 },
-	{ {-19, 34, -19, }, 58 },
-	{ {-19, 35, -19, }, 59 },
-	{ {-19, 36, -19, }, 60 },
-	{ {-19, 37, -19, }, 61 },
-	{ {-19, 38, -19, }, 62 },
-	{ {-19, 39, -19, }, 63 },
-	{ {-19, 0, -19, }, 64 },
-	{ {-19, 15, -19, }, 65 },
-	{ {14, -19, }, -1 },
-	{ {33, -19, }, -1 },
-	{ {41, -19, }, -1 },
+	{ {-19, 47, -19, }, 54 },
+	{ {-19, 32, -19, }, 55 },
+	{ {-19, 33, -19, }, 56 },
+	{ {-19, 29, -19, }, 57 },
+	{ {-19, 30, -19, }, 58 },
+	{ {-19, 28, -19, }, 59 },
+	{ {-19, 31, -19, }, 60 },
+	{ {-19, 34, -19, }, 61 },
+	{ {-19, 35, -19, }, 62 },
+	{ {-19, 36, -19, }, 63 },
+	{ {-19, 37, -19, }, 64 },
+	{ {-19, 38, -19, }, 65 },
+	{ {-19, 39, -19, }, 66 },
+	{ {-19, 0, -19, }, 67 },
+	{ {-19, 15, -19, }, 68 },
+	{ {14, -19, }, 69 },
+	{ {33, -19, }, 70 },
+	{ {41, -19, }, 71 },
 },
 {
 	{ {}, -1 },
@@ -154,15 +154,15 @@ static const std::vector<std::vector<std::pair<std::vector<int>, int> > > s_rule
 	{ {3, -2, }, 39 },
 },
 {
-	{ {52, }, 76 },
-	{ {-22, 42, 52, }, 77 },
+	{ {52, }, 82 },
+	{ {-22, 42, 52, }, 83 },
 },
 {
 	{ {52, }, 45 },
 	{ {-23, 46, 52, }, 46 },
 },
 {
-	{ {22, -34, 23, -2, 5, }, 74 },
+	{ {22, -34, 23, -2, 5, }, 80 },
 },
 {
 	{ {-30, }, -1 },
@@ -181,7 +181,7 @@ static const std::vector<std::vector<std::pair<std::vector<int>, int> > > s_rule
 	{ {43, }, -1 },
 },
 {
-	{ {52, }, 70 },
+	{ {52, }, 76 },
 	{ {-31, 24, -19, 25, }, -1 },
 	{ {-31, 46, 52, }, -1 },
 },
@@ -190,23 +190,23 @@ static const std::vector<std::vector<std::pair<std::vector<int>, int> > > s_rule
 	{ {22, -19, 23, 46, 52, }, -1 },
 },
 {
-	{ {-29, }, 68 },
-	{ {-6, }, 69 },
+	{ {-29, }, 74 },
+	{ {-6, }, 75 },
 },
 {
 	{ {26, 27, }, -1 },
 	{ {26, -35, -36, 27, }, -1 },
 },
 {
-	{ {22, 23, }, 72 },
-	{ {22, -18, 23, }, 73 },
+	{ {22, 23, }, 78 },
+	{ {22, -18, 23, }, 79 },
 	{ {-32, }, -1 },
 	{ {53, }, -1 },
 },
 {
 	{ {}, -1 },
 	{ {48, }, -1 },
-	{ {-22, }, 75 },
+	{ {-22, }, 81 },
 	{ {-22, 42, 48, }, -1 },
 },
 {
@@ -1984,37 +1984,37 @@ static void action_46(
 static void action_47(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    left->ast = ::mpl::ast::NumberNode::create(right[0]->token.text);
+    left->ast = ::mpl::ast::NilNode::create();
 }
 static void action_48(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    left->ast = ::mpl::ast::StringNode::create(right[0]->token.text);
+    left->ast = ::mpl::ast::BoolNode::create(false);
 }
 static void action_49(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    simple_action(left, right);
+    left->ast = ::mpl::ast::BoolNode::create(true);
 }
 static void action_50(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    parenthesis_action(left, right);
+    left->ast = ::mpl::ast::NumberNode::create(right[0]->token.text);
 }
 static void action_51(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    binary_op_action(left, right);
+    left->ast = ::mpl::ast::StringNode::create(right[0]->token.text);
 }
 static void action_52(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    binary_op_action(left, right);
+    simple_action(left, right);
 }
 static void action_53(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    binary_op_action(left, right);
+    parenthesis_action(left, right);
 }
 static void action_54(
         const ::mpl::ast::ParserNodePtr& left,
@@ -2079,52 +2079,51 @@ static void action_65(
 static void action_66(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    simple_action(left, right);
+    binary_op_action(left, right);
 }
 static void action_67(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    loop(left, right[0], right[2]);
+    binary_op_action(left, right);
 }
 static void action_68(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    simple_action(left, right);
+    binary_op_action(left, right);
 }
 static void action_69(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    simple_action(left, right);
+    unary_op_action(left, right);
 }
 static void action_70(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    left->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
+    unary_op_action(left, right);
 }
 static void action_71(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    func_call_action(left, right);
+    unary_op_action(left, right);
 }
 static void action_72(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    // none
+    simple_action(left, right);
 }
 static void action_73(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    assign(left, right[1]);
+    loop(left, right[0], right[2]);
 }
 static void action_74(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    func_body_action(left, right);
+    simple_action(left, right);
 }
 static void action_75(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
-    // 暂时不考虑'...'
     simple_action(left, right);
 }
 static void action_76(
@@ -2133,6 +2132,37 @@ static void action_76(
     left->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
 }
 static void action_77(
+        const ::mpl::ast::ParserNodePtr& left,
+        const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    func_call_action(left, right);
+}
+static void action_78(
+        const ::mpl::ast::ParserNodePtr& left,
+        const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    // none
+}
+static void action_79(
+        const ::mpl::ast::ParserNodePtr& left,
+        const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    assign(left, right[1]);
+}
+static void action_80(
+        const ::mpl::ast::ParserNodePtr& left,
+        const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    func_body_action(left, right);
+}
+static void action_81(
+        const ::mpl::ast::ParserNodePtr& left,
+        const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    // 暂时不考虑'...'
+    simple_action(left, right);
+}
+static void action_82(
+        const ::mpl::ast::ParserNodePtr& left,
+        const std::vector< ::mpl::ast::ParserNodePtr>& right) {
+    left->ast = ::mpl::ast::IDNode::create(right[0]->token.text);
+}
+static void action_83(
         const ::mpl::ast::ParserNodePtr& left,
         const std::vector< ::mpl::ast::ParserNodePtr>& right) {
     right[2]->ast = ::mpl::ast::IDNode::create(right[2]->token.text);
@@ -2154,7 +2184,8 @@ static const std::vector< ::mpl::ast::ReduceAction> s_actions = {
 	action_60, action_61, action_62, action_63, action_64, 
 	action_65, action_66, action_67, action_68, action_69, 
 	action_70, action_71, action_72, action_73, action_74, 
-	action_75, action_76, action_77, 
+	action_75, action_76, action_77, action_78, action_79, 
+	action_80, action_81, action_82, action_83, 
 };
 GeneratedLALRParser::GeneratedLALRParser(::mpl::Reader& reader) :
         _lexer(reader) {
@@ -2213,7 +2244,7 @@ GeneratedLALRParser::~GeneratedLALRParser() {
             if (is_debug) {
                 std::cout << "shift: " << it->second.second << std::endl;
             }
-            if (token.type > 0) {
+            if (token.type >= 0) {
                 nodes.push_back(::mpl::ast::ParserNode::create(token));
             }
             token.type = TokenType::EPSILON;

@@ -6,6 +6,10 @@
 a = 1
 b = a
 c = a + b
+d = - c
+e = a and not c
+f = true
+g = nil
 
 function fib(n)
     if n <= 1 then

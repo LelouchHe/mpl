@@ -10,6 +10,7 @@ namespace ast {
 // 和后期我们要进行的walk不一样,此时还没有ASTTree
 
 void binary_op_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
+void unary_op_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 void number_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 void id_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
 void parenthesis_action(const ParserNodePtr& left, const std::vector<ParserNodePtr>& right);
